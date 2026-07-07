@@ -2946,7 +2946,7 @@ playlist.style.top = (rect.top + (player.classList.contains('collapsed') ? 65 : 
             });
 
 
-            //DOMElements.attachmentBtn.addEventListener('click', () => {
+            /*DOMElements.attachmentBtn.addEventListener('click', () => {
 
                 const modal = document.createElement('div');
                 modal.className = 'modal image-upload-modal';
@@ -3178,7 +3178,7 @@ playlist.style.top = (rect.top + (player.classList.contains('collapsed') ? 65 : 
             });
 
 
-            DOMElements.imageInput.addEventListener('change', () => {
+            */DOMElements.imageInput.addEventListener('change', () => {
                 if (DOMElements.imageInput.files[0]) {
                     if (isBatchMode) {
                         showNotification('批量模式不支持图片', 'warning');
