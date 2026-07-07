@@ -2946,7 +2946,7 @@ playlist.style.top = (rect.top + (player.classList.contains('collapsed') ? 65 : 
             });
 
 
-            DOMElements.attachmentBtn.addEventListener('click', () => {
+            //DOMElements.attachmentBtn.addEventListener('click', () => {
 
                 const modal = document.createElement('div');
                 modal.className = 'modal image-upload-modal';
