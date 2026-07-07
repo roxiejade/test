@@ -847,84 +847,78 @@
     // ========== 渲染红包消息卡片 ==========
 
     window.renderRedPacketMessage = function (msg) {
-        var rp = msg.redPacket || {};
-        var recordId = rp.id || msg.id;
-        var amount = rp.amount || 0;
-        var message = rp.message || msg.text || '恭喜发财';
-        var status = rp.status || 'pending';
-        var isSentByMe = (msg.sender === 'user');
-        var isOpened = status !== 'pending';
+    var rp = msg.redPacket || {};
+    var recordId = rp.id || msg.id;
+    var amount = rp.amount || 0;
+    var message = rp.message || msg.text || '恭喜发财';
+    var status = rp.status || 'pending';
+    var isSentByMe = (msg.sender === 'user');
+    var isOpened = status !== 'pending';
 
-        // 查找最新记录状态（可能已被领取）
-        if (transferData && window.transferData.records) {
-            var latestRecord = window.transferData.records.find(function (r) { return r.id === recordId; });
-            if (latestRecord) {
-                status = latestRecord.status;
-                amount = latestRecord.amount;
-                message = latestRecord.message || message;
-                isOpened = status !== 'pending';
-            }
+    // 从全局 transferData 获取最新状态
+    if (typeof window.transferData !== 'undefined' && window.transferData && window.transferData.records) {
+        var latestRecord = window.transferData.records.find(function (r) { return r.id === recordId; });
+        if (latestRecord) {
+            status = latestRecord.status;
+            amount = latestRecord.amount;
+            message = latestRecord.message || message;
+            isOpened = status !== 'pending';
         }
+    }
 
-        // 时间显示
-        var timeStr = '';
-        if (msg.timestamp) {
-            var ts = new Date(msg.timestamp);
-            var now = new Date();
-            var diff = now - ts;
-            if (diff < 60000) {
-                timeStr = '刚刚';
-            } else if (diff < 3600000) {
-                timeStr = Math.floor(diff / 60000) + '分钟前';
-            } else if (diff < 86400000) {
-                timeStr = ts.getHours().toString().padStart(2, '0') + ':' + ts.getMinutes().toString().padStart(2, '0');
-            } else {
-                timeStr = (ts.getMonth() + 1) + '/' + ts.getDate();
-            }
-        }
-
-        // 状态文本
-        var statusHtml = '';
-        if (status === 'pending') {
-            statusHtml = '<span style="display:flex;align-items:center;gap:4px;font-weight:500;color:#c4453c;"><i class="fas fa-clock" style="font-size:10px;"></i> ' + (isSentByMe ? '对方待领取' : '待领取') + '</span>';
-        } else if (status === 'received') {
-            statusHtml = '<span style="display:flex;align-items:center;gap:4px;font-weight:500;color:#2ed573;"><i class="fas fa-check-circle" style="font-size:10px;"></i> 已领取</span>';
+    var timeStr = '';
+    if (msg.timestamp) {
+        var ts = new Date(msg.timestamp);
+        var now = new Date();
+        var diff = now - ts;
+        if (diff < 60000) {
+            timeStr = '刚刚';
+        } else if (diff < 3600000) {
+            timeStr = Math.floor(diff / 60000) + '分钟前';
+        } else if (diff < 86400000) {
+            timeStr = ts.getHours().toString().padStart(2, '0') + ':' + ts.getMinutes().toString().padStart(2, '0');
         } else {
-            statusHtml = '<span style="display:flex;align-items:center;gap:4px;font-weight:500;color:#bbb;"><i class="fas fa-undo" style="font-size:10px;"></i> 已退回</span>';
+            timeStr = (ts.getMonth() + 1) + '/' + ts.getDate();
         }
+    }
 
-        // 卡片背景
-        var bodyBg = isOpened
-            ? 'background:linear-gradient(180deg,#e0d8d8 0%,#ccc 100%);'
-            : 'background:linear-gradient(180deg,#c4453c 0%,#a33a32 100%);';
+    var statusHtml = '';
+    if (status === 'pending') {
+        statusHtml = '<span style="display:flex;align-items:center;gap:3px;font-weight:500;color:#c4453c;font-size:9px;"><i class="fas fa-clock" style="font-size:8px;"></i> ' + (isSentByMe ? '对方待领取' : '待领取') + '</span>';
+    } else if (status === 'received') {
+        statusHtml = '<span style="display:flex;align-items:center;gap:3px;font-weight:500;color:#2ed573;font-size:9px;"><i class="fas fa-check-circle" style="font-size:8px;"></i> 已领取</span>';
+    } else {
+        statusHtml = '<span style="display:flex;align-items:center;gap:3px;font-weight:500;color:#bbb;font-size:9px;"><i class="fas fa-undo" style="font-size:8px;"></i> 已退回</span>';
+    }
 
-        var svgStroke = isOpened ? 'stroke="#999"' : 'stroke="#fff"';
-        var svgCircleFill = isOpened ? 'fill="#999"' : 'fill="#fff"';
-        var rpSvgCustom = '<svg width="36" height="44" viewBox="0 0 20 28" fill="none" ' + svgStroke + ' stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="16" height="18" rx="2"/><path d="M2 8l8 6 8-6"/><circle cx="10" cy="14" r="2.5" ' + svgCircleFill + ' stroke="none"/></svg>';
+    var bodyBg = isOpened
+        ? 'background:linear-gradient(180deg,#e0d8d8 0%,#ccc 100%);'
+        : 'background:linear-gradient(180deg,#c4453c 0%,#a33a32 100%);';
 
-        var card =
-            '<div class="red-packet-card' + (isOpened ? ' opened' : '') + '" data-rp-id="' + recordId + '" style="width:260px;border-radius:6px;overflow:hidden;cursor:pointer;transition:transform 0.15s;position:relative;">' +
-                // 红色主体
-                '<div class="rp-body" style="' + bodyBg + 'padding:12px 14px 14px;color:#fff;position:relative;display:flex;align-items:center;gap:12px;">' +
-                    // 红包袋图标
-                    '<div class="rp-icon" style="width:44px;height:44px;flex-shrink:0;display:flex;align-items:center;justify-content:center;">' +
-                        rpSvgCustom +
-                    '</div>' +
-                    // 内容区
-                    '<div class="rp-content" style="flex:1;min-width:0;">' +
-                        '<div class="rp-title" style="font-size:13px;font-weight:600;margin-bottom:2px;">红包</div>' +
-                        '<div class="rp-amount-text" style="font-size:24px;font-weight:700;line-height:1.2;"><span style="font-size:14px;font-weight:500;">&yen;</span>' + fmt(amount) + '</div>' +
-                        '<div class="rp-msg-text" style="font-size:11px;opacity:0.8;margin-top:2px;">' + message + '</div>' +
-                    '</div>' +
+    var svgStroke = isOpened ? 'stroke="#999"' : 'stroke="#fff"';
+    var svgCircleFill = isOpened ? 'fill="#999"' : 'fill="#fff"';
+    // SVG 缩小：36x44 → 27x33
+    var rpSvgCustom = '<svg width="27" height="33" viewBox="0 0 20 28" fill="none" ' + svgStroke + ' stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="16" height="18" rx="2"/><path d="M2 8l8 6 8-6"/><circle cx="10" cy="14" r="2.5" ' + svgCircleFill + ' stroke="none"/></svg>';
+
+    var card =
+        '<div class="red-packet-card' + (isOpened ? ' opened' : '') + '" data-rp-id="' + recordId + '" style="width:195px;border-radius:5px;overflow:hidden;cursor:pointer;transition:transform 0.15s;position:relative;">' +
+            '<div class="rp-body" style="' + bodyBg + 'padding:9px 11px 11px;color:#fff;position:relative;display:flex;align-items:center;gap:9px;">' +
+                '<div class="rp-icon" style="width:33px;height:33px;flex-shrink:0;display:flex;align-items:center;justify-content:center;">' +
+                    rpSvgCustom +
                 '</div>' +
-                // 底部白色区域
-                '<div class="rp-footer" style="background:#fff;padding:8px 14px;display:flex;align-items:center;justify-content:space-between;font-size:11px;border-top:1px dashed rgba(196,69,60,0.3);">' +
-                    statusHtml +
-                    '<span style="color:#bbb;font-size:11px;">' + timeStr + '</span>' +
+                '<div class="rp-content" style="flex:1;min-width:0;">' +
+                    '<div class="rp-title" style="font-size:10px;font-weight:600;margin-bottom:1px;">红包</div>' +
+                    '<div class="rp-amount-text" style="font-size:18px;font-weight:700;line-height:1.2;">' + fmt(amount) + '</div>' +
+                    '<div class="rp-msg-text" style="font-size:9px;opacity:0.8;margin-top:1px;">' + message + '</div>' +
                 '</div>' +
-            '</div>';
+            '</div>' +
+            '<div class="rp-footer" style="background:#fff;padding:6px 11px;display:flex;align-items:center;justify-content:space-between;font-size:9px;border-top:1px dashed rgba(196,69,60,0.3);">' +
+                statusHtml +
+                '<span style="color:#bbb;font-size:9px;">' + timeStr + '</span>' +
+            '</div>' +
+        '</div>';
 
-        return card;
-    };
+    return card;
+};
 
 })();
