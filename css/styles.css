@@ -11713,8 +11713,8 @@ body #user-sticker-picker .empty-sticker-tip {
     justify-content: center;
     transition: all 0.25s ease;
     flex-shrink: 0;
-            align-self: stretch;
-            margin: auto 0;
+            /*align-self: stretch;*/
+            /*margin: auto 0;*/
 }
 .plus-btn.active {
     transform: rotate(45deg);
