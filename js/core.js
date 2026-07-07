@@ -305,7 +305,8 @@ const loadData = async () => {
             localforage.getItem(getStorageKey('myStickerLibrary')),
             localforage.getItem(getStorageKey('customReplyGroups')),
             localforage.getItem(getStorageKey('customPokeGroups')),
-            localforage.getItem(getStorageKey('customStatusGroups'))
+            localforage.getItem(getStorageKey('customStatusGroups')),
+    localforage.getItem(getStorageKey('transferData')) 
         ]);
         const getVal = (index) => results[index].status === 'fulfilled' ? results[index].value : null;
 
@@ -330,10 +331,13 @@ const loadData = async () => {
         const savedReplyGroups = getVal(18);
         const savedPokeGroups = getVal(19);
         const savedStatusGroups = getVal(20);
+        const savedTransferData = getVal(21);
 
         if (savedPartnerPersonas) partnerPersonas = savedPartnerPersonas;
 
         if (savedSettings) Object.assign(settings, savedSettings);
+
+        if (savedTransferData) transferData = savedTransferData;
 
         if (settings.showPartnerNameInChat !== undefined) {
             showPartnerNameInChat = settings.showPartnerNameInChat;
@@ -580,6 +584,7 @@ const saveData = async () => {
         { key: 'customThemes',           val: () => localforage.setItem(`${APP_PREFIX}customThemes`, customThemes) },
         { key: 'themeSchemes',           val: () => localforage.setItem(`${APP_PREFIX}themeSchemes`, themeSchemes) },
         { key: 'chatMessages',           val: () => localforage.setItem(getStorageKey('chatMessages'), messages) },
+            { key: 'transferData', val: () => localforage.setItem(getStorageKey('transferData'), transferData) },
     ];
 
     const partnerAvatarSrc = (() => {
@@ -949,6 +954,19 @@ function createMessageFragment(msg, prevMsg, nextMsg, lastSenderRef) {
         fragment.appendChild(systemMsgDiv);
         lastSenderRef.current = 'system';
         return fragment;
+            } else if (msg.type === 'red-packet') {
+    // 红包消息渲染
+    const rpDiv = document.createElement('div');
+    rpDiv.className = `message-wrapper ${msg.sender === 'user' ? 'sent' : 'received'}`;
+    rpDiv.dataset.id = msg.id;
+    if (typeof window.renderRedPacketMessage === 'function') {
+        rpDiv.innerHTML = window.renderRedPacketMessage(msg);
+    } else {
+        rpDiv.innerHTML = '<div style="padding:10px;background:#c4453c;color:#fff;border-radius:8px;">红包</div>';
+    }
+    fragment.appendChild(rpDiv);
+    lastSenderRef.current = msg.sender;
+    return fragment;
     }
 
     if (msg.type === 'call-event') {
