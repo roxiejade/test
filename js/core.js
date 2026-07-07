@@ -960,7 +960,7 @@ function createMessageFragment(msg, prevMsg, nextMsg, lastSenderRef) {
     rpDiv.className = `message-wrapper ${msg.sender === 'user' ? 'sent' : 'received'}`;
     rpDiv.dataset.id = msg.id;
     if (typeof window.renderRedPacketMessage === 'function') {
-        const padding = msg.sender === 'user' ? 'padding-right: 52px;' : 'padding-left: 52px;';
+        const padding = msg.sender === 'user' ? 'padding-right: 46px;' : 'padding-left: 46px;';
         const rpHtml = window.renderRedPacketMessage(msg);
         rpDiv.innerHTML = `<div style="${padding}">${rpHtml}</div>`;
     } else {
