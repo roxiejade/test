@@ -960,7 +960,7 @@ function createMessageFragment(msg, prevMsg, nextMsg, lastSenderRef) {
     rpDiv.className = `message-wrapper ${msg.sender === 'user' ? 'sent' : 'received'}`;
     rpDiv.dataset.id = msg.id;
     if (typeof window.renderRedPacketMessage === 'function') {
-        // 对齐气泡内侧
+        // 对齐气泡内侧：发送方靠右缩进，接收方靠左缩进
         const padding = msg.sender === 'user' ? 'padding-right: 52px;' : 'padding-left: 52px;';
         const rpHtml = window.renderRedPacketMessage(msg);
         rpDiv.innerHTML = `<div style="${padding}">${rpHtml}</div>`;
