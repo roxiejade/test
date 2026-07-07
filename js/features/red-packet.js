@@ -810,40 +810,39 @@
     // ========== 余额设置弹窗 ==========
 
     window.showTransferBalanceSettings = function () {
-        window.initTransferData();
+    window.initTransferData();
 
-        var overlay = document.createElement('div');
-        overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:center;justify-content:center;animation:fadeIn 0.2s;';
-        overlay.onclick = function (e) { if (e.target === overlay) overlay.remove(); };
+    var overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:center;justify-content:center;animation:fadeIn 0.2s;';
+    overlay.onclick = function (e) { if (e.target === overlay) overlay.remove(); };
 
-        overlay.innerHTML =
-    '<div style="width:min(360px,88vw);background:var(--primary-bg,#fff);border-radius:20px;padding:0;animation:popIn 0.25s cubic-bezier(0.34,1.56,0.64,1);box-shadow:0 20px 60px rgba(0,0,0,0.28);border:1px solid var(--border-color,#e8e8e8);margin:0 auto;transform-origin:center center;">' +
-                '<div style="width:36px;height:4px;border-radius:2px;background:var(--border-color,#e8e8e8);margin:10px auto 0;"></div>' +
-                '<div style="padding:16px 20px 12px;font-size:17px;font-weight:600;text-align:center;color:var(--text-primary,#1a1a1a);">余额设置</div>' +
-                '<div style="padding:0 20px 24px;">' +
-                    '<div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:0.5px solid var(--border-color,#e8e8e8);">' +
-                        '<div style="font-size:14px;color:var(--text-primary,#1a1a1a);"><span>我的余额</span><small style="display:block;font-size:11px;color:var(--text-secondary,#888);margin-top:2px;">当前会话</small></div>' +
-                        '<input type="number" id="rp-bal-my" value="' + (window.transferData.myBalance / 100).toFixed(2) + '" style="width:120px;height:36px;border:1.5px solid var(--border-color,#e8e8e8);border-radius:8px;padding:0 10px;font-size:15px;text-align:right;outline:none;font-weight:600;background:var(--secondary-bg,#f5f5f5);color:var(--text-primary,#1a1a1a);box-sizing:border-box;" />' +
-                    '</div>' +
-                    '<div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;">' +
-                        '<div style="font-size:14px;color:var(--text-primary,#1a1a1a);"><span>对方余额</span><small style="display:block;font-size:11px;color:var(--text-secondary,#888);margin-top:2px;">当前会话</small></div>' +
-                        '<input type="number" id="rp-bal-sys" value="' + (window.transferData.systemBalance / 100).toFixed(2) + '" style="width:120px;height:36px;border:1.5px solid var(--border-color,#e8e8e8);border-radius:8px;padding:0 10px;font-size:15px;text-align:right;outline:none;font-weight:600;background:var(--secondary-bg,#f5f5f5);color:var(--text-primary,#1a1a1a);box-sizing:border-box;" />' +
-                    '</div>' +
-                    '<button id="rp-bal-save" style="width:100%;height:48px;border:none;border-radius:12px;background:var(--accent-color,#b8a9c9);color:#fff;font-size:16px;font-weight:600;cursor:pointer;margin-top:16px;transition:opacity 0.15s;">保存</button>' +
+    overlay.innerHTML =
+        '<div style="width:min(360px,88vw);background:var(--primary-bg,#fff);border-radius:20px;padding:0;animation:popIn 0.25s cubic-bezier(0.34,1.56,0.64,1);box-shadow:0 20px 60px rgba(0,0,0,0.28);border:1px solid var(--border-color,#e8e8e8);">' +
+            '<div style="width:36px;height:4px;border-radius:2px;background:var(--border-color,#e8e8e8);margin:10px auto 0;"></div>' +
+            '<div style="padding:16px 20px 12px;font-size:17px;font-weight:600;text-align:center;color:var(--text-primary,#1a1a1a);">余额设置</div>' +
+            '<div style="padding:0 20px 24px;">' +
+                '<div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:0.5px solid var(--border-color,#e8e8e8);">' +
+                    '<div style="font-size:14px;color:var(--text-primary,#1a1a1a);"><span>我的余额</span><small style="display:block;font-size:11px;color:var(--text-secondary,#888);margin-top:2px;">当前会话</small></div>' +
+                    '<input type="number" id="rp-bal-my" value="' + (window.transferData.myBalance / 100).toFixed(2) + '" style="width:120px;height:36px;border:1.5px solid var(--border-color,#e8e8e8);border-radius:8px;padding:0 10px;font-size:15px;text-align:right;outline:none;font-weight:600;background:var(--secondary-bg,#f5f5f5);color:var(--text-primary,#1a1a1a);box-sizing:border-box;" />' +
                 '</div>' +
-            '</div>';
+                '<div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;">' +
+                    '<div style="font-size:14px;color:var(--text-primary,#1a1a1a);"><span>对方余额</span><small style="display:block;font-size:11px;color:var(--text-secondary,#888);margin-top:2px;">当前会话</small></div>' +
+                    '<input type="number" id="rp-bal-sys" value="' + (window.transferData.systemBalance / 100).toFixed(2) + '" style="width:120px;height:36px;border:1.5px solid var(--border-color,#e8e8e8);border-radius:8px;padding:0 10px;font-size:15px;text-align:right;outline:none;font-weight:600;background:var(--secondary-bg,#f5f5f5);color:var(--text-primary,#1a1a1a);box-sizing:border-box;" />' +
+                '</div>' +
+                '<button id="rp-bal-save" style="width:100%;height:48px;border:none;border-radius:12px;background:var(--accent-color,#b8a9c9);color:#fff;font-size:16px;font-weight:600;cursor:pointer;margin-top:16px;transition:opacity 0.15s;">保存</button>' +
+            '</div>' +
+        '</div>';
 
-        document.body.appendChild(overlay);
+    document.body.appendChild(overlay);
 
-        overlay.querySelector('#rp-bal-save').onclick = function () {
-            window.transferData.myBalance = Math.round((parseFloat(overlay.querySelector('#rp-bal-my').value) || 0) * 100);
-            window.transferData.systemBalance = Math.round((parseFloat(overlay.querySelector('#rp-bal-sys').value) || 0) * 100);
-            if (typeof window.throttledSaveData === 'function') window.throttledSaveData();
-            if (typeof window.showNotification === 'function') window.showNotification('余额已保存', 'success');
-            overlay.remove();
-        };
+    overlay.querySelector('#rp-bal-save').onclick = function () {
+        window.transferData.myBalance = Math.round((parseFloat(overlay.querySelector('#rp-bal-my').value) || 0) * 100);
+        window.transferData.systemBalance = Math.round((parseFloat(overlay.querySelector('#rp-bal-sys').value) || 0) * 100);
+        if (typeof window.throttledSaveData === 'function') window.throttledSaveData();
+        if (typeof window.showNotification === 'function') window.showNotification('余额已保存', 'success');
+        overlay.remove();
     };
-
+};
     // ========== 渲染红包消息卡片 ==========
 
     window.renderRedPacketMessage = function (msg) {
