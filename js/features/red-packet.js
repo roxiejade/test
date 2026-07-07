@@ -192,7 +192,7 @@
         overlay.onclick = function (e) { if (e.target === overlay) overlay.remove(); };
 
         overlay.innerHTML =
-            '<div style="width:100%;max-width:420px;background:var(--primary-bg,#fff);border-radius:20px 20px 0 0;padding:0;animation:slideUp 0.3s cubic-bezier(0.34,1.56,0.64,1);">' +
+          '<div style="width:100%;max-width:420px;background:var(--primary-bg,#fff);border-radius:20px;padding:0;animation:slideUp 0.3s cubic-bezier(0.34,1.56,0.64,1);">' +
                 '<div style="width:36px;height:4px;border-radius:2px;background:var(--border-color,#e8e8e8);margin:10px auto 0;"></div>' +
                 '<div style="padding:20px 20px 16px;font-size:17px;font-weight:600;text-align:center;color:var(--text-primary,#1a1a1a);">红包</div>' +
                 '<div style="padding:0 20px 24px;display:flex;gap:16px;">' +
