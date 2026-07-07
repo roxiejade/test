@@ -899,23 +899,23 @@
     // SVG 缩小：36x44 → 27x33
     var rpSvgCustom = '<svg width="27" height="33" viewBox="0 0 20 28" fill="none" ' + svgStroke + ' stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="16" height="18" rx="2"/><path d="M2 8l8 6 8-6"/><circle cx="10" cy="14" r="2.5" ' + svgCircleFill + ' stroke="none"/></svg>';
 
-    var card =
-        '<div class="red-packet-card' + (isOpened ? ' opened' : '') + '" data-rp-id="' + recordId + '" style="width:195px;border-radius:5px;overflow:hidden;cursor:pointer;transition:transform 0.15s;position:relative;">' +
-            '<div class="rp-body" style="' + bodyBg + 'padding:9px 11px 11px;color:#fff;position:relative;display:flex;align-items:center;gap:9px;">' +
-                '<div class="rp-icon" style="width:33px;height:33px;flex-shrink:0;display:flex;align-items:center;justify-content:center;">' +
-                    rpSvgCustom +
-                '</div>' +
-                '<div class="rp-content" style="flex:1;min-width:0;">' +
-                    '<div class="rp-title" style="font-size:10px;font-weight:600;margin-bottom:1px;">红包</div>' +
-                    '<div class="rp-amount-text" style="font-size:18px;font-weight:700;line-height:1.2;">¥' + fmt(amount) + '</div>'
-                    '<div class="rp-msg-text" style="font-size:9px;opacity:0.8;margin-top:1px;">' + message + '</div>' +
-                '</div>' +
+   var card =
+    '<div class="red-packet-card' + (isOpened ? ' opened' : '') + '" data-rp-id="' + recordId + '" style="width:195px;border-radius:5px;overflow:hidden;cursor:pointer;transition:transform 0.15s;position:relative;">' +
+        '<div class="rp-body" style="' + bodyBg + 'padding:9px 11px 11px;color:#fff;position:relative;display:flex;align-items:center;gap:9px;">' +
+            '<div class="rp-icon" style="width:33px;height:33px;flex-shrink:0;display:flex;align-items:center;justify-content:center;">' +
+                rpSvgCustom +
             '</div>' +
-            '<div class="rp-footer" style="background:#fff;padding:6px 11px;display:flex;align-items:center;justify-content:space-between;font-size:9px;border-top:1px dashed rgba(196,69,60,0.3);">' +
-                statusHtml +
-                '<span style="color:#bbb;font-size:9px;">' + timeStr + '</span>' +
+            '<div class="rp-content" style="flex:1;min-width:0;">' +
+                '<div class="rp-title" style="font-size:10px;font-weight:600;margin-bottom:1px;">红包</div>' +
+                '<div class="rp-amount-text" style="font-size:18px;font-weight:700;line-height:1.2;">¥' + fmt(amount) + '</div>' +
+                '<div class="rp-msg-text" style="font-size:9px;opacity:0.8;margin-top:1px;">' + message + '</div>' +
             '</div>' +
-        '</div>';
+        '</div>' +
+        '<div class="rp-footer" style="background:#fff;padding:6px 11px;display:flex;align-items:center;justify-content:space-between;font-size:9px;border-top:1px dashed rgba(196,69,60,0.3);">' +
+            statusHtml +
+            '<span style="color:#bbb;font-size:9px;">' + timeStr + '</span>' +
+        '</div>' +
+    '</div>';
 
     return card;
 };
