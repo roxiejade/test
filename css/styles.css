@@ -11700,8 +11700,8 @@ body #user-sticker-picker .empty-sticker-tip {
 
 /* 加号按钮（输入栏） */
 .plus-btn {
-    width: 36px;
-    height: 36px;
+    /*width: 36px;*/
+    /*height: 36px;*/
     border-radius: 50% !important;
     background: var(--accent-color, #b8a9c9) !important;
     color: #fff !important;
