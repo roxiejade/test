@@ -6,8 +6,6 @@
 (function () {
     'use strict';
 
-    var transferData;
-
     // ========== 工具函数 ==========
 
     /** 金额格式化：分 -> 元 */
@@ -61,12 +59,12 @@
     // ========== 初始化余额数据 ==========
 
     window.initTransferData = function () {
-    if (typeof transferData === 'undefined' || transferData === null) {
-        transferData = { myBalance: 100000, systemBalance: 100000, records: [] };
+    if (typeof window.transferData === 'undefined' || window.transferData === null) {
+        window.transferData = { myBalance: 100000, systemBalance: 100000, records: [] };
     }
-    if (!transferData.records) transferData.records = [];
-    if (typeof transferData.myBalance !== 'number') transferData.myBalance = 100000;
-    if (typeof transferData.systemBalance !== 'number') transferData.systemBalance = 100000;
+    if (!window.transferData.records) window.transferData.records = [];
+    if (typeof window.transferData.myBalance !== 'number') window.transferData.myBalance = 100000;
+    if (typeof window.transferData.systemBalance !== 'number') window.transferData.systemBalance = 100000;
 };
 
     // ========== 红包主菜单弹窗（发红包 / 查看余额）==========
@@ -149,7 +147,7 @@
                             '<span style="font-size:28px;font-weight:500;color:var(--text-primary,#1a1a1a);">&yen;</span>' +
                             '<input type="number" placeholder="0.00" step="0.01" min="0.01" id="rp-send-amount" style="width:180px;font-size:42px;font-weight:700;border:none;outline:none;text-align:center;background:none;color:var(--text-primary,#1a1a1a);border-bottom:2px solid var(--border-color,#e8e8e8);padding-bottom:4px;transition:border-color 0.2s;" />' +
                         '</div>' +
-                        '<div style="margin-top:10px;font-size:12px;color:var(--text-secondary,#888);">余额: &yen;' + fmt(transferData.myBalance) + '</div>' +
+                        '<div style="margin-top:10px;font-size:12px;color:var(--text-secondary,#888);">余额: &yen;' + fmt(window.transferData.myBalance) + '</div>' +
                     '</div>' +
                     // 留言输入
                     '<input type="text" placeholder="添加留言..." id="rp-send-message" maxlength="50" value="' + defaultMsg + '" style="width:100%;height:40px;border:1.5px solid var(--border-color,#e8e8e8);border-radius:10px;padding:0 14px;font-size:14px;outline:none;background:var(--secondary-bg,#f5f5f5);color:var(--text-primary,#1a1a1a);transition:border-color 0.2s;box-sizing:border-box;" />' +
@@ -188,7 +186,7 @@
         // 金额输入校验
         amountInput.oninput = function () {
             var val = parseFloat(amountInput.value);
-            var valid = val && val > 0 && val * 100 <= transferData.myBalance;
+            var valid = val && val > 0 && val * 100 <= window.transferData.myBalance;
             submitBtn.disabled = !valid;
             submitBtn.style.opacity = valid ? '1' : '0.4';
         };
@@ -200,7 +198,7 @@
         submitBtn.onclick = function () {
             var amount = Math.round(parseFloat(amountInput.value) * 100);
             if (!amount || amount <= 0) return;
-            if (amount > transferData.myBalance) {
+            if (amount > window.transferData.myBalance) {
                 if (typeof window.showNotification === 'function') window.showNotification('余额不足', 'warning');
                 return;
             }
@@ -208,7 +206,7 @@
             var message = msgInput.value.trim() || '恭喜发财';
 
             // 扣除余额
-            transferData.myBalance -= amount;
+            window.transferData.myBalance -= amount;
 
             // 创建记录
             var record = {
@@ -220,7 +218,7 @@
                 status: 'pending',
                 createdAt: Date.now()
             };
-            transferData.records.push(record);
+            window.transferData.records.push(record);
 
             // 保存
             if (typeof window.throttledSaveData === 'function') window.throttledSaveData();
@@ -254,14 +252,14 @@
 
             setTimeout(function () {
                 window.initTransferData();
-                var rpRecord = transferData.records.find(function (r) { return r.id === record.id; });
+                var rpRecord = window.transferData.records.find(function (r) { return r.id === record.id; });
                 if (!rpRecord || rpRecord.status !== 'pending') return;
 
                 // 独立判定退回：20%概率退回
                 if (Math.random() < 0.2) {
                     rpRecord.status = 'returned';
                     rpRecord.returnedAt = Date.now();
-                    transferData.myBalance += rpRecord.amount;
+                    window.transferData.myBalance += rpRecord.amount;
 
                     if (typeof window.throttledSaveData === 'function') window.throttledSaveData();
 
@@ -287,7 +285,7 @@
                     // 70%：立即收取
                     rpRecord.status = 'received';
                     rpRecord.receivedAt = Date.now();
-                    transferData.systemBalance += rpRecord.amount;
+                    window.transferData.systemBalance += rpRecord.amount;
 
                     if (typeof window.throttledSaveData === 'function') window.throttledSaveData();
 
@@ -319,8 +317,8 @@
         window.initTransferData();
 
         var record = null;
-        if (transferData.records) {
-            record = transferData.records.find(function (r) { return r.id === recordId; });
+        if (window.transferData.records) {
+            record = window.transferData.records.find(function (r) { return r.id === recordId; });
         }
         if (!record) {
             if (typeof window.showNotification === 'function') window.showNotification('红包不存在', 'warning');
@@ -393,7 +391,7 @@
                 returnBtn.onmouseleave = function () { this.style.filter = 'none'; this.style.transform = 'translateY(0)'; this.style.boxShadow = '0 2px 8px rgba(255,107,53,0.35)'; };
                 returnBtn.onclick = function () {
                     // 退回红包：金额退回系统，不更新用户余额
-                    transferData.systemBalance += record.amount;
+                    window.transferData.systemBalance += record.amount;
                     record.status = 'returned';
                     record.returnedAt = Date.now();
 
@@ -449,8 +447,8 @@
 
                 // 正常领取：更新余额
                 if (record.from === 'system') {
-                    transferData.myBalance += record.amount;
-                    transferData.systemBalance -= record.amount;
+                    window.transferData.myBalance += record.amount;
+                    window.transferData.systemBalance -= record.amount;
                 }
                 // 更新记录状态
                 record.status = 'received';
@@ -539,21 +537,21 @@
             amount = Math.round(specialYuan * 100); // 转为分
         } else {
             // 80%在0-200元内随机，20%在0-余额内随机
-            var maxBalance = Math.floor(transferData.systemBalance / 100); // 余额（元）
+            var maxBalance = Math.floor(window.transferData.systemBalance / 100); // 余额（元）
             if (maxBalance <= 0) return false;
             if (Math.random() < 0.8) {
                 var max200 = Math.min(200, maxBalance);
                 amount = Math.floor(Math.random() * (max200 * 100)) + 1; // 0.01~200元
             } else {
-                amount = Math.floor(Math.random() * transferData.systemBalance) + 1;
+                amount = Math.floor(Math.random() * window.transferData.systemBalance) + 1;
             }
         }
 
         // 检查系统余额
-        if (transferData.systemBalance < amount) return false;
+        if (window.transferData.systemBalance < amount) return false;
 
         // 扣除系统余额
-        transferData.systemBalance -= amount;
+        window.transferData.systemBalance -= amount;
 
         // 留言
         var message;
@@ -575,7 +573,7 @@
             status: 'pending',
             createdAt: Date.now()
         };
-        transferData.records.push(record);
+        window.transferData.records.push(record);
 
         // 计数
         _rpSendCountToday++;
@@ -614,9 +612,9 @@
 
     window.tryCollectPendingRedPacket = function () {
         window.initTransferData();
-        if (!transferData.records) return;
+        if (!window.transferData.records) return;
 
-        var pending = transferData.records.filter(function (r) {
+        var pending = window.transferData.records.filter(function (r) {
             return r.status === 'pending' && r.from === 'me';
         });
         if (pending.length === 0) return;
@@ -632,7 +630,7 @@
         // 系统收取
         target.status = 'received';
         target.receivedAt = Date.now();
-        transferData.systemBalance += target.amount;
+        window.transferData.systemBalance += target.amount;
 
         if (typeof window.throttledSaveData === 'function') window.throttledSaveData();
 
@@ -656,10 +654,10 @@
 
     window.checkRedPacketExpiry = function () {
         window.initTransferData();
-        if (!transferData.records) return;
+        if (!window.transferData.records) return;
 
         var now = Date.now();
-        var expired = transferData.records.filter(function (r) {
+        var expired = window.transferData.records.filter(function (r) {
             return r.status === 'pending' && (now - r.createdAt) > 24 * 3600 * 1000;
         });
 
@@ -668,9 +666,9 @@
             r.returnedAt = now;
             // 退回发送方余额
             if (r.from === 'me') {
-                transferData.myBalance += r.amount;
+                window.transferData.myBalance += r.amount;
             } else if (r.from === 'system') {
-                transferData.systemBalance += r.amount;
+                window.transferData.systemBalance += r.amount;
             }
         });
 
@@ -710,11 +708,11 @@
                 '<div style="padding:0 20px 24px;">' +
                     '<div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:0.5px solid var(--border-color,#e8e8e8);">' +
                         '<div style="font-size:14px;color:var(--text-primary,#1a1a1a);"><span>我的余额</span><small style="display:block;font-size:11px;color:var(--text-secondary,#888);margin-top:2px;">当前会话</small></div>' +
-                        '<input type="number" id="rp-bal-my" value="' + (transferData.myBalance / 100).toFixed(2) + '" style="width:120px;height:36px;border:1.5px solid var(--border-color,#e8e8e8);border-radius:8px;padding:0 10px;font-size:15px;text-align:right;outline:none;font-weight:600;background:var(--secondary-bg,#f5f5f5);color:var(--text-primary,#1a1a1a);box-sizing:border-box;" />' +
+                        '<input type="number" id="rp-bal-my" value="' + (window.transferData.myBalance / 100).toFixed(2) + '" style="width:120px;height:36px;border:1.5px solid var(--border-color,#e8e8e8);border-radius:8px;padding:0 10px;font-size:15px;text-align:right;outline:none;font-weight:600;background:var(--secondary-bg,#f5f5f5);color:var(--text-primary,#1a1a1a);box-sizing:border-box;" />' +
                     '</div>' +
                     '<div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;">' +
                         '<div style="font-size:14px;color:var(--text-primary,#1a1a1a);"><span>对方余额</span><small style="display:block;font-size:11px;color:var(--text-secondary,#888);margin-top:2px;">当前会话</small></div>' +
-                        '<input type="number" id="rp-bal-sys" value="' + (transferData.systemBalance / 100).toFixed(2) + '" style="width:120px;height:36px;border:1.5px solid var(--border-color,#e8e8e8);border-radius:8px;padding:0 10px;font-size:15px;text-align:right;outline:none;font-weight:600;background:var(--secondary-bg,#f5f5f5);color:var(--text-primary,#1a1a1a);box-sizing:border-box;" />' +
+                        '<input type="number" id="rp-bal-sys" value="' + (window.transferData.systemBalance / 100).toFixed(2) + '" style="width:120px;height:36px;border:1.5px solid var(--border-color,#e8e8e8);border-radius:8px;padding:0 10px;font-size:15px;text-align:right;outline:none;font-weight:600;background:var(--secondary-bg,#f5f5f5);color:var(--text-primary,#1a1a1a);box-sizing:border-box;" />' +
                     '</div>' +
                     '<button id="rp-bal-save" style="width:100%;height:48px;border:none;border-radius:12px;background:var(--accent-color,#b8a9c9);color:#fff;font-size:16px;font-weight:600;cursor:pointer;margin-top:16px;transition:opacity 0.15s;">保存</button>' +
                 '</div>' +
@@ -723,8 +721,8 @@
         document.body.appendChild(overlay);
 
         overlay.querySelector('#rp-bal-save').onclick = function () {
-            transferData.myBalance = Math.round((parseFloat(overlay.querySelector('#rp-bal-my').value) || 0) * 100);
-            transferData.systemBalance = Math.round((parseFloat(overlay.querySelector('#rp-bal-sys').value) || 0) * 100);
+            window.transferData.myBalance = Math.round((parseFloat(overlay.querySelector('#rp-bal-my').value) || 0) * 100);
+            window.transferData.systemBalance = Math.round((parseFloat(overlay.querySelector('#rp-bal-sys').value) || 0) * 100);
             if (typeof window.throttledSaveData === 'function') window.throttledSaveData();
             if (typeof window.showNotification === 'function') window.showNotification('余额已保存', 'success');
             overlay.remove();
@@ -743,8 +741,8 @@
         var isOpened = status !== 'pending';
 
         // 查找最新记录状态（可能已被领取）
-        if (transferData && transferData.records) {
-            var latestRecord = transferData.records.find(function (r) { return r.id === recordId; });
+        if (transferData && window.transferData.records) {
+            var latestRecord = window.transferData.records.find(function (r) { return r.id === recordId; });
             if (latestRecord) {
                 status = latestRecord.status;
                 amount = latestRecord.amount;
