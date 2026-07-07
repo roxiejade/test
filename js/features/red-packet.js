@@ -908,7 +908,7 @@
                 '</div>' +
                 '<div class="rp-content" style="flex:1;min-width:0;">' +
                     '<div class="rp-title" style="font-size:10px;font-weight:600;margin-bottom:1px;">红包</div>' +
-                    '<div class="rp-amount-text" style="font-size:18px;font-weight:700;line-height:1.2;">' + fmt(amount) + '</div>' +
+                    '<div class="rp-amount-text" style="font-size:18px;font-weight:700;line-height:1.2;">¥' + fmt(amount) + '</div>'
                     '<div class="rp-msg-text" style="font-size:9px;opacity:0.8;margin-top:1px;">' + message + '</div>' +
                 '</div>' +
             '</div>' +
