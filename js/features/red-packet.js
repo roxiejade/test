@@ -251,10 +251,10 @@
             '<div style="width:100%;max-width:420px;background:var(--primary-bg,#fff);border-radius:20px 20px 0 0;padding:0;animation:slideUp 0.3s cubic-bezier(0.34,1.56,0.64,1);max-height:85vh;overflow-y:auto;">' +
                 '<div style="width:36px;height:4px;border-radius:2px;background:var(--border-color,#e8e8e8);margin:10px auto 0;"></div>' +
                 '<div style="padding:16px 20px 12px;font-size:17px;font-weight:600;text-align:center;color:var(--text-primary,#1a1a1a);">' +
-                    (isFestival
-                        ? '<span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:10px;background:#f9e5e3;color:#c4453c;font-size:11px;font-weight:500;"><i class="fas fa-star"></i> ' + festival.name + '</span>'
-                        : '发红包') +
-                '</div>' +
+    (isFestival
+        ? '<span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:10px;border:1px solid var(--accent-color);color:var(--accent-color);font-size:11px;font-weight:500;">' + festival.name + '</span>'
+        : '发红包') +
+'</div>' +
                 '<div style="padding:0 20px 24px;">' +
                     // 金额输入区
                     '<div style="text-align:center;padding:20px 0 24px;">' +
