@@ -34,28 +34,143 @@
     // ========== 节日检测 ==========
 
     function getFestivals() {
-        var now = new Date();
-        var m = now.getMonth() + 1;
-        var d = now.getDate();
-        var festivals = [
-            { month: 1, day: 1, name: '元旦', messages: ['新年快乐!', '元旦快乐', '新的一年加油~', '万事如意'] },
-            { month: 2, day: 14, name: '情人节', messages: ['情人节快乐', '永远爱你', '你是我最珍贵的', '甜蜜每一天'] },
-            { month: 3, day: 8, name: '妇女节', messages: ['女神节快乐', '你是最美的', '做自己的女王'] },
-            { month: 4, day: 1, name: '愚人节', messages: ['愚人节快乐', '今天你被套路了吗', '哈哈开个玩笑~'] },
-            { month: 5, day: 1, name: '劳动节', messages: ['劳动节快乐', '辛苦了~', '好好休息一下吧'] },
-            { month: 5, day: 20, name: '520', messages: ['520快乐', '我爱你', '一生一世', '你是我心中唯一'] },
-            { month: 6, day: 1, name: '儿童节', messages: ['儿童节快乐', '永远做个快乐的小孩', '今天你最大~'] },
-            { month: 7, day: 7, name: '七夕', messages: ['七夕快乐', '星河万里不如你', '鹊桥相会', '愿得一心人'] },
-            { month: 10, day: 1, name: '国庆节', messages: ['国庆快乐', '放假快乐~', '祖国生日快乐'] },
-            { month: 10, day: 31, name: '万圣节', messages: ['万圣节快乐', 'Trick or Treat!', '不给糖就捣蛋'] },
-            { month: 11, day: 11, name: '双十一', messages: ['双十一快乐', '购物愉快~', '清空购物车'] },
-            { month: 12, day: 24, name: '平安夜', messages: ['平安夜快乐', '平平安安', '圣诞前夕温暖你'] },
-            { month: 12, day: 25, name: '圣诞节', messages: ['圣诞快乐', 'Merry Christmas!', '铃儿响叮当'] },
-            { month: 12, day: 31, name: '跨年', messages: ['跨年快乐', '一起迎接新年~', '辞旧迎新'] }
+    var now = new Date();
+    var m = now.getMonth() + 1;
+    var d = now.getDate();
+    
+    // ---- 农历日期计算（仅用于七夕等农历节日） ----
+    // 简化农历数据：1900-2100 农历每月大小月（0=小月29天，1=大月30天）
+    // 以及农历新年对应的公历日期偏移
+    // 这里使用近似算法，精确到天
+    
+    function getLunarDate(year, month, day) {
+        // 1900年正月初一 = 1900年1月31日
+        // 这里用简单查表法，只计算七夕（农历七月初七）
+        // 因为七夕是固定的农历七月初七，我们只需要计算"农历七月初七"对应的公历日期
+        
+        // 农历每月天数（1900-2100）
+        var lunarMonthDays = [
+            0x04bd8, 0x04ae0, 0x0a570, 0x054d5, 0x0d260, 0x0d950, 0x16554, 0x056a0, 0x09ad0, 0x055d2, // 1900-1909
+            0x04ae0, 0x0a5b6, 0x0a4d0, 0x0d250, 0x1d255, 0x0b540, 0x0d6a0, 0x0ada2, 0x095b0, 0x14977, // 1910-1919
+            0x04970, 0x0a4b0, 0x0b4b5, 0x06a50, 0x06d40, 0x1ab54, 0x02b60, 0x09570, 0x052f2, 0x04970, // 1920-1929
+            0x06566, 0x0d4a0, 0x0ea50, 0x06e95, 0x05ad0, 0x02b60, 0x186e3, 0x092e0, 0x1c8d7, 0x0c950, // 1930-1939
+            0x0d4a0, 0x1d8a6, 0x0b550, 0x056a0, 0x1a5b4, 0x025d0, 0x092d0, 0x0d2b2, 0x0a950, 0x0b557, // 1940-1949
+            0x06ca0, 0x0b550, 0x15355, 0x04da0, 0x0a5b0, 0x14573, 0x052b0, 0x0a9a8, 0x0e950, 0x06aa0, // 1950-1959
+            0x0aea6, 0x0ab50, 0x04b60, 0x0aae4, 0x0a570, 0x05260, 0x0f263, 0x0d950, 0x05b57, 0x056a0, // 1960-1969
+            0x096d0, 0x04ddb, 0x04ad0, 0x0a4d0, 0x0d4d4, 0x0d250, 0x0d558, 0x0b540, 0x0b6a0, 0x195a6, // 1970-1979
+            0x095b0, 0x049b0, 0x0a974, 0x0a4b0, 0x0b27a, 0x06a50, 0x06d40, 0x0af46, 0x0ab60, 0x09570, // 1980-1989
+            0x04af5, 0x04970, 0x064b0, 0x074a3, 0x0ea50, 0x06b58, 0x05ac0, 0x0ab60, 0x096d5, 0x092e0, // 1990-1999
+            0x0c960, 0x0d954, 0x0d4a0, 0x0da50, 0x07552, 0x056a0, 0x0abb7, 0x025d0, 0x092d0, 0x0cab5, // 2000-2009
+            0x0a950, 0x0b4a0, 0x0baa4, 0x0ad50, 0x055d9, 0x04ba0, 0x0a5b0, 0x15176, 0x052b0, 0x0a930, // 2010-2019
+            0x07954, 0x06aa0, 0x0ad50, 0x05b52, 0x04b60, 0x0a6e6, 0x0a4e0, 0x0d260, 0x0ea65, 0x0d530, // 2020-2029
+            0x05aa0, 0x076a3, 0x096d0, 0x04afb, 0x04ad0, 0x0a4d0, 0x1d0b6, 0x0d250, 0x0d520, 0x0dd45, // 2030-2039
+            0x0b5a0, 0x056d0, 0x055b2, 0x049b0, 0x0a577, 0x0a4b0, 0x0aa50, 0x1b255, 0x06d20, 0x0ada0, // 2040-2049
+            0x14b63, 0x09370, 0x049f8, 0x04970, 0x064b0, 0x168a6, 0x0ea50, 0x06b20, 0x1a6c4, 0x0aae0, // 2050-2059
+            0x092e0, 0x0d2e3, 0x0c960, 0x0d557, 0x0d4a0, 0x0da50, 0x05d55, 0x056a0, 0x0a6d0, 0x055d4, // 2060-2069
+            0x052d0, 0x0a9b8, 0x0aa50, 0x0b5a0, 0x0b6a6, 0x04ad0, 0x0a4b0, 0x0a4a4, 0x0d250, 0x1d255, // 2070-2079
+            0x0b540, 0x0d6a0, 0x0ada2, 0x095b0, 0x14977, 0x04970, 0x0a4b0, 0x0b4b5, 0x06a50, 0x06d40, // 2080-2089
+            0x1ab54, 0x02b60, 0x09570, 0x052f2, 0x04970, 0x06566, 0x0d4a0, 0x0ea50, 0x06e95, 0x05ad0, // 2090-2099
+            0x02b60, 0x186e3, 0x092e0, 0x1c8d7, 0x0c950, 0x0d4a0 // 2100
         ];
-        return festivals.filter(function (f) { return f.month === m && f.day === d; });
+        
+        // 农历1900年正月初一对应的公历日期
+        var baseDate = new Date(1900, 0, 31);
+        var baseLunarYear = 1900;
+        var baseLunarMonth = 1;
+        var baseLunarDay = 1;
+        
+        // 计算从1900年正月初一到目标农历日期的天数差
+        function lunarToDays(year, month, day) {
+            var days = 0;
+            for (var y = baseLunarYear; y < year; y++) {
+                var leap = lunarMonthDays[y - 1900] & 0x0f;
+                var monthCount = 12 + (leap ? 1 : 0);
+                for (var m = 1; m <= monthCount; m++) {
+                    var bits = lunarMonthDays[y - 1900];
+                    var isLeapMonth = (m > 12);
+                    var actualMonth = isLeapMonth ? m - 1 : m;
+                    var daysInMonth = (bits & (0x10000 >> actualMonth)) ? 30 : 29;
+                    days += daysInMonth;
+                }
+            }
+            // 计算当年已经过的月份
+            var bits = lunarMonthDays[year - 1900];
+            var leap = bits & 0x0f;
+            for (var m = 1; m < month; m++) {
+                var daysInMonth = (bits & (0x10000 >> m)) ? 30 : 29;
+                days += daysInMonth;
+            }
+            days += day - 1;
+            return days;
+        }
+        
+        var daysOffset = lunarToDays(year, month, day);
+        var targetDate = new Date(baseDate);
+        targetDate.setDate(targetDate.getDate() + daysOffset);
+        return targetDate;
     }
-
+    
+    // ---- 节日列表 ----
+    var festivals = [
+        { month: 1, day: 1, name: '元旦', messages: ['新年快乐!', '元旦快乐', '新的一年依然爱你', '万事如意'] },
+        { month: 2, day: 14, name: '情人节', messages: ['情人节快乐', '永远爱你', '你是我最珍贵的', '附赠亲吻'] },
+        { month: 3, day: 8, name: '妇女节', messages: ['妇女节快乐', '世界上第一厉害的小玉节日快乐', '你特别棒'] },
+        { month: 4, day: 1, name: '愚人节', messages: ['愚人节快乐', '红包是真的',] },
+        { month: 5, day: 1, name: '劳动节', messages: ['劳动节快乐', '辛苦了~', '好好休息一下吧'] },
+        { month: 5, day: 20, name: '520', messages: ['520快乐', '我爱你', '一生一世', '你是我心中唯一'] },
+        { month: 6, day: 1, name: '儿童节', messages: ['儿童节快乐', '给夏以昼永远的宝贝小朋友', ] },
+        // 七夕：农历七月初七（动态计算）
+        { month: -1, day: -1, name: '七夕', messages: ['七夕快乐', '星河万里不如你', '鹊桥相会', '愿得一心人'], isLunar: true, lunarMonth: 7, lunarDay: 7 },
+       // 除夕（腊月二十九，小月年份）
+{ month: -1, day: -1, name: '除夕', messages: ['除夕快乐', '辞旧迎新', '团圆年夜饭', '新的一年万事如意'], isLunar: true, lunarMonth: 12, lunarDay: 29 },
+// 除夕（腊月三十，大月年份）
+{ month: -1, day: -1, name: '除夕', messages: ['除夕快乐', '辞旧迎新', '团圆年夜饭', '新的一年万事如意'], isLunar: true, lunarMonth: 12, lunarDay: 30 },
+// 春节：农历正月初一
+{ month: -1, day: -1, name: '春节', messages: ['新年快乐', '万事如意', '恭喜发财', '阖家欢乐'], isLunar: true, lunarMonth: 1, lunarDay: 1 },
+// 元宵节：农历正月十五
+{ month: -1, day: -1, name: '元宵节', messages: ['元宵节快乐', '团团圆圆', '今天吃汤圆了吗', '好事连连'], isLunar: true, lunarMonth: 1, lunarDay: 15 },
+// 腊八节：农历十二月初八
+{ month: -1, day: -1, name: '腊八节', messages: ['腊八节快乐', '万事粥全', '温暖过冬', '平安喜乐'], isLunar: true, lunarMonth: 12, lunarDay: 8 },
+// 北方小年：农历十二月二十三
+{ month: -1, day: -1, name: '北方小年', messages: ['小年快乐', '辞旧迎新', '万事顺遂', '灶神保佑'], isLunar: true, lunarMonth: 12, lunarDay: 23 },
+// 南方小年：农历十二月二十四
+{ month: -1, day: -1, name: '南方小年', messages: ['小年快乐', '迎祥纳福', '年年有余', '平安喜乐'], isLunar: true, lunarMonth: 12, lunarDay: 24 },
+// 端午节：农历五月初五
+{ month: -1, day: -1, name: '端午节', messages: ['端午安康', '吃粽子', '平安顺遂'], isLunar: true, lunarMonth: 5, lunarDay: 5 },
+// 中秋节：农历八月十五
+{ month: -1, day: -1, name: '中秋节', messages: ['中秋快乐', '吃月饼了吗', '花好月圆', '千里共婵娟'], isLunar: true, lunarMonth: 8, lunarDay: 15 },
+// 重阳节：农历九月初九
+{ month: -1, day: -1, name: '重阳节', messages: ['重阳安康', '登高望远', '久久相伴'], isLunar: true, lunarMonth: 9, lunarDay: 9 },
+        { month: 10, day: 1, name: '国庆节', messages: ['国庆快乐', '假期愉快',] },
+        { month: 10, day: 31, name: '万圣节', messages: ['万圣节快乐', 'Trick or Treat!', '不给糖就捣蛋'] },
+        { month: 11, day: 11, name: '双十一', messages: ['哥哥的卡', '清空购物车'] },
+        { month: 12, day: 24, name: '平安夜', messages: ['平安夜快乐', '平平安安', '苹果'] },
+        { month: 12, day: 25, name: '圣诞节', messages: ['圣诞快乐', 'Merry Christmas!'] },
+        { month: 12, day: 31, name: '跨年', messages: ['跨年快乐', '爱你', '辞旧迎新'] }
+    ];
+    
+    // 检查今天是否匹配某个节日
+    var today = new Date();
+    var todayMonth = today.getMonth() + 1;
+    var todayDay = today.getDate();
+    
+    for (var i = 0; i < festivals.length; i++) {
+        var f = festivals[i];
+        if (f.isLunar) {
+            // 农历节日：计算今年的农历日期对应的公历日期
+            var lunarDate = getLunarDate(today.getFullYear(), f.lunarMonth, f.lunarDay);
+            if (lunarDate.getMonth() + 1 === todayMonth && lunarDate.getDate() === todayDay) {
+                return [f];
+            }
+        } else {
+            // 公历节日
+            if (f.month === todayMonth && f.day === todayDay) {
+                return [f];
+            }
+        }
+    }
+    return [];
+}
     // ========== 初始化余额数据 ==========
 
     window.initTransferData = function () {
@@ -128,7 +243,7 @@
 
         var quickMsgs = isFestival
             ? festival.messages
-            : ['恭喜发财', '新年快乐', '大吉大利', '好运连连', '辛苦了~', '买杯奶茶'];
+            : ['恭喜发财', '奖励', '大吉大利', '财神哥哥驾到', '哥哥的卡随便刷', '买杯奶茶'];
 
         var defaultMsg = isFestival ? festival.messages[0] : '';
 
