@@ -954,23 +954,50 @@ function createMessageFragment(msg, prevMsg, nextMsg, lastSenderRef) {
         fragment.appendChild(systemMsgDiv);
         lastSenderRef.current = 'system';
         return fragment;
-          } else if (msg.type === 'red-packet') {
-    // 红包消息渲染
+         } else if (msg.type === 'red-packet') {
+    // 红包消息渲染（带头像）
     const rpDiv = document.createElement('div');
     rpDiv.className = `message-wrapper ${msg.sender === 'user' ? 'sent' : 'received'}`;
     rpDiv.dataset.id = msg.id;
+
+    // ---- 头像部分 ----
+    const avatarDiv = document.createElement('div');
+    avatarDiv.className = 'message-avatar';
+    if (settings.inChatAvatarEnabled) {
+        const isUser = msg.sender === 'user';
+        const avatarElement = isUser ? DOMElements.me.avatar : DOMElements.partner.avatar;
+        avatarDiv.innerHTML = avatarElement.innerHTML;
+        const avatarShape = isUser ? (settings.myAvatarShape || 'circle') : (settings.partnerAvatarShape || 'circle');
+        ['circle', 'square', 'pentagon', 'heart'].forEach(s => avatarDiv.classList.remove('shape-' + s));
+        if (avatarShape !== 'none') avatarDiv.classList.add('shape-' + avatarShape);
+        const isSameSender = lastSenderRef.current === msg.sender;
+        if (!settings.alwaysShowAvatar && isSameSender) {
+            avatarDiv.classList.add('hidden');
+        }
+    } else {
+        avatarDiv.style.display = 'none';
+    }
+    rpDiv.appendChild(avatarDiv);
+    // ---- 头像部分结束 ----
+
+    // ---- 内容部分 ----
+    const contentWrapper = document.createElement('div');
+    contentWrapper.className = 'message-content-wrapper';
     if (typeof window.renderRedPacketMessage === 'function') {
-        // 对齐气泡内侧：发送方靠右缩进，接收方靠左缩进
         const padding = msg.sender === 'user' ? 'padding-right: 52px;' : 'padding-left: 52px;';
         const rpHtml = window.renderRedPacketMessage(msg);
-        rpDiv.innerHTML = `<div style="${padding}">${rpHtml}</div>`;
+        contentWrapper.innerHTML = `<div style="${padding}">${rpHtml}</div>`;
     } else {
-        rpDiv.innerHTML = '<div style="padding:10px;background:#c4453c;color:#fff;border-radius:8px;">红包</div>';
+        contentWrapper.innerHTML = '<div style="padding:10px;background:#c4453c;color:#fff;border-radius:8px;">红包</div>';
     }
+    rpDiv.appendChild(contentWrapper);
+    // ---- 内容部分结束 ----
+
     fragment.appendChild(rpDiv);
     lastSenderRef.current = msg.sender;
     return fragment;
 }
+        
     if (msg.type === 'call-event') {
         const callEvDiv = document.createElement('div');
         callEvDiv.className = 'call-event-message';
