@@ -817,7 +817,7 @@
         overlay.onclick = function (e) { if (e.target === overlay) overlay.remove(); };
 
         overlay.innerHTML =
-            '<div style="width:min(360px,88vw);background:var(--primary-bg,#fff);border-radius:20px;padding:0;animation:popIn 0.25s cubic-bezier(0.34,1.56,0.64,1);box-shadow:0 20px 60px rgba(0,0,0,0.28);border:1px solid var(--border-color,#e8e8e8);">' +
+    '<div style="width:min(360px,88vw);background:var(--primary-bg,#fff);border-radius:20px;padding:0;animation:popIn 0.25s cubic-bezier(0.34,1.56,0.64,1);box-shadow:0 20px 60px rgba(0,0,0,0.28);border:1px solid var(--border-color,#e8e8e8);margin:0 auto;transform-origin:center center;">' +
                 '<div style="width:36px;height:4px;border-radius:2px;background:var(--border-color,#e8e8e8);margin:10px auto 0;"></div>' +
                 '<div style="padding:16px 20px 12px;font-size:17px;font-weight:600;text-align:center;color:var(--text-primary,#1a1a1a);">余额设置</div>' +
                 '<div style="padding:0 20px 24px;">' +
