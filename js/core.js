@@ -954,21 +954,23 @@ function createMessageFragment(msg, prevMsg, nextMsg, lastSenderRef) {
         fragment.appendChild(systemMsgDiv);
         lastSenderRef.current = 'system';
         return fragment;
-            } else if (msg.type === 'red-packet') {
+          } else if (msg.type === 'red-packet') {
     // 红包消息渲染
     const rpDiv = document.createElement('div');
     rpDiv.className = `message-wrapper ${msg.sender === 'user' ? 'sent' : 'received'}`;
     rpDiv.dataset.id = msg.id;
     if (typeof window.renderRedPacketMessage === 'function') {
-        rpDiv.innerHTML = window.renderRedPacketMessage(msg);
+        // 对齐气泡内侧：发送方靠右缩进，接收方靠左缩进
+        const padding = msg.sender === 'user' ? 'padding-right: 52px;' : 'padding-left: 52px;';
+        const rpHtml = window.renderRedPacketMessage(msg);
+        rpDiv.innerHTML = `<div style="${padding}">${rpHtml}</div>`;
     } else {
         rpDiv.innerHTML = '<div style="padding:10px;background:#c4453c;color:#fff;border-radius:8px;">红包</div>';
     }
     fragment.appendChild(rpDiv);
     lastSenderRef.current = msg.sender;
     return fragment;
-    }
-
+}
     if (msg.type === 'call-event') {
         const callEvDiv = document.createElement('div');
         callEvDiv.className = 'call-event-message';
