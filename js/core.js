@@ -955,32 +955,17 @@ function createMessageFragment(msg, prevMsg, nextMsg, lastSenderRef) {
         lastSenderRef.current = 'system';
         return fragment;
         } else if (msg.type === 'red-packet') {
-    // 红包消息渲染（带气泡壳）
+    // 红包消息渲染（原版 + 缩进）
     const rpDiv = document.createElement('div');
     rpDiv.className = `message-wrapper ${msg.sender === 'user' ? 'sent' : 'received'}`;
     rpDiv.dataset.id = msg.id;
-
-    // 气泡壳：白底、圆角、阴影，像普通消息气泡一样
-    const bubbleShell = document.createElement('div');
-    bubbleShell.className = `message message-${msg.sender === 'user' ? 'sent' : 'received'} ${settings.bubbleStyle}`;
-    bubbleShell.style.background = '#ffffff';
-    bubbleShell.style.boxShadow = '0 1px 4px rgba(0,0,0,0.08)';
-    bubbleShell.style.padding = '4px';  // 给红包卡片一点呼吸空间
-
     if (typeof window.renderRedPacketMessage === 'function') {
         const padding = msg.sender === 'user' ? 'padding-right: 52px;' : 'padding-left: 52px;';
         const rpHtml = window.renderRedPacketMessage(msg);
-        // 外层缩进容器，内层放气泡壳
-        const outerDiv = document.createElement('div');
-        outerDiv.style.cssText = padding;
-        outerDiv.appendChild(bubbleShell);
-        // 红包卡片放进气泡壳
-        bubbleShell.innerHTML = rpHtml;
-        rpDiv.appendChild(outerDiv);
+        rpDiv.innerHTML = `<div style="${padding}">${rpHtml}</div>`;
     } else {
         rpDiv.innerHTML = '<div style="padding:10px;background:#c4453c;color:#fff;border-radius:8px;">红包</div>';
     }
-
     fragment.appendChild(rpDiv);
     lastSenderRef.current = msg.sender;
     return fragment;
