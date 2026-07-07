@@ -6,6 +6,8 @@
 (function () {
     'use strict';
 
+    var transferData;
+
     // ========== 工具函数 ==========
 
     /** 金额格式化：分 -> 元 */
@@ -59,13 +61,13 @@
     // ========== 初始化余额数据 ==========
 
     window.initTransferData = function () {
-        if (typeof transferData === 'undefined' || transferData === null) {
-            transferData = { myBalance: 100000, systemBalance: 100000, records: [] };
-        }
-        if (!transferData.records) transferData.records = [];
-        if (typeof transferData.myBalance !== 'number') transferData.myBalance = 100000;
-        if (typeof transferData.systemBalance !== 'number') transferData.systemBalance = 100000;
-    };
+    if (typeof transferData === 'undefined' || transferData === null) {
+        transferData = { myBalance: 100000, systemBalance: 100000, records: [] };
+    }
+    if (!transferData.records) transferData.records = [];
+    if (typeof transferData.myBalance !== 'number') transferData.myBalance = 100000;
+    if (typeof transferData.systemBalance !== 'number') transferData.systemBalance = 100000;
+};
 
     // ========== 红包主菜单弹窗（发红包 / 查看余额）==========
 
