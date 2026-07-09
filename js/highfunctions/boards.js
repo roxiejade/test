@@ -507,6 +507,24 @@ if (multiBar) {
 }   
 
 function openDetail(threadId, type) {
+  // --- 关键元素检查 ---
+    const detailBody = document.getElementById('board-detail-body');
+    const detailDate = document.getElementById('board-detail-date');
+    const envelopeModal = document.getElementById('envelope-board-modal');
+    const detailModal = document.getElementById('board-detail-modal');
+    
+    if (!detailBody) {
+        console.warn('⚠️ board-detail-body 不存在，无法打开详情');
+        showNotification ? showNotification('详情页未加载', 'warning') : alert('详情页未加载');
+        return;
+    }
+    
+    if (!detailModal) {
+        console.warn('⚠️ board-detail-modal 不存在');
+        showNotification ? showNotification('详情弹窗未加载', 'warning') : alert('详情弹窗未加载');
+        return;
+    }
+    // --- 检查结束 ---
     currentThreadId = threadId;
     const threads = type === 'me' ? boardData.myThreads : boardData.partnerThreads;
     const thread = threads.find(t => t.id === threadId);
