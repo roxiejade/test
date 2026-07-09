@@ -265,13 +265,14 @@ function initModals() {
 
 function bindStaticEvents() {
   // --- 列表层 ---
+  document.getElementById('board-list-close-btn').onclick = () => hideModal(document.getElementById('envelope-board-modal'));
   // 导出功能暂时不需要，先注释掉
   // document.getElementById('board-export-btn').onclick = () => {
   //     isMultiSelectMode = true;
   //     selectedThreadIds.clear();
   //     switchTab(currentView);
   // };
-};
+}
 
 // 绑定多选操作栏的按钮
 /*document.getElementById('board-cancel-select-btn').onclick = exitMultiSelectMode;
