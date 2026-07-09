@@ -411,9 +411,11 @@ window.renderEnvelopeBoard = async function() {
         currentView = 'me';
     }
     switchTab(currentView);
-  // 优雅地打开原系统的弹窗
-  const modal = document.getElementById('envelope-board-modal') || document.getElementById('envelope-modal');
-  if (modal && typeof showModal === 'function') showModal(modal);
+    // 只打开留言板弹窗，不去找 envelope-modal
+    const modal = document.getElementById('envelope-board-modal');
+    if (modal && typeof showModal === 'function') {
+        showModal(modal);
+    }
 };
 
 function switchTab(type) {
