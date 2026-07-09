@@ -415,21 +415,7 @@ function bindStaticEvents() {
 }
 
 
-window.renderEnvelopeBoard = async function() {
-    await loadData();
-    syncReplyPool();
-    initModals();
-    // 如果关了主动写留言板，且当前在对方界面，强制切回我的
-    if (!(typeof settings !== 'undefined' && settings.boardPartnerWriteEnabled) && currentView === 'partner') {
-        currentView = 'me';
-    }
-    switchTab(currentView);
-    // 只打开留言板弹窗，不去找 envelope-modal
-    const modal = document.getElementById('envelope-board-modal');
-    if (modal && typeof showModal === 'function') {
-        showModal(modal);
-    }
-};
+
 
 function switchTab(type) {
     // 🌟 终极极简版：彻底解绑！按钮永远显示，绝不拦截跳转！
@@ -1088,8 +1074,21 @@ window._bv2_doMultiSelect = function(action) {
     }
 };
 
-// --- 添加这一行 ---
-window.renderEnvelopeBoard = renderEnvelopeBoard;
+window.renderEnvelopeBoard = async function() {
+    await loadData();
+    syncReplyPool();
+    initModals();
+    // 如果关了主动写留言板，且当前在对方界面，强制切回我的
+    if (!(typeof settings !== 'undefined' && settings.boardPartnerWriteEnabled) && currentView === 'partner') {
+        currentView = 'me';
+    }
+    switchTab(currentView);
+    // 只打开留言板弹窗，不去找 envelope-modal
+    const modal = document.getElementById('envelope-board-modal');
+    if (modal && typeof showModal === 'function') {
+        showModal(modal);
+    }
+};
   
 // --- 启动 ---
 loadData().then(() => { setInterval(checkStatus, 60000); checkStatus(); });
