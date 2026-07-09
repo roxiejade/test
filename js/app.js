@@ -682,19 +682,19 @@ window.openBoardFromHeader = function() {
     }
 };
 
-// 月经记录
-document.getElementById('period-function')?.addEventListener('click', function() {
-    const modal = document.getElementById('period-modal');
-    if (modal) {
-        if (typeof showModal === 'function') {
-            showModal(modal);
-        } else {
-            console.warn('showModal 函数未定义');
-        }
-    } else {
-        console.warn('period-modal 不存在');
-        if (typeof showNotification === 'function') {
-            showNotification('月经记录功能加载中...', 'info');
-        }
+// ===== 高级功能入口绑定 =====
+document.addEventListener('DOMContentLoaded', function() {
+    // 月经记录
+    var periodEntry = document.getElementById('period-function');
+    if (periodEntry) {
+        periodEntry.addEventListener('click', function(e) {
+            e.stopPropagation();
+            var modal = document.getElementById('period-modal');
+            if (modal && typeof showModal === 'function') {
+                showModal(modal);
+            } else {
+                console.warn('period-modal not found');
+            }
+        });
     }
 });
