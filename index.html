@@ -518,7 +518,7 @@
     </div>
 </div>
 
-        <!-- ===== 在这里插入留言板 ===== -->
+       <!-- ===== 在这里插入留言板 ===== -->
 <div class="modal" id="envelope-board-modal">
     <div class="modal-content" style="max-height:92vh; padding:0; overflow:hidden; background:transparent;">
         <div class="board-wrapper">
@@ -536,6 +536,15 @@
                 <div id="board-tab-area"></div>
                 <!-- 留言列表 -->
                 <div id="board-list-body"></div>
+                <!-- 底部多选栏 -->
+                <div id="board-list-footer">
+                    <div id="board-multi-select-bar" style="display:none; padding:8px 0; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                        <span id="board-selected-count" style="font-size:13px; color:var(--text-secondary);">已选 0 条</span>
+                        <button class="modal-btn modal-btn-secondary" onclick="window._bv2_doMultiSelect && window._bv2_doMultiSelect('all')" style="padding:4px 12px; font-size:12px;">全选</button>
+                        <button class="modal-btn modal-btn-primary" onclick="window._bv2_doMultiSelect && window._bv2_doMultiSelect('confirm')" style="padding:4px 12px; font-size:12px;">导出</button>
+                        <button class="modal-btn modal-btn-secondary" onclick="window._bv2_doMultiSelect && window._bv2_doMultiSelect('cancel')" style="padding:4px 12px; font-size:12px;">取消</button>
+                    </div>
+                </div>
             </div>
             <div class="board-footer">
                 <button class="board-add-btn" id="board-new-post-btn">
