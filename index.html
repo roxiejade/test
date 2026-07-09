@@ -518,6 +518,35 @@
     </div>
 </div>
 
+        <!-- ===== 在这里插入留言板 ===== -->
+<div class="modal" id="envelope-board-modal">
+    <div class="modal-content" style="max-height:92vh; padding:0; overflow:hidden; background:transparent;">
+        <div class="board-wrapper">
+            <div class="board-header">
+                <div class="board-header-title">
+                    <i class="fas fa-sticky-note"></i>
+                    <span>留言板</span>
+                </div>
+                <button class="board-close-btn" id="board-list-close-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="board-body">
+                <!-- 标签切换区 -->
+                <div id="board-tab-area"></div>
+                <!-- 留言列表 -->
+                <div id="board-list-body"></div>
+            </div>
+            <div class="board-footer">
+                <button class="board-add-btn" id="board-new-post-btn">
+                    <i class="fas fa-plus"></i> 新建留言
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- ===== 留言板插入结束 ===== -->
+        
 <div class="modal" id="envelope-view-modal" style="z-index:2100;">
     <div class="modal-content" style="overflow:hidden;padding:0;background:transparent;max-height:92vh;display:flex;flex-direction:column;">
     <div style="background:var(--secondary-bg);border-radius:20px;overflow:hidden;display:flex;flex-direction:column;max-height:92vh;">
