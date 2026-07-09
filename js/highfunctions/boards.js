@@ -433,11 +433,11 @@ function switchTab(type) {
 if (tabArea) {
     tabArea.innerHTML = `
     <div style="display:flex; gap:8px; align-items:center;">
-        <button class="board-tab-btn ${isMe ? 'active' : ''}" data-tab="me" style="...">
-            ${myName}${boardData.myThreads.some(t => t.unread) ? '<span style="...">✨</span>' : ''}
+        <button class="board-tab-btn ${isMe ? 'active' : ''}" data-tab="me" style="padding:6px 14px; border-radius:20px; border:1px solid var(--border-color); background:${isMe ? 'var(--accent-color)' : 'transparent'}; color:${isMe ? '#fff' : 'var(--text-secondary)'}; font-size:12px; font-weight:600; cursor:pointer; position:relative;">
+            ${myName}${boardData.myThreads.some(t => t.unread) ? '<span style="position:absolute;top:-6px;right:-6px;font-size:14px;">✨</span>' : ''}
         </button>
-        <button class="board-tab-btn ${!isMe ? 'active' : ''}" data-tab="partner" style="...">
-            ${partnerName}${boardData.partnerThreads.some(t => t.unread) ? '<span style="...">✨</span>' : ''}
+        <button class="board-tab-btn ${!isMe ? 'active' : ''}" data-tab="partner" style="padding:6px 14px; border-radius:20px; border:1px solid var(--border-color); background:${!isMe ? 'var(--accent-color)' : 'transparent'}; color:${!isMe ? '#fff' : 'var(--text-secondary)'}; font-size:12px; font-weight:600; cursor:pointer; position:relative;">
+            ${partnerName}${boardData.partnerThreads.some(t => t.unread) ? '<span style="position:absolute;top:-6px;right:-6px;font-size:14px;">✨</span>' : ''}
         </button>
     </div>`;
     
@@ -451,57 +451,60 @@ if (tabArea) {
 
 
   // --- 列表内容 ---
-    const listBody = document.getElementById('board-list-body');
-    const listFooter = document.getElementById('board-list-footer');
+const listBody = document.getElementById('board-list-body');
+const listFooter = document.getElementById('board-list-footer');
+if (listBody) {
     if (threads.length === 0) {
-      listBody.innerHTML = `<div class="board-empty"><i class="fas fa-sticky-note"></i><p>${isMe ? '还没有留言' : 'Ta还没有主动留言'}</p></div>`;
+        listBody.innerHTML = `<div class="board-empty"><i class="fas fa-sticky-note"></i><p>${isMe ? '还没有留言' : 'Ta还没有主动留言'}</p></div>`;
     } else {
-      listBody.innerHTML = threads.slice().reverse().map(t => {
-        const last = t.replies[t.replies.length - 1];
-        let statusText = '等待回复', statusClass = 'pending';
-        if (last && ((isMe && last.sender === 'partner') || (!isMe && last.sender === 'me'))) {
-          statusText = '已回复'; statusClass = 'replied';
-        }
-        const preview = t.replies[0] ? (t.replies[0].image ? '🖼 图片留言' : escapeHtml((t.replies[0].text || '').substring(0, 40))) : '';
-        const unreadStar = t.unread ? '<span style="position:absolute;top:12px;right:12px;font-size:14px;z-index:2;">✨</span>' : '';
-        //return `<div class="board-card" data-thread-id="${t.id}" style="position:relative;cursor:pointer;">${unreadStar}<div class="board-card-top-line"></div><div class="board-card-body"><div class="board-card-preview">${preview}</div><div class="board-card-meta"><span class="board-card-date">${formatTime(t.createdAt)}</span><span class="board-card-status ${statusClass}">${statusText}</span></div></div></div>`;
-        return `<div class="board-card" data-thread-id="${t.id}" style="position:relative;cursor:pointer;${isMultiSelectMode && selectedThreadIds.has(t.id) ? 'border:2px solid var(--accent-color);' : ''}">${unreadStar}<div class="board-card-top-line"></div><div class="board-card-body"><div class="board-card-preview">${preview}</div><div class="board-card-meta"><span class="board-card-date">${formatTime(t.createdAt)}</span><span class="board-card-status ${statusClass}">${statusText}</span></div></div></div>`;
-
-      }).join('');
-      // 自己绑定点击事件，不再依赖 HTML 的 onclick
-      listBody.querySelectorAll('[data-thread-id]').forEach(card => {
-          card.onclick = () => {
-              const tid = card.dataset.threadId;
-              if (isMultiSelectMode) {
-                  // --- 核心攻克：确保多选池子被真正激活 ---
-                  if (!selectedThreadIds) selectedThreadIds = new Set();
-                  if (selectedThreadIds.has(tid)) selectedThreadIds.delete(tid);
-                  else selectedThreadIds.add(tid);
-                  // --- 攻克结束 ---
-                  switchTab(currentView);
-              } else {
-                  openDetail(tid, currentView);
-              }
-          };
-      });
+        listBody.innerHTML = threads.slice().reverse().map(t => {
+            const last = t.replies[t.replies.length - 1];
+            let statusText = '等待回复', statusClass = 'pending';
+            if (last && ((isMe && last.sender === 'partner') || (!isMe && last.sender === 'me'))) {
+                statusText = '已回复'; statusClass = 'replied';
+            }
+            const preview = t.replies[0] ? (t.replies[0].image ? '🖼 图片留言' : escapeHtml((t.replies[0].text || '').substring(0, 40))) : '';
+            const unreadStar = t.unread ? '<span style="position:absolute;top:12px;right:12px;font-size:14px;z-index:2;">✨</span>' : '';
+            return `<div class="board-card" data-thread-id="${t.id}" style="position:relative;cursor:pointer;${isMultiSelectMode && selectedThreadIds.has(t.id) ? 'border:2px solid var(--accent-color);' : ''}">${unreadStar}<div class="board-card-top-line"></div><div class="board-card-body"><div class="board-card-preview">${preview}</div><div class="board-card-meta"><span class="board-card-date">${formatTime(t.createdAt)}</span><span class="board-card-status ${statusClass}">${statusText}</span></div></div></div>`;
+        }).join('');
+        listBody.querySelectorAll('[data-thread-id]').forEach(card => {
+            card.onclick = () => {
+                const tid = card.dataset.threadId;
+                if (isMultiSelectMode) {
+                    if (!selectedThreadIds) selectedThreadIds = new Set();
+                    if (selectedThreadIds.has(tid)) selectedThreadIds.delete(tid);
+                    else selectedThreadIds.add(tid);
+                    switchTab(currentView);
+                } else {
+                    openDetail(tid, currentView);
+                }
+            };
+        });
     }
-
+}
     // --- 底部按钮 ---
     //listFooter.style.display = isMe ? '' : 'none';
     // 找到原本的 listFooter.style.display = isMe ? '' : 'none';
 // 替换成下面这段：
 const newPostBtn = document.getElementById('board-new-post-btn');
 const multiBar = document.getElementById('board-multi-select-bar');
-if (isMultiSelectMode) {
-    newPostBtn.style.display = 'none';
-    multiBar.style.display = 'flex';
-    document.getElementById('board-selected-count').textContent = `已选 ${selectedThreadIds.size} 条`;
-} else {
-    newPostBtn.style.display = isMe ? 'flex' : 'none';
-    multiBar.style.display = 'none';
+if (newPostBtn) {
+    if (isMultiSelectMode) {
+        newPostBtn.style.display = 'none';
+    } else {
+        newPostBtn.style.display = isMe ? 'flex' : 'none';
+    }
+}
+if (multiBar) {
+    if (isMultiSelectMode) {
+        multiBar.style.display = 'flex';
+        const selectedCount = document.getElementById('board-selected-count');
+        if (selectedCount) selectedCount.textContent = `已选 ${selectedThreadIds.size} 条`;
+    } else {
+        multiBar.style.display = 'none';
+    }
 }
 
-  }
 
 function openDetail(threadId, type) {
     currentThreadId = threadId;
