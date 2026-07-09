@@ -1678,6 +1678,100 @@
                 <i class="fas fa-tools"></i><span>高级功能</span>
             </div>
 
+            <!-- 月经记录模态框 -->
+    <div class="modal" id="period-modal">
+        <div class="modal-content">
+            <div class="modal-title">
+                <i class="fa-solid fa-droplet"></i><span>月经记录</span>
+            </div>
+            
+            <div class="period-section">
+                <div class="period-status-card">
+                    <div class="period-status-icon"><i class="fas fa-calendar-check"></i></div>
+                    <div class="period-status-content">
+                        <div class="period-status-title">当前周期状态</div>
+                        <div class="period-status-value" id="period-current-status">未记录</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="period-section">
+                <div class="period-section-title">
+                    <i class="fas fa-comment-dots"></i><span>关怀文案</span>
+                </div>
+                <div class="period-random-message" id="period-random-message">
+                    记得多喝热水，照顾好自己
+                </div>
+            </div>
+            
+            <div class="period-section">
+                <div class="period-section-title">
+                    <i class="fas fa-edit"></i><span>记录月经</span>
+                </div>
+                <div class="period-input-group">
+                    <div class="period-input-row">
+                        <div class="period-input-item">
+                            <label for="period-start-date">开始日期</label>
+                            <input type="date" id="period-start-date" class="period-date-input">
+                        </div>
+                        <div class="period-input-item">
+                            <label for="period-end-date">结束日期</label>
+                            <input type="date" id="period-end-date" class="period-date-input">
+                        </div>
+                    </div>
+                    <div class="period-actions">
+                        <button class="period-btn period-btn-primary" id="start-period-record">
+                            <i class="fas fa-play-circle"></i> 记录开始
+                        </button>
+                        <button class="period-btn period-btn-secondary" id="end-period-record">
+                            <i class="fas fa-stop-circle"></i> 记录结束
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="period-section">
+                <div class="period-section-title">
+                    <i class="fas fa-chart-pie"></i><span>周期统计</span>
+                </div>
+                <div class="period-stats-grid">
+                    <div class="period-stat-item">
+                        <div class="period-stat-value" id="period-duration">-</div>
+                        <div class="period-stat-label">本次持续天数</div>
+                    </div>
+                    <div class="period-stat-item">
+                        <div class="period-stat-value" id="period-cycle-length">-</div>
+                        <div class="period-stat-label">平均周期天数</div>
+                    </div>
+                    <div class="period-stat-item">
+                        <div class="period-stat-value" id="period-days-until-next">-</div>
+                        <div class="period-stat-label">距离下次</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="period-section">
+                <div class="period-section-title">
+                    <i class="fas fa-history"></i><span>历史记录</span>
+                </div>
+                <div class="period-history-list" id="period-history-list">
+                    <div class="period-empty-state">
+                        <i class="fas fa-calendar-plus"></i>
+                        <p>暂无记录</p>
+                        <span>开始记录你的月经周期吧</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-buttons" style="padding: 14px 16px;">
+                <button class="modal-btn modal-btn-secondary" id="back-advanced" onclick="(function(){hideModal(document.getElementById('period-modal'));showModal(document.getElementById('advanced-modal'))})()">
+                    <i class="fas fa-arrow-left"></i> 返回
+                </button>
+                <button class="modal-btn modal-btn-secondary" id="close-period">关闭</button>
+            </div>
+        </div>
+    </div>
+
             <div class="settings-section">
                 <div class="settings-section-title">
                     <i class="fas fa-magic"></i>实用工具
@@ -2673,6 +2767,7 @@
     <script src="js/features/mood.js"></script>
 <script src="js/features/envelope.js"></script>
 <script src="js/highfunctions/boards.js"></script>
+        <script src="js/highfunctions/period.js"></script>
 <script src="js/features/red-packet.js"></script>
 <script src="js/plus-panel.js"></script>    
 <script src="js/features/reply-library.js"></script>
