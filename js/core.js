@@ -425,6 +425,7 @@ const loadData = async () => {
 
         try { await initMoodData(); } catch(e) { console.warn("心情数据加载失败", e); }
         try { await loadEnvelopeData(); } catch(e) { console.warn("信封数据加载失败", e); }
+            try { await initPeriodData(); } catch(e) { console.warn("月经数据加载失败", e); }
         
         displayedMessageCount = HISTORY_BATCH_SIZE;
         
