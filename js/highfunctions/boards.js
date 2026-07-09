@@ -1095,4 +1095,6 @@ window.renderEnvelopeBoard = async function() {
 // --- 启动 ---
 loadData().then(() => { setInterval(checkStatus, 60000); checkStatus(); });
 
+  console.log('✅ boards.js 执行完成，renderEnvelopeBoard:', typeof window.renderEnvelopeBoard);
+  
 })();
