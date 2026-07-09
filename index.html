@@ -489,6 +489,40 @@
     </div>
 </div>
 <!-- ===== 留言板详情弹窗结束 ===== -->
+
+        <!-- ===== 在这里添加写留言弹窗 ===== -->
+
+<!-- ===== 写留言弹窗 ===== -->
+<div class="modal" id="board-compose-modal">
+    <div class="modal-content" id="board-v2-compose-container">
+        <div class="board-compose-wrapper">
+            <div class="board-compose-header">
+                <div class="board-compose-title">
+                    <i class="fas fa-pen-fancy"></i>
+                    <span id="board-compose-title-text">写新留言</span>
+                </div>
+                <button class="board-compose-close" id="board-compose-close-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="board-compose-paper">
+                <textarea id="bv2-compose-text" placeholder="写下你的碎碎念..." style="background:transparent!important;border:none!important;outline:none!important;font-family:var(--font-family)!important;font-size:14px!important;line-height:29px!important;color:var(--text-primary)!important;width:100%;resize:none;padding:14px 16px 14px 50px;min-height:180px;position:relative;z-index:1;"></textarea>
+            </div>
+            <div style="padding:0 16px 10px;display:flex;justify-content:space-between;align-items:center;">
+                <label style="cursor:pointer;color:var(--text-secondary);font-size:18px;">
+                    <i class="fas fa-image"></i>
+                    <input type="file" accept="image/*" id="bv2-compose-img-input" style="display:none;">
+                </label>
+                <span id="bv2-img-hint" style="font-size:11px;color:var(--accent-color);display:none;">已选图片</span>
+            </div>
+            <div class="board-compose-footer">
+                <button class="board-compose-btn cancel" id="board-compose-cancel-btn">取消</button>
+                <button class="board-compose-btn send" id="board-compose-send-btn">发布</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- ===== 写留言弹窗结束 ===== -->
         
 <div class="modal" id="envelope-view-modal" style="z-index:2100;">
     <div class="modal-content" style="overflow:hidden;padding:0;background:transparent;max-height:92vh;display:flex;flex-direction:column;">
