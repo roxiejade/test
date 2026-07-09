@@ -429,27 +429,25 @@ function switchTab(type) {
     const partnerName = (typeof settings !== 'undefined' && settings.partnerName) || '对方';
 
     // --- 标签区 ---
-    const tabArea = document.getElementById('board-tab-area');
+   const tabArea = document.getElementById('board-tab-area');
 if (tabArea) {
     tabArea.innerHTML = `
     <div style="display:flex; gap:8px; align-items:center;">
-        <button class="board-tab-btn ${isMe ? 'active' : ''}" data-tab="me" style="padding:6px 14px; border-radius:20px; border:1px solid var(--border-color); background:${isMe ? 'var(--accent-color)' : 'transparent'}; color:${isMe ? '#fff' : 'var(--text-secondary)'}; font-size:12px; font-weight:600; cursor:pointer; position:relative;">
-            ${myName}${boardData.myThreads.some(t => t.unread) ? '<span style="position:absolute;top:-6px;right:-6px;font-size:14px;">✨</span>' : ''}
+        <button class="board-tab-btn ${isMe ? 'active' : ''}" data-tab="me" style="...">
+            ${myName}${boardData.myThreads.some(t => t.unread) ? '<span style="...">✨</span>' : ''}
         </button>
-        <button class="board-tab-btn ${!isMe ? 'active' : ''}" data-tab="partner" style="padding:6px 14px; border-radius:20px; border:1px solid var(--border-color); background:${!isMe ? 'var(--accent-color)' : 'transparent'}; color:${!isMe ? '#fff' : 'var(--text-secondary)'}; font-size:12px; font-weight:600; cursor:pointer; position:relative;">
-            ${partnerName}${boardData.partnerThreads.some(t => t.unread) ? '<span style="position:absolute;top:-6px;right:-6px;font-size:14px;">✨</span>' : ''}
+        <button class="board-tab-btn ${!isMe ? 'active' : ''}" data-tab="partner" style="...">
+            ${partnerName}${boardData.partnerThreads.some(t => t.unread) ? '<span style="...">✨</span>' : ''}
         </button>
     </div>`;
-}
-    /*tabArea.querySelectorAll('[data-tab]').forEach(btn => {
-        btn.onclick = () => switchTab(btn.dataset.tab);
-    });*/
+    
     tabArea.querySelectorAll('[data-tab]').forEach(btn => {
         btn.onclick = () => {
-            if (isMultiSelectMode) exitMultiSelectMode(); // <--- 加上这句
+            if (isMultiSelectMode) exitMultiSelectMode();
             switchTab(btn.dataset.tab);
         };
     });
+}
 
 
   // --- 列表内容 ---
