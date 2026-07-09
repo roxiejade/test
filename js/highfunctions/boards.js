@@ -265,140 +265,153 @@ function initModals() {
 
 function bindStaticEvents() {
   // --- 列表层 ---
-  document.getElementById('board-list-close-btn').onclick = () => hideModal(document.getElementById('envelope-board-modal'));
+  const closeBtn = document.getElementById('board-list-close-btn');
+  if (closeBtn) {
+    closeBtn.onclick = () => hideModal(document.getElementById('envelope-board-modal'));
+  }
+
   // 导出功能暂时不需要，先注释掉
   // document.getElementById('board-export-btn').onclick = () => {
   //     isMultiSelectMode = true;
   //     selectedThreadIds.clear();
   //     switchTab(currentView);
   // };
-}
 
-// 绑定多选操作栏的按钮
-/*document.getElementById('board-cancel-select-btn').onclick = exitMultiSelectMode;
-document.getElementById('board-select-all-btn').onclick = () => {
-    const threads = currentView === 'me' ? boardData.myThreads : boardData.partnerThreads;
-    threads.forEach(t => selectedThreadIds.add(t.id));
-    switchTab(currentView);
-};*/
-/*document.getElementById('board-confirm-select-btn').onclick = () => {
-    if (selectedThreadIds.size === 0) {
-        if(typeof showNotification === 'function') showNotification('请至少选择一条留言', 'warning');
-        return;
-    }
-    document.getElementById('board-format-modal').style.display = 'flex';
-};*/
-/*document.getElementById('board-confirm-select-btn').onclick = () => {
-    if (selectedThreadIds.size === 0) {
-        if(typeof showNotification === 'function') showNotification('请至少选择一条留言', 'warning');
-        return;
-    }
-    // 不要用 style.display，用系统原生的弹窗函数，防止 DOM 找不到
-    if (typeof showModal === 'function') {
-        showModal(document.getElementById('board-format-modal'));
-    } else {
-        document.getElementById('board-format-modal').style.display = 'flex';
-    }
-};*/
-document.getElementById('final-export-cancel').onclick = () => {
-    document.getElementById('board-format-modal').style.display = 'none';
-};
-/*document.getElementById('final-export-txt').onclick = () => {
-    document.getElementById('board-format-modal').style.display = 'none';
-    window._bv2_exportSelected('txt'); 
-};
-document.getElementById('final-export-img').onclick = () => {
-    document.getElementById('board-format-modal').style.display = 'none';
-    window._bv2_exportSelected('img');
-};*/
+  // 其他所有 getElementById 也加上空值判断
+  const finalCancel = document.getElementById('final-export-cancel');
+  if (finalCancel) {
+    finalCancel.onclick = () => {
+      document.getElementById('board-format-modal').style.display = 'none';
+    };
+  }
 
-  document.getElementById('board-new-post-btn').onclick = () => window._bv2_openCompose('new', null, 'me');
+  const newPostBtn = document.getElementById('board-new-post-btn');
+  if (newPostBtn) {
+    newPostBtn.onclick = () => window._bv2_openCompose('new', null, 'me');
+  }
 
-  // --- 详情层 ---
-  document.getElementById('board-detail-back-btn').onclick = () => {
-    hideModal(document.getElementById('board-detail-modal'));
-    showModal(document.getElementById('envelope-board-modal'));
-  };
-  document.getElementById('board-global-edit-btn').onclick = () => window._bv2_toggleGlobalEdit();
-  document.getElementById('board-delete-thread-btn').onclick = () => {
-    if (currentThreadId) window._bv2_deleteThread(currentThreadId, currentView);
-  };
-  document.getElementById('board-edit-cancel-btn').onclick = () => window._bv2_cancelGlobalEdit();
-  document.getElementById('board-edit-save-btn').onclick = () => window._bv2_saveGlobalEdit();
+  // 详情层
+  const detailBack = document.getElementById('board-detail-back-btn');
+  if (detailBack) {
+    detailBack.onclick = () => {
+      hideModal(document.getElementById('board-detail-modal'));
+      showModal(document.getElementById('envelope-board-modal'));
+    };
+  }
 
-  // --- 撰写层 ---
-  /*document.getElementById('board-compose-close-btn').onclick = () => {
-    hideModal(document.getElementById('board-compose-modal'));
-    showModal(document.getElementById('board-detail-modal'));
-  };
-  document.getElementById('board-compose-cancel-btn').onclick = () => {
-    hideModal(document.getElementById('board-compose-modal'));
-    showModal(document.getElementById('board-detail-modal'));
-  };*/
-  document.getElementById('board-compose-close-btn').onclick = () => {
+  const globalEdit = document.getElementById('board-global-edit-btn');
+  if (globalEdit) {
+    globalEdit.onclick = () => window._bv2_toggleGlobalEdit();
+  }
+
+  const deleteThread = document.getElementById('board-delete-thread-btn');
+  if (deleteThread) {
+    deleteThread.onclick = () => {
+      if (currentThreadId) window._bv2_deleteThread(currentThreadId, currentView);
+    };
+  }
+
+  const editCancel = document.getElementById('board-edit-cancel-btn');
+  if (editCancel) {
+    editCancel.onclick = () => window._bv2_cancelGlobalEdit();
+  }
+
+  const editSave = document.getElementById('board-edit-save-btn');
+  if (editSave) {
+    editSave.onclick = () => window._bv2_saveGlobalEdit();
+  }
+
+  // 撰写层
+  const composeClose = document.getElementById('board-compose-close-btn');
+  if (composeClose) {
+    composeClose.onclick = () => {
       hideModal(document.getElementById('board-compose-modal'));
-      // 如果不是从详情页进来的（即新建留言），就回列表；否则回详情
       if (!window._bv2_composeFromDetail) {
-          showModal(document.getElementById('envelope-board-modal'));
+        showModal(document.getElementById('envelope-board-modal'));
       } else {
-          showModal(document.getElementById('board-detail-modal'));
+        showModal(document.getElementById('board-detail-modal'));
       }
-  };
-  document.getElementById('board-compose-cancel-btn').onclick = () => {
+    };
+  }
+
+  const composeCancel = document.getElementById('board-compose-cancel-btn');
+  if (composeCancel) {
+    composeCancel.onclick = () => {
       hideModal(document.getElementById('board-compose-modal'));
-      // 同样的判断逻辑
       if (!window._bv2_composeFromDetail) {
-          showModal(document.getElementById('envelope-board-modal'));
+        showModal(document.getElementById('envelope-board-modal'));
       } else {
-          showModal(document.getElementById('board-detail-modal'));
+        showModal(document.getElementById('board-detail-modal'));
       }
-  };
+    };
+  }
 
-  document.getElementById('board-compose-send-btn').onclick = () => window._bv2_submitPost();
-  document.getElementById('bv2-compose-img-input').onchange = (e) => window._bv2_handleImgSelect(e);
+  const composeSend = document.getElementById('board-compose-send-btn');
+  if (composeSend) {
+    composeSend.onclick = () => window._bv2_submitPost();
+  }
 
-  // --- 图片操作框事件 ---
-  document.getElementById('board-img-action-cancel').onclick = () => hideModal(document.getElementById('board-img-action-modal'));
-  document.getElementById('board-img-replace-action').onclick = () => {
-    hideModal(document.getElementById('board-img-action-modal'));
-    if (window._bv2_pendingImgId) {
-      document.getElementById('bv2-detail-img-input').click();
-    }
-  };
-  document.getElementById('board-img-delete-action').onclick = () => {
-    hideModal(document.getElementById('board-img-action-modal'));
-    if (window._bv2_pendingImgId && confirm('确定要删除这张图片吗？')) {
-      if (!window._bv2_imgEdits) window._bv2_imgEdits = {};
-      window._bv2_imgEdits[window._bv2_pendingImgId] = { action: 'delete' };
-      const imgEl = document.getElementById(`bv2-img-${window._bv2_pendingImgId}`);
-      if (imgEl) imgEl.style.display = 'none';
-      window._bv2_pendingImgId = null;
-    }
-  };
+  const imgInput = document.getElementById('bv2-compose-img-input');
+  if (imgInput) {
+    imgInput.onchange = (e) => window._bv2_handleImgSelect(e);
+  }
 
-  // --- 详情页替换图片用的文件选择器 ---
-  document.getElementById('bv2-detail-img-input').onchange = async function(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    let base64 = '';
-    if (typeof optimizeImage === 'function') {
-      base64 = await optimizeImage(file);
-    } else {
-      base64 = await new Promise(resolve => {
-        const r = new FileReader();
-        r.onload = ev => resolve(ev.target.result);
-        r.readAsDataURL(file);
-      });
-    }
-    if (window._bv2_pendingImgId) {
-      if (!window._bv2_imgEdits) window._bv2_imgEdits = {};
-      window._bv2_imgEdits[window._bv2_pendingImgId] = { action: 'replace', data: base64 };
-      const imgEl = document.querySelector(`#bv2-img-${window._bv2_pendingImgId} img`);
-      if (imgEl) imgEl.src = base64;
-      window._bv2_pendingImgId = null;
-    }
-    e.target.value = '';
-  };
+  // 图片操作框
+  const imgCancel = document.getElementById('board-img-action-cancel');
+  if (imgCancel) {
+    imgCancel.onclick = () => hideModal(document.getElementById('board-img-action-modal'));
+  }
+
+  const imgReplace = document.getElementById('board-img-replace-action');
+  if (imgReplace) {
+    imgReplace.onclick = () => {
+      hideModal(document.getElementById('board-img-action-modal'));
+      if (window._bv2_pendingImgId) {
+        document.getElementById('bv2-detail-img-input').click();
+      }
+    };
+  }
+
+  const imgDelete = document.getElementById('board-img-delete-action');
+  if (imgDelete) {
+    imgDelete.onclick = () => {
+      hideModal(document.getElementById('board-img-action-modal'));
+      if (window._bv2_pendingImgId && confirm('确定要删除这张图片吗？')) {
+        if (!window._bv2_imgEdits) window._bv2_imgEdits = {};
+        window._bv2_imgEdits[window._bv2_pendingImgId] = { action: 'delete' };
+        const imgEl = document.getElementById(`bv2-img-${window._bv2_pendingImgId}`);
+        if (imgEl) imgEl.style.display = 'none';
+        window._bv2_pendingImgId = null;
+      }
+    };
+  }
+
+  // 详情页替换图片用的文件选择器
+  const detailImgInput = document.getElementById('bv2-detail-img-input');
+  if (detailImgInput) {
+    detailImgInput.onchange = async function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      let base64 = '';
+      if (typeof optimizeImage === 'function') {
+        base64 = await optimizeImage(file);
+      } else {
+        base64 = await new Promise(resolve => {
+          const r = new FileReader();
+          r.onload = ev => resolve(ev.target.result);
+          r.readAsDataURL(file);
+        });
+      }
+      if (window._bv2_pendingImgId) {
+        if (!window._bv2_imgEdits) window._bv2_imgEdits = {};
+        window._bv2_imgEdits[window._bv2_pendingImgId] = { action: 'replace', data: base64 };
+        const imgEl = document.querySelector(`#bv2-img-${window._bv2_pendingImgId} img`);
+        if (imgEl) imgEl.src = base64;
+        window._bv2_pendingImgId = null;
+      }
+      e.target.value = '';
+    };
+  }
 }
 
 
