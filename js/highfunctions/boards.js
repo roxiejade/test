@@ -496,6 +496,8 @@ if (newPostBtn) {
     }
 }
 if (multiBar) {
+   if (multiBar) {
+    if (multiBar) {
     if (isMultiSelectMode) {
         multiBar.style.display = 'flex';
         const selectedCount = document.getElementById('board-selected-count');
@@ -504,7 +506,7 @@ if (multiBar) {
         multiBar.style.display = 'none';
     }
 }
-
+}   
 
 function openDetail(threadId, type) {
     currentThreadId = threadId;
