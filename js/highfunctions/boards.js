@@ -265,13 +265,12 @@ function initModals() {
 
 function bindStaticEvents() {
   // --- 列表层 ---
-  document.getElementById('board-list-close-btn').onclick = () => hideModal(document.getElementById('envelope-board-modal'));
-  //document.getElementById('board-export-btn').onclick = () => window._bv2_exportTxt(currentView);
-// 把原来的导出按钮事件删掉，换成这个
-document.getElementById('board-export-btn').onclick = () => {
-    isMultiSelectMode = true;
-    selectedThreadIds.clear();
-    switchTab(currentView); // 刷新列表，触发多选样式
+  // 导出功能暂时不需要，先注释掉
+  // document.getElementById('board-export-btn').onclick = () => {
+  //     isMultiSelectMode = true;
+  //     selectedThreadIds.clear();
+  //     switchTab(currentView);
+  // };
 };
 
 // 绑定多选操作栏的按钮
