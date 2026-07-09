@@ -1088,7 +1088,9 @@ window._bv2_doMultiSelect = function(action) {
     }
 };
 
-
+// --- 添加这一行 ---
+window.renderEnvelopeBoard = renderEnvelopeBoard;
+  
 // --- 启动 ---
 loadData().then(() => { setInterval(checkStatus, 60000); checkStatus(); });
 
