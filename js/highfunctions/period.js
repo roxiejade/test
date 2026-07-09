@@ -3,6 +3,10 @@
  * Period Tracker Module
  */
 
+let periodRecords = [];
+let periodSettings = {};
+let lastPeriodReminderCheck = null;
+
 // ===== 数据加载 =====
 async function initPeriodData() {
     try {
