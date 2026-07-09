@@ -1678,7 +1678,57 @@
                 <i class="fas fa-tools"></i><span>高级功能</span>
             </div>
 
-            <!-- 月经记录模态框 -->
+            
+
+            <div class="settings-section">
+                <div class="settings-section-title">
+                    <i class="fas fa-magic"></i>实用工具
+                </div>
+                <div class="settings-item-list">
+                    <div class="settings-item" id="custom-replies-function">
+                        <i class="fas fa-comment-dots"></i><span>自定义回复</span>
+                    </div>
+                    <div class="settings-item" id="stats-function">
+                        <i class="fas fa-chart-bar"></i><span>消息统计</span>
+                    </div>
+                    <div class="settings-item" id="mood-function">
+                        <i class="fas fa-calendar-day"></i><span>心情手账</span>
+                    </div>
+                    <div class="settings-item" id="anniversary-function">
+                        <i class="fas fa-heart"></i><span>重要日</span>
+                    </div>
+                    <div class="settings-item" id="fortune-lenormand-function" style="position:relative;">
+                        <i class="fas fa-star-and-crescent"></i><span>运势 · 占卜</span>
+                    </div>
+                    <div class="settings-item" id="decision-function">
+                        <i class="fas fa-balance-scale"></i>
+                        <span>抉择</span>
+                    </div>
+                    <div class="settings-item" id="companion-diary-function">
+                        <i class="fas fa-book"></i><span>陪伴日记</span>
+                    </div>
+                    <div class="settings-item settings-item-disabled" id="coming-soon-placeholder">
+                        <i class="fas fa-hourglass-half"></i><span>敬请期待</span>
+                    </div>
+                    <div class="settings-item" id="music-player-toggle">
+                        <i class="fas fa-music"></i><span>悬浮音乐播放器</span>
+                    </div>
+                    <div class="settings-item" id="envelope-function" style="display:none;">
+    <i class="fas fa-envelope-open-text"></i><span>信箱</span>
+</div>
+                </div>
+            </div>
+
+            <div class="modal-buttons" style="position:sticky;bottom:0;background:var(--secondary-bg);border-top:1px solid var(--border-color);padding:12px 0 0;z-index:10;margin-top:8px;margin-left:-24px;margin-right:-24px;padding-left:24px;padding-right:24px;padding-bottom:max(14px, env(safe-area-inset-bottom, 0px));">
+                <button class="modal-btn modal-btn-secondary" id="back-advanced" onclick="(function(){hideModal(document.getElementById('advanced-modal'));showModal(document.getElementById('settings-modal'))})()">
+                    <i class="fas fa-arrow-left"></i> 返回
+                </button>
+                <button class="modal-btn modal-btn-secondary" id="close-advanced" onclick="hideModal(document.getElementById('advanced-modal'))">关闭</button>
+            </div>
+        </div>
+    </div>
+
+<!-- 月经记录模态框 -->
     <div class="modal" id="period-modal">
         <div class="modal-content">
             <div class="modal-title">
@@ -1771,56 +1821,6 @@
             </div>
         </div>
     </div>
-
-            <div class="settings-section">
-                <div class="settings-section-title">
-                    <i class="fas fa-magic"></i>实用工具
-                </div>
-                <div class="settings-item-list">
-                    <div class="settings-item" id="custom-replies-function">
-                        <i class="fas fa-comment-dots"></i><span>自定义回复</span>
-                    </div>
-                    <div class="settings-item" id="stats-function">
-                        <i class="fas fa-chart-bar"></i><span>消息统计</span>
-                    </div>
-                    <div class="settings-item" id="mood-function">
-                        <i class="fas fa-calendar-day"></i><span>心情手账</span>
-                    </div>
-                    <div class="settings-item" id="anniversary-function">
-                        <i class="fas fa-heart"></i><span>重要日</span>
-                    </div>
-                    <div class="settings-item" id="fortune-lenormand-function" style="position:relative;">
-                        <i class="fas fa-star-and-crescent"></i><span>运势 · 占卜</span>
-                    </div>
-                    <div class="settings-item" id="decision-function">
-                        <i class="fas fa-balance-scale"></i>
-                        <span>抉择</span>
-                    </div>
-                    <div class="settings-item" id="companion-diary-function">
-                        <i class="fas fa-book"></i><span>陪伴日记</span>
-                    </div>
-                    <div class="settings-item settings-item-disabled" id="coming-soon-placeholder">
-                        <i class="fas fa-hourglass-half"></i><span>敬请期待</span>
-                    </div>
-                    <div class="settings-item" id="music-player-toggle">
-                        <i class="fas fa-music"></i><span>悬浮音乐播放器</span>
-                    </div>
-                    <div class="settings-item" id="envelope-function" style="display:none;">
-    <i class="fas fa-envelope-open-text"></i><span>信箱</span>
-</div>
-                </div>
-            </div>
-
-            <div class="modal-buttons" style="position:sticky;bottom:0;background:var(--secondary-bg);border-top:1px solid var(--border-color);padding:12px 0 0;z-index:10;margin-top:8px;margin-left:-24px;margin-right:-24px;padding-left:24px;padding-right:24px;padding-bottom:max(14px, env(safe-area-inset-bottom, 0px));">
-                <button class="modal-btn modal-btn-secondary" id="back-advanced" onclick="(function(){hideModal(document.getElementById('advanced-modal'));showModal(document.getElementById('settings-modal'))})()">
-                    <i class="fas fa-arrow-left"></i> 返回
-                </button>
-                <button class="modal-btn modal-btn-secondary" id="close-advanced" onclick="hideModal(document.getElementById('advanced-modal'))">关闭</button>
-            </div>
-        </div>
-    </div>
-
-
 
     <div class="modal" id="data-modal">
         <div class="modal-content">
