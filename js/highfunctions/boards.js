@@ -430,7 +430,7 @@ function switchTab(type) {
 
     // --- 标签区 ---
     const tabArea = document.getElementById('board-tab-area');
-    // 永远无条件渲染这两个按钮
+if (tabArea) {
     tabArea.innerHTML = `
     <div style="display:flex; gap:8px; align-items:center;">
         <button class="board-tab-btn ${isMe ? 'active' : ''}" data-tab="me" style="padding:6px 14px; border-radius:20px; border:1px solid var(--border-color); background:${isMe ? 'var(--accent-color)' : 'transparent'}; color:${isMe ? '#fff' : 'var(--text-secondary)'}; font-size:12px; font-weight:600; cursor:pointer; position:relative;">
@@ -440,6 +440,7 @@ function switchTab(type) {
             ${partnerName}${boardData.partnerThreads.some(t => t.unread) ? '<span style="position:absolute;top:-6px;right:-6px;font-size:14px;">✨</span>' : ''}
         </button>
     </div>`;
+}
     /*tabArea.querySelectorAll('[data-tab]').forEach(btn => {
         btn.onclick = () => switchTab(btn.dataset.tab);
     });*/
