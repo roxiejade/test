@@ -555,6 +555,38 @@
     </div>
 </div>
 <!-- ===== 留言板插入结束 ===== -->
+
+        <!-- ===== 留言板详情弹窗 ===== -->
+<div class="modal" id="board-detail-modal">
+    <div class="modal-content" style="max-height:92vh; padding:0; overflow:hidden; background:transparent;">
+        <div class="board-detail-wrapper">
+            <div class="board-detail-header">
+                <button class="board-detail-back" id="board-detail-back-btn">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <span class="board-detail-title">留言详情</span>
+                <button class="board-detail-action-btn delete" id="board-delete-thread-btn">
+                    <i class="fas fa-trash"></i>
+                </button>
+                <button class="board-detail-action-btn" id="board-global-edit-btn">
+                    <i class="fas fa-pen"></i>
+                </button>
+            </div>
+            <div class="board-paper">
+                <div class="board-paper-top-line"></div>
+                <div class="board-paper-content">
+                    <div id="board-detail-body"></div>
+                    <div id="board-detail-date"></div>
+                    <div id="board-edit-actions-bar" style="display:none; margin-top:12px; display:flex; gap:8px; justify-content:flex-end;">
+                        <button class="modal-btn modal-btn-secondary" id="board-edit-cancel-btn">取消</button>
+                        <button class="modal-btn modal-btn-primary" id="board-edit-save-btn">保存</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- ===== 留言板详情弹窗结束 ===== -->
         
 <div class="modal" id="envelope-view-modal" style="z-index:2100;">
     <div class="modal-content" style="overflow:hidden;padding:0;background:transparent;max-height:92vh;display:flex;flex-direction:column;">
