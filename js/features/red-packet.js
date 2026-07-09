@@ -892,7 +892,7 @@
 
     var bodyBg = isOpened
         ? 'background:linear-gradient(180deg,#e0d8d8 0%,#ccc 100%);'
-        : 'background:linear-gradient(180deg,#c4453c 0%,#a33a32 100%);';
+        : 'background:linear-gradient(180deg,#D57C6F 0%,#b5655a 100%);';
 
     var svgStroke = isOpened ? 'stroke="#999"' : 'stroke="#fff"';
     var svgCircleFill = isOpened ? 'fill="#999"' : 'fill="#fff"';
