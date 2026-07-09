@@ -681,3 +681,20 @@ window.openBoardFromHeader = function() {
         }
     }
 };
+
+// 月经记录
+document.getElementById('period-function')?.addEventListener('click', function() {
+    const modal = document.getElementById('period-modal');
+    if (modal) {
+        if (typeof showModal === 'function') {
+            showModal(modal);
+        } else {
+            console.warn('showModal 函数未定义');
+        }
+    } else {
+        console.warn('period-modal 不存在');
+        if (typeof showNotification === 'function') {
+            showNotification('月经记录功能加载中...', 'info');
+        }
+    }
+});
