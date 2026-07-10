@@ -2415,7 +2415,7 @@ var _timeFlowRate = 1;
             if (isNaN(_timeFlowRate) || _timeFlowRate < 0.1) _timeFlowRate = 1;
         }
     } catch(e) {}
-})();
+
 
 // ============================================================
 // 时刻弹窗（参考网站风格）
