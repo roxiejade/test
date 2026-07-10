@@ -2396,7 +2396,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         observer.observe(historyLoader);
     }
-
+});
 
 
         // ============================================================
