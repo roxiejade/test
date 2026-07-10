@@ -2523,11 +2523,12 @@ function requestTimeChange() {
             if (typeof showNotification === 'function') showNotification('对方同意了修改', 'success');
         } else {
             if (status) status.innerText = "对方拒绝了";
-            if (btn) { btn.disabled = false; btn.style.opacity = ""; btn.innerText = "再试一次"; }
+if (btn) { btn.disabled = false; btn.style.opacity = ""; btn.innerText = "再试一次"; }
         }
     }, 1300 + Math.random() * 900);
+});  // ← 添加这个
 }
-
+                          
 // ============================================================
 // 时间流速设置
 // ============================================================
