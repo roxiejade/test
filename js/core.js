@@ -1,36 +1,29 @@
 /*核心应用逻辑：数据加载保存、消息渲染、会话管理等*/
 
 // ============================================================
-// 通用弹窗函数
+// 通用弹窗函数（来自参考网站）
 // ============================================================
 
-function modal(title, content) {
-    // 移除已有的弹窗
-    var oldModals = document.querySelectorAll('.custom-modal-overlay');
-    oldModals.forEach(function(m) { m.remove(); });
-
-    var overlay = document.createElement('div');
-    overlay.className = 'custom-modal-overlay';
-    overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.55);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;animation:fadeIn 0.2s ease;';
-
-    overlay.innerHTML = `
-        <div style="background:var(--secondary-bg);border-radius:20px;padding:24px;width:88%;max-width:380px;max-height:80vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.4);animation:modalContentSlideIn 0.3s ease forwards;">
-            ${title ? `<div style="font-size:17px;font-weight:700;color:var(--text-primary);margin-bottom:14px;text-align:center;">${title}</div>` : ''}
-            ${content}
-        </div>
-    `;
-
-    overlay.addEventListener('click', function(e) {
-        if (e.target === overlay) overlay.remove();
-    });
-
-    document.body.appendChild(overlay);
-    return overlay;
+function modal(title, html) {
+    document.getElementById("mTitle").innerText = title || "";
+    document.getElementById("mBody").innerHTML = html || "";
+    document.getElementById("modal").classList.add("on");
 }
 
 function closeModal() {
-    var modals = document.querySelectorAll('.custom-modal-overlay');
-    modals.forEach(function(m) { m.remove(); });
+    document.getElementById("modal").classList.remove("on");
+}
+
+function toast(text, type) {
+    var el = document.getElementById("toast");
+    el.innerText = text;
+    el.className = "toast";
+    if (type === "warn") el.classList.add("warn");
+    el.classList.add("on");
+    clearTimeout(el._timer);
+    el._timer = setTimeout(function() {
+        el.classList.remove("on");
+    }, 2000);
 }
 
 
