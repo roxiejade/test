@@ -2399,7 +2399,37 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 
-        // ============================================================
+       这个报错是因为你的代码中 **`requestTimeChange` 函数缺少了一个闭合的大括号 `}`**。
+
+由于函数没有正确闭合，JavaScript 引擎在解析后续代码（或文件末尾）时发现了括号不匹配，从而抛出了 `Unexpected token` 的语法错误。
+
+### 错误位置定位
+
+在你的代码大约中间部分，`requestTimeChange` 函数的 `setTimeout` 结束后，直接写了注释和下一个函数，漏掉了 `}`：
+
+```javascript
+// ... 前面的代码 ...
+        } else {
+            if (status) status.innerText = "对方拒绝了";
+            if (btn) { btn.disabled = false; btn.style.opacity = ""; btn.innerText = "再试一次"; }
+        }
+    }, 1300 + Math.random() * 900);
+
+    // ❌ 这里缺少了一个 } 来闭合 requestTimeChange 函数
+                          
+// ============================================================
+// 时间流速设置
+// ============================================================
+```
+
+### 修复方法
+
+在 `}, 1300 + Math.random() * 900);` 后面补上一个 `}` 即可。
+
+以下是修复后的完整代码，你可以直接复制替换原有代码：
+
+```javascript
+// ============================================================
 // 时间戳点击弹窗 - 完整功能
 // ============================================================
 
@@ -2415,7 +2445,7 @@ var _timeFlowRate = 1;
             if (isNaN(_timeFlowRate) || _timeFlowRate < 0.1) _timeFlowRate = 1;
         }
     } catch(e) {}
-        })();
+})();
 
 
 // ============================================================
@@ -2524,10 +2554,10 @@ function requestTimeChange() {
             if (typeof showNotification === 'function') showNotification('对方同意了修改', 'success');
         } else {
             if (status) status.innerText = "对方拒绝了";
-if (btn) { btn.disabled = false; btn.style.opacity = ""; btn.innerText = "再试一次"; }
+            if (btn) { btn.disabled = false; btn.style.opacity = ""; btn.innerText = "再试一次"; }
         }
     }, 1300 + Math.random() * 900);
-
+} // <--- 这里补上了缺失的闭合大括号
                           
 // ============================================================
 // 时间流速设置
