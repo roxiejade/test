@@ -1103,64 +1103,88 @@ function createMessageFragment(msg, prevMsg, nextMsg, lastSenderRef) {
 
     let metaHTML = '';
     if (showTimestamp) {
-        const ts = new Date(msg.timestamp);
-        let timeStr;
-        const fmt = settings.timeFormat || 'HH:mm';
-        if (fmt === 'HH:mm:ss') {
-            timeStr = ts.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
-        } else if (fmt === 'h:mm AM/PM') {
-            timeStr = ts.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
-        } else if (fmt === 'h:mm:ss AM/PM') {
-            timeStr = ts.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true });
-        } else {
-            timeStr = ts.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false });
-        }
-        // 改成（只有对方消息可点击）：
-if (msg.sender !== 'user') {
-    metaHTML += `<div class="timestamp" style="cursor:pointer;" onclick="showTimeMenu(event, '${msg.id}')">${timeStr}</div>`;
-} else {
-    metaHTML += `<div class="timestamp">${timeStr}</div>`;
-}
-    }
-
-    if (msg.sender === 'user' && settings.readReceiptsEnabled && isLastInSenderGroup) {
-        const rrStyle = settings.readReceiptStyle || 'icon';
-        if (rrStyle === 'text') {
-            if (msg.status === 'read') {
-                metaHTML += `<div class="read-receipt read" style="font-size:9px;letter-spacing:0.3px;font-weight:500;">已读</div>`;
-            } else {
-                metaHTML += `<div class="read-receipt" style="font-size:9px;letter-spacing:0.3px;opacity:0.5;">未读</div>`;
-            }
-        } else {
-            const statusIcon = msg.status === 'read' ? 'fa-check-double' : 'fa-check';
-            metaHTML += `<div class="read-receipt ${msg.status === 'read' ? 'read' : ''}"><i class="fas ${statusIcon}"></i></div>`;
-        }
-    }
-
-    if (metaHTML !== '') {
-        const metaDiv = document.createElement('div');
-        metaDiv.className = 'message-meta';
-        if (!showTimestamp && !metaHTML.includes('timestamp')) {
-            metaDiv.style.height = 'auto';
-            metaDiv.style.marginTop = '2px';
-            if (settings.inChatAvatarPosition !== 'top') {
-                avatarDiv.style.marginBottom = '18px';
-            }
-        } else {
-            if (settings.inChatAvatarPosition !== 'top') {
-                avatarDiv.style.marginBottom = '26px';
-            }
-        }
-        metaDiv.innerHTML = metaHTML;
-        contentWrapper.append(actionsDiv, messageDiv, metaDiv);
+        // ★★★ 修改开始：应用流速 + 使用 openTimeModal ★★★
+    var displayTime;
+    if (msg.sender !== 'user') {
+        // 对方消息应用流速
+        var adjusted = getPartnerDisplayTime(msg.timestamp);
+        displayTime = adjusted || new Date(msg.timestamp);
     } else {
-        contentWrapper.append(actionsDiv, messageDiv);
+        displayTime = new Date(msg.timestamp);
     }
-    wrapper.appendChild(contentWrapper);
-    fragment.appendChild(wrapper);
+    var ts = displayTime;
+    
+    let metaHTML = '';
+if (showTimestamp) {
+    // ★★★ 修改开始：应用流速 + 使用 openTimeModal ★★★
+    var displayTime;
+    if (msg.sender !== 'user') {
+        // 对方消息应用流速
+        var adjusted = getPartnerDisplayTime(msg.timestamp);
+        displayTime = adjusted || new Date(msg.timestamp);
+    } else {
+        displayTime = new Date(msg.timestamp);
+    }
+    var ts = displayTime;
+    
+    let timeStr;
+    const fmt = settings.timeFormat || 'HH:mm';
+    if (fmt === 'HH:mm:ss') {
+        timeStr = ts.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+    } else if (fmt === 'h:mm AM/PM') {
+        timeStr = ts.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+    } else if (fmt === 'h:mm:ss AM/PM') {
+        timeStr = ts.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true });
+    } else {
+        timeStr = ts.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false });
+    }
+    // 只有对方消息的时间戳可点击
+    if (msg.sender !== 'user') {
+        metaHTML += `<div class="timestamp" style="cursor:pointer;" onclick="openTimeModal('${msg.id}')">${timeStr}</div>`;
+    } else {
+        metaHTML += `<div class="timestamp">${timeStr}</div>`;
+    }
+    // ★★★ 修改结束 ★★★
+}
 
-    lastSenderRef.current = groupMember ? ('group_' + groupMember.name) : msg.sender;
-    return fragment;
+if (msg.sender === 'user' && settings.readReceiptsEnabled && isLastInSenderGroup) {
+    const rrStyle = settings.readReceiptStyle || 'icon';
+    if (rrStyle === 'text') {
+        if (msg.status === 'read') {
+            metaHTML += `<div class="read-receipt read" style="font-size:9px;letter-spacing:0.3px;font-weight:500;">已读</div>`;
+        } else {
+            metaHTML += `<div class="read-receipt" style="font-size:9px;letter-spacing:0.3px;opacity:0.5;">未读</div>`;
+        }
+    } else {
+        const statusIcon = msg.status === 'read' ? 'fa-check-double' : 'fa-check';
+        metaHTML += `<div class="read-receipt ${msg.status === 'read' ? 'read' : ''}"><i class="fas ${statusIcon}"></i></div>`;
+    }
+}
+
+if (metaHTML !== '') {
+    const metaDiv = document.createElement('div');
+    metaDiv.className = 'message-meta';
+    if (!showTimestamp && !metaHTML.includes('timestamp')) {
+        metaDiv.style.height = 'auto';
+        metaDiv.style.marginTop = '2px';
+        if (settings.inChatAvatarPosition !== 'top') {
+            avatarDiv.style.marginBottom = '18px';
+        }
+    } else {
+        if (settings.inChatAvatarPosition !== 'top') {
+            avatarDiv.style.marginBottom = '26px';
+        }
+    }
+    metaDiv.innerHTML = metaHTML;
+    contentWrapper.append(actionsDiv, messageDiv, metaDiv);
+} else {
+    contentWrapper.append(actionsDiv, messageDiv);
+}
+wrapper.appendChild(contentWrapper);
+fragment.appendChild(wrapper);
+
+lastSenderRef.current = groupMember ? ('group_' + groupMember.name) : msg.sender;
+return fragment;
 }
 
 function _updateReadReceiptsDOM() {
@@ -2513,5 +2537,338 @@ function findMessageById(messageId) {
         return window.messages.find(function(m) { return String(m.id) === String(messageId); });
     }
     return null;
+}
+
+        // ============================================================
+// 时间戳点击弹窗 - 完整功能
+// ============================================================
+
+var _currentTimeMsgId = null;
+var _timeFlowRate = 1;
+
+// 加载保存的流速
+(function loadTimeFlowRate() {
+    try {
+        var saved = localStorage.getItem('timeFlowRate');
+        if (saved !== null) {
+            _timeFlowRate = parseFloat(saved);
+            if (isNaN(_timeFlowRate) || _timeFlowRate < 0.1) _timeFlowRate = 1;
+        }
+    } catch(e) {}
+})();
+
+// ============================================================
+// 时刻弹窗（参考网站风格）
+// ============================================================
+
+function openTimeModal(messageId) {
+    _currentTimeMsgId = messageId;
+    var msg = findMessageById(messageId);
+    if (!msg) return;
+
+    var displayTime;
+    if (msg.sender !== 'user') {
+        var adjusted = getPartnerDisplayTime(msg.timestamp);
+        displayTime = adjusted || new Date(msg.timestamp);
+    } else {
+        displayTime = new Date(msg.timestamp);
+    }
+    var timeStr = displayTime.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+
+    var flowDisplay = '1x → ' + _timeFlowRate.toFixed(1) + 'x';
+
+    var html = `
+        <div class="opp-time-modal">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:2px; font-size:12px; font-weight:600; color:var(--text-secondary); letter-spacing:0.5px;">
+                ⏱ 时刻
+            </div>
+            <div style="border-bottom:1px solid var(--border-color); margin-bottom:10px;"></div>
+
+            <div id="time-modal-flow" style="display:flex; align-items:center; gap:8px; cursor:pointer; padding:6px 10px; border-radius:8px; margin-bottom:12px; transition:background 0.15s; background:rgba(var(--accent-color-rgb),0.04);" onclick="closeModal();openFlowRateModal();">
+                <span style="font-size:15px;">⏳</span>
+                <span id="time-modal-flow-display" style="font-size:13px; font-weight:500; color:var(--text-primary);">${flowDisplay}</span>
+                <span style="font-size:10px; color:var(--text-secondary); margin-left:auto; opacity:0.5;">点击调整</span>
+            </div>
+
+            <div class="otm-clock" style="font-size:32px; font-weight:700; text-align:center; padding:8px 0 14px; font-family:monospace; letter-spacing:2px; color:var(--text-primary);">
+                ${timeStr}
+            </div>
+
+            <div id="otm-status" class="otm-status" style="text-align:center; font-size:13px; min-height:24px; color:var(--text-secondary); margin-bottom:10px;"></div>
+
+            <div class="otm-actions" style="display:flex; gap:10px;">
+                <button class="pill-btn" onclick="syncTimeToSystem()" style="flex:1; padding:10px 0; border:none; border-radius:10px; background:var(--accent-color); color:#fff; font-size:13px; font-weight:600; cursor:pointer; font-family:var(--font-family); transition:opacity 0.2s;">
+                    时间同步
+                </button>
+                <button class="pill-btn ghost" id="otm-req-btn" onclick="requestTimeChange()" style="flex:1; padding:10px 0; border:1.5px solid var(--border-color); border-radius:10px; background:transparent; color:var(--text-primary); font-size:13px; font-weight:600; cursor:pointer; font-family:var(--font-family); transition:all 0.2s;">
+                    请求修改
+                </button>
+            </div>
+        </div>
+    `;
+
+    modal("时刻", html);
+}
+
+// ============================================================
+// 时间同步（新增）
+// ============================================================
+
+function syncTimeToSystem() {
+    var msg = findMessageById(_currentTimeMsgId);
+    if (!msg) return;
+
+    var now = new Date();
+    msg.timestamp = now.getTime();
+
+    updateTimestampDisplay(_currentTimeMsgId, msg.timestamp);
+    insertSystemMessage('你同步了时间 ⌛');
+    if (typeof throttledSaveData === 'function') throttledSaveData();
+    else if (typeof saveData === 'function') saveData();
+    if (typeof showNotification === 'function') showNotification('时间已同步', 'success');
+    closeModal();
+}
+
+// ============================================================
+// 请求修改（完全复制参考网站，仅适配变量名）
+// ============================================================
+
+function requestTimeChange() {
+    var btn = document.getElementById("otm-req-btn");
+    var status = document.getElementById("otm-status");
+
+    if (btn) { btn.disabled = true; btn.style.opacity = ".35"; }
+    if (status) status.innerText = "等待回应中…";
+
+    setTimeout(function() {
+        var ok = Math.random() > 0.38; // 参考网站: 62% 成功
+
+        if (ok) {
+            var msg = findMessageById(_currentTimeMsgId);
+            if (msg) {
+                var h = String(Math.floor(Math.random() * 24)).padStart(2, '0');
+                var m = String(Math.floor(Math.random() * 60)).padStart(2, '0');
+                var s = String(Math.floor(Math.random() * 60)).padStart(2, '0');
+                var dateObj = new Date(msg.timestamp);
+                dateObj.setHours(parseInt(h));
+                dateObj.setMinutes(parseInt(m));
+                dateObj.setSeconds(parseInt(s));
+                msg.timestamp = dateObj.getTime();
+                updateTimestampDisplay(_currentTimeMsgId, msg.timestamp);
+            }
+            if (typeof throttledSaveData === 'function') throttledSaveData();
+            else if (typeof saveData === 'function') saveData();
+            closeModal();
+            insertSystemMessage('你请求修改了时间 ✨');
+            if (typeof showNotification === 'function') showNotification('对方同意了修改', 'success');
+        } else {
+            if (status) status.innerText = "对方拒绝了";
+            if (btn) { btn.disabled = false; btn.style.opacity = ""; btn.innerText = "再试一次"; }
+        }
+    }, 1300 + Math.random() * 900);
+}
+
+// ============================================================
+// 时间流速设置
+// ============================================================
+
+function openFlowRateModal() {
+    var flowDisplay = '1x → ' + _timeFlowRate.toFixed(1) + 'x';
+
+    var html = `
+        <div class="flow-rate-modal-content">
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px; border-bottom:1px solid var(--border-color); padding-bottom:14px;">
+                <span style="font-size:20px;">⏳</span>
+                <span style="font-size:16px; font-weight:700; color:var(--text-primary);">时间流速设置</span>
+            </div>
+
+            <div style="font-size:13px; color:var(--text-secondary); margin-bottom:14px;">
+                当前: <span id="flow-current-display" style="font-weight:600; color:var(--accent-color);">${flowDisplay}</span>
+            </div>
+
+            <div style="font-size:12px; color:var(--text-secondary); margin-bottom:10px; display:flex; align-items:center; gap:6px; justify-content:center; flex-wrap:wrap;">
+                <span style="font-weight:500;">我的时间</span>
+                <span style="font-size:14px;">⏱</span>
+                <span style="font-weight:600; color:var(--text-primary); font-size:16px;">1</span>
+                <span style="font-weight:600; color:var(--text-secondary);">:</span>
+                <input type="number" id="flow-rate-input" style="width:80px; padding:6px 8px; border:1.5px solid var(--border-color); border-radius:8px; background:var(--primary-bg); color:var(--text-primary); font-size:16px; font-weight:600; text-align:center; outline:none; font-family:var(--font-family);" step="0.1" min="0.1" max="30" value="${_timeFlowRate.toFixed(1)}">
+                <span style="font-size:14px;">⏱</span>
+                <span style="font-weight:500;">对方时间</span>
+            </div>
+            <div style="font-size:10px; color:var(--text-secondary); text-align:center; margin-bottom:14px; opacity:0.5;">
+                左边固定为 1（你的时间），右边可调整
+            </div>
+
+            <div id="flow-status-area" style="padding:10px 14px; border-radius:10px; background:var(--primary-bg); min-height:42px; margin-bottom:14px; display:flex; align-items:center; justify-content:center; font-size:13px; color:var(--text-secondary); border:1px solid var(--border-color);">
+                <span id="flow-status-text">点击「让他修改」试试</span>
+            </div>
+
+            <div style="display:flex; gap:10px;">
+                <button id="flow-req-btn" class="pill-btn" style="flex:1; padding:10px 0; border:1.5px solid var(--border-color); border-radius:10px; background:transparent; color:var(--text-primary); font-size:13px; font-weight:600; cursor:pointer; font-family:var(--font-family); transition:all 0.2s;">
+                    让他修改
+                </button>
+                <button id="flow-save-btn" class="pill-btn" style="flex:1; padding:10px 0; border:none; border-radius:10px; background:var(--accent-color); color:#fff; font-size:13px; font-weight:600; cursor:pointer; font-family:var(--font-family); transition:opacity 0.2s;">
+                    保存
+                </button>
+            </div>
+        </div>
+    `;
+
+    modal("", html);
+
+    // 绑定事件（在弹窗渲染后）
+    setTimeout(function() {
+        var input = document.getElementById('flow-rate-input');
+        var reqBtn = document.getElementById('flow-req-btn');
+        var saveBtn = document.getElementById('flow-save-btn');
+        var statusText = document.getElementById('flow-status-text');
+        var statusArea = document.getElementById('flow-status-area');
+
+        // 让他修改（参考请求修改逻辑）
+        reqBtn.addEventListener('click', function() {
+            reqBtn.disabled = true;
+            reqBtn.style.opacity = '0.35';
+            statusText.textContent = '请求修改流速中…';
+            statusArea.style.borderColor = 'var(--accent-color)';
+            statusArea.style.background = 'rgba(var(--accent-color-rgb), 0.06)';
+
+            setTimeout(function() {
+                var ok = Math.random() > 0.38; // 62% 成功
+
+                if (ok) {
+                    var randomValue = generateRandomFlowRate();
+                    input.value = randomValue.toFixed(1);
+                    statusText.textContent = '✅ 对方已修改流速';
+                    statusArea.style.borderColor = 'rgba(100,200,120,0.6)';
+                    statusArea.style.background = 'rgba(100,200,120,0.06)';
+
+                    // 保存流速
+                    _timeFlowRate = randomValue;
+                    localStorage.setItem('timeFlowRate', String(_timeFlowRate));
+                    updateTimeFlowDisplay();
+
+                    // 关闭流速弹窗，回到时刻弹窗
+                    setTimeout(function() {
+                        closeModal();
+                        // 重新打开时刻弹窗（显示更新后的流速）
+                        openTimeModal(_currentTimeMsgId);
+                    }, 600);
+
+                    if (typeof showNotification === 'function') showNotification('对方已修改流速 ✨', 'success');
+                } else {
+                    statusText.textContent = '❌ 对方拒绝修改流速';
+                    statusArea.style.borderColor = 'rgba(255,100,100,0.4)';
+                    statusArea.style.background = 'rgba(255,100,100,0.06)';
+                    reqBtn.disabled = false;
+                    reqBtn.style.opacity = '';
+                    setTimeout(function() {
+                        statusText.textContent = '再试一次吧';
+                        statusArea.style.borderColor = 'var(--border-color)';
+                        statusArea.style.background = 'var(--primary-bg)';
+                    }, 1500);
+                }
+            }, 1300 + Math.random() * 900);
+        });
+
+        // 保存（直接生效）
+        saveBtn.addEventListener('click', function() {
+            var val = parseFloat(input.value);
+            if (isNaN(val) || val < 0.1) {
+                if (typeof showNotification === 'function') showNotification('请输入有效数字 (≥0.1)', 'warning');
+                return;
+            }
+            if (val > 30) {
+                if (typeof showNotification === 'function') showNotification('最大值不能超过 30', 'warning');
+                return;
+            }
+            _timeFlowRate = val;
+            localStorage.setItem('timeFlowRate', String(_timeFlowRate));
+            updateTimeFlowDisplay();
+            insertSystemMessage('时间流速已调整为 1x → ' + _timeFlowRate.toFixed(1) + 'x ⏳');
+            if (typeof showNotification === 'function') showNotification('流速已保存 ⏳', 'success');
+            closeModal();
+            // 重新打开时刻弹窗（显示更新后的流速）
+            openTimeModal(_currentTimeMsgId);
+        });
+
+    }, 50);
+}
+
+function updateTimeFlowDisplay() {
+    var display = document.getElementById('time-modal-flow-display');
+    if (display) {
+        display.textContent = '1x → ' + _timeFlowRate.toFixed(1) + 'x';
+    }
+    var currentDisplay = document.getElementById('flow-current-display');
+    if (currentDisplay) {
+        currentDisplay.textContent = '1x → ' + _timeFlowRate.toFixed(1) + 'x';
+    }
+}
+
+// ============================================================
+// 通用辅助函数
+// ============================================================
+
+function findMessageById(messageId) {
+    if (typeof messages !== 'undefined') {
+        return messages.find(function(m) { return String(m.id) === String(messageId); });
+    }
+    if (window.messages) {
+        return window.messages.find(function(m) { return String(m.id) === String(messageId); });
+    }
+    return null;
+}
+
+function updateTimestampDisplay(messageId, timestamp) {
+    var el = document.querySelector('[data-msg-id="' + messageId + '"] .timestamp');
+    if (el) {
+        var ts = new Date(timestamp);
+        var timeStr = ts.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false });
+        el.textContent = timeStr;
+        el.style.transition = 'color 0.3s';
+        el.style.color = 'var(--accent-color)';
+        setTimeout(function() { el.style.color = ''; }, 500);
+    }
+}
+
+function insertSystemMessage(text) {
+    var systemMsg = {
+        id: 'sys_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+        sender: 'system',
+        text: text,
+        timestamp: Date.now(),
+        type: 'system'
+    };
+    if (typeof messages !== 'undefined') {
+        messages.push(systemMsg);
+        if (typeof renderMessages === 'function') renderMessages();
+    } else if (window.messages) {
+        window.messages.push(systemMsg);
+        if (typeof renderMessages === 'function') renderMessages();
+    }
+    if (typeof throttledSaveData === 'function') throttledSaveData();
+    else if (typeof saveData === 'function') saveData();
+}
+
+function generateRandomFlowRate() {
+    var rand = Math.random();
+    if (rand < 0.70) {
+        var type = Math.random();
+        if (type < 0.5) {
+            return Math.floor(Math.random() * 30) + 1;
+        } else {
+            return Math.round((1.1 + Math.random() * 28.8) * 10) / 10;
+        }
+    } else {
+        return Math.round((0.2 + Math.random() * 0.7) * 10) / 10;
+    }
+}
+
+function getPartnerDisplayTime(originalTimestamp) {
+    if (!originalTimestamp) return null;
+    var now = Date.now();
+    var elapsed = now - originalTimestamp;
+    var adjustedTime = originalTimestamp + elapsed * _timeFlowRate;
+    return new Date(adjustedTime);
 }
 });
