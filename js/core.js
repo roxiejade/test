@@ -2527,7 +2527,7 @@ function requestTimeChange() {
             if (btn) { btn.disabled = false; btn.style.opacity = ""; btn.innerText = "再试一次"; }
         }
     }, 1300 + Math.random() * 900);
-}
+} // <--- 这里补上了缺失的闭合大括号
                           
 // ============================================================
 // 时间流速设置
