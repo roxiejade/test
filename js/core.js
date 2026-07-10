@@ -2415,6 +2415,7 @@ var _timeFlowRate = 1;
             if (isNaN(_timeFlowRate) || _timeFlowRate < 0.1) _timeFlowRate = 1;
         }
     } catch(e) {}
+        })();
 
 
 // ============================================================
@@ -2731,4 +2732,3 @@ function getPartnerDisplayTime(originalTimestamp) {
     var adjustedTime = originalTimestamp + elapsed * _timeFlowRate;
     return new Date(adjustedTime);
 }
-});
