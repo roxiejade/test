@@ -386,7 +386,7 @@ function bindStaticEvents() {
     };
   }
 
-  // 详情页替换图片用的文件选择器
+    // 详情页替换图片用的文件选择器
   const detailImgInput = document.getElementById('bv2-detail-img-input');
   if (detailImgInput) {
     detailImgInput.onchange = async function(e) {
@@ -412,25 +412,27 @@ function bindStaticEvents() {
       e.target.value = '';
     };
   }
-}
 
   // ===== 写留言弹窗 - 图片删除按钮 =====
-const imgRemoveBtn = document.getElementById('bv2-img-preview-remove');
-if (imgRemoveBtn) {
+  const imgRemoveBtn = document.getElementById('bv2-img-preview-remove');
+  if (imgRemoveBtn) {
     imgRemoveBtn.onclick = function() {
-        window._bv2_removeSelectedImage();
+      window._bv2_removeSelectedImage();
     };
-}
+  }
 
-// ===== 写留言弹窗 - 表情包按钮 =====
-const stickerBtn = document.getElementById('bv2-compose-sticker-btn');
-if (stickerBtn) {
+  // ===== 写留言弹窗 - 表情包按钮 =====
+  const stickerBtn = document.getElementById('bv2-compose-sticker-btn');
+  if (stickerBtn) {
     stickerBtn.onclick = function(e) {
-        e.preventDefault();
-        window._bv2_openStickerPicker();
+      e.preventDefault();
+      window._bv2_openStickerPicker();
     };
-}
+  }
 
+}   
+
+ 
 
 
 
