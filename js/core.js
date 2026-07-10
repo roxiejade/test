@@ -2526,7 +2526,7 @@ function requestTimeChange() {
 if (btn) { btn.disabled = false; btn.style.opacity = ""; btn.innerText = "再试一次"; }
         }
     }, 1300 + Math.random() * 900);
-}
+
                           
 // ============================================================
 // 时间流速设置
