@@ -1413,9 +1413,11 @@ function closeStickerPicker(save) {
     if (!overlay) return;
 
     if (!save) {
-        // 放弃选择：清空已选（恢复到打开前的状态）
-        window._bv2_selectedStickers = [];
+    // 放弃选择：恢复到打开前的状态
+    if (window._bv2_stickerBackup !== undefined) {
+        window._bv2_selectedStickers = window._bv2_stickerBackup;
     }
+}
 
     // 关闭弹窗
     overlay.style.display = 'none';
