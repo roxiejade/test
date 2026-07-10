@@ -1115,7 +1115,12 @@ function createMessageFragment(msg, prevMsg, nextMsg, lastSenderRef) {
         } else {
             timeStr = ts.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false });
         }
-        metaHTML += `<div class="timestamp">${timeStr}</div>`;
+        // 改成（只有对方消息可点击）：
+if (msg.sender !== 'user') {
+    metaHTML += `<div class="timestamp" style="cursor:pointer;" onclick="showTimeMenu(event, '${msg.id}')">${timeStr}</div>`;
+} else {
+    metaHTML += `<div class="timestamp">${timeStr}</div>`;
+}
     }
 
     if (msg.sender === 'user' && settings.readReceiptsEnabled && isLastInSenderGroup) {
@@ -2380,4 +2385,133 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         observer.observe(historyLoader);
     }
+
+        // ============================================================
+// 点击时间戳弹出菜单
+// ============================================================
+
+var _currentTimeMsgId = null;
+
+function showTimeMenu(event, messageId) {
+    event.stopPropagation();
+    _currentTimeMsgId = messageId;
+
+    var menu = document.getElementById('time-menu');
+    if (!menu) return;
+
+    var x = Math.min(event.clientX, window.innerWidth - 180);
+    var y = Math.min(event.clientY, window.innerHeight - 150);
+    menu.style.left = x + 'px';
+    menu.style.top = y + 'px';
+    menu.style.display = 'block';
+
+    menu.querySelectorAll('.time-menu-item').forEach(function(btn) {
+        btn.onclick = function(e) {
+            e.stopPropagation();
+            var action = this.dataset.action;
+            if (action === 'random') {
+                randomizeTime(messageId);
+            } else if (action === 'request') {
+                requestTimeChange(messageId);
+            }
+            hideTimeMenu();
+        };
+    });
+
+    setTimeout(function() {
+        document.addEventListener('click', hideTimeMenuOnOutside);
+    }, 10);
+}
+
+function hideTimeMenuOnOutside(e) {
+    var menu = document.getElementById('time-menu');
+    if (menu && !menu.contains(e.target)) {
+        hideTimeMenu();
+        document.removeEventListener('click', hideTimeMenuOnOutside);
+    }
+}
+
+function hideTimeMenu() {
+    var menu = document.getElementById('time-menu');
+    if (menu) menu.style.display = 'none';
+}
+
+function randomizeTime(messageId) {
+    var msg = findMessageById(messageId);
+    if (!msg) return;
+
+    var h = String(Math.floor(Math.random() * 24)).padStart(2, '0');
+    var m = String(Math.floor(Math.random() * 60)).padStart(2, '0');
+    var s = String(Math.floor(Math.random() * 60)).padStart(2, '0');
+
+    var dateObj = new Date(msg.timestamp);
+    dateObj.setHours(parseInt(h));
+    dateObj.setMinutes(parseInt(m));
+    dateObj.setSeconds(parseInt(s));
+    msg.timestamp = dateObj.getTime();
+
+    updateTimestampDisplay(messageId, msg.timestamp);
+    if (typeof throttledSaveData === 'function') throttledSaveData();
+    else if (typeof saveData === 'function') saveData();
+    if (typeof showNotification === 'function') showNotification('时间已随机更新', 'success');
+}
+
+function requestTimeChange(messageId) {
+    var msg = findMessageById(messageId);
+    if (!msg) return;
+
+    var h = String(Math.floor(Math.random() * 24)).padStart(2, '0');
+    var m = String(Math.floor(Math.random() * 60)).padStart(2, '0');
+    var s = String(Math.floor(Math.random() * 60)).padStart(2, '0');
+
+    var dateObj = new Date(msg.timestamp);
+    dateObj.setHours(parseInt(h));
+    dateObj.setMinutes(parseInt(m));
+    dateObj.setSeconds(parseInt(s));
+    msg.timestamp = dateObj.getTime();
+
+    updateTimestampDisplay(messageId, msg.timestamp);
+
+    var partnerName = (typeof settings !== 'undefined' && settings.partnerName) || '对方';
+    insertSystemMessage(partnerName + ' 请求修改了时间 ✨');
+
+    if (typeof throttledSaveData === 'function') throttledSaveData();
+    else if (typeof saveData === 'function') saveData();
+    if (typeof showNotification === 'function') showNotification('已请求修改时间 ✨', 'info');
+}
+
+function updateTimestampDisplay(messageId, timestamp) {
+    var el = document.querySelector('[data-msg-id="' + messageId + '"] .timestamp');
+    if (el) {
+        var ts = new Date(timestamp);
+        var timeStr = ts.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false });
+        el.textContent = timeStr;
+        el.style.transition = 'color 0.3s';
+        el.style.color = 'var(--accent-color)';
+        setTimeout(function() { el.style.color = ''; }, 500);
+    }
+}
+
+function insertSystemMessage(text) {
+    var systemMsg = {
+        id: 'sys_' + Date.now(),
+        sender: 'system',
+        text: text,
+        timestamp: Date.now(),
+        type: 'system'
+    };
+    if (typeof messages !== 'undefined') messages.push(systemMsg);
+    else if (window.messages) window.messages.push(systemMsg);
+    if (typeof renderMessages === 'function') renderMessages();
+}
+
+function findMessageById(messageId) {
+    if (typeof messages !== 'undefined') {
+        return messages.find(function(m) { return String(m.id) === String(messageId); });
+    }
+    if (window.messages) {
+        return window.messages.find(function(m) { return String(m.id) === String(messageId); });
+    }
+    return null;
+}
 });
