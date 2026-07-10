@@ -2526,7 +2526,6 @@ function requestTimeChange() {
 if (btn) { btn.disabled = false; btn.style.opacity = ""; btn.innerText = "再试一次"; }
         }
     }, 1300 + Math.random() * 900);
-});  // ← 添加这个
 }
                           
 // ============================================================
@@ -2732,3 +2731,4 @@ function getPartnerDisplayTime(originalTimestamp) {
     var adjustedTime = originalTimestamp + elapsed * _timeFlowRate;
     return new Date(adjustedTime);
 }
+});
