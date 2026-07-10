@@ -12348,8 +12348,8 @@ body #user-sticker-picker .empty-sticker-tip {
   color: var(--text-secondary);
   opacity: 0.5;
   margin-top: 20px;
-  text-align: right;
-  padding-right: 40px;
+  text-align: left;
+  padding-left: 40px;
 }
 
 /* 编辑操作按钮 */
