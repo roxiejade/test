@@ -12824,3 +12824,129 @@ html[data-theme="dark"] .period-stat-value { color: var(--accent-color-dark); }
 .event-modal-overlay.active {
     display: flex;
 }
+
+/* ============================================================
+   时刻弹窗 & 流速设置弹窗 样式
+   ============================================================ */
+
+.opp-time-modal {
+    padding: 4px 0;
+}
+
+.otm-clock {
+    font-size: 32px;
+    font-weight: 700;
+    text-align: center;
+    padding: 8px 0 14px;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 2px;
+    color: var(--text-primary);
+}
+
+.otm-status {
+    text-align: center;
+    font-size: 13px;
+    min-height: 24px;
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+    transition: color 0.3s;
+}
+
+.otm-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.otm-actions .pill-btn {
+    flex: 1;
+    padding: 10px 0;
+    border: none;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: var(--font-family);
+    transition: all 0.2s ease;
+}
+
+.otm-actions .pill-btn:active {
+    transform: scale(0.97);
+}
+
+.otm-actions .pill-btn.ghost {
+    border: 1.5px solid var(--border-color);
+    background: transparent;
+    color: var(--text-primary);
+}
+
+.otm-actions .pill-btn.ghost:hover:not(:disabled) {
+    background: rgba(var(--accent-color-rgb), 0.06);
+    border-color: var(--accent-color);
+}
+
+.otm-actions .pill-btn.ghost:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+#time-modal-flow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    transition: background 0.15s ease;
+    background: rgba(var(--accent-color-rgb), 0.04);
+    border: 1px solid rgba(var(--accent-color-rgb), 0.08);
+}
+
+#time-modal-flow:hover {
+    background: rgba(var(--accent-color-rgb), 0.08);
+}
+
+/* ============================================================
+   流速设置弹窗
+   ============================================================ */
+
+.flow-rate-modal-content {
+    padding: 0;
+}
+
+.flow-rate-modal-content #flow-rate-input {
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.flow-rate-modal-content #flow-rate-input:focus {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px rgba(var(--accent-color-rgb), 0.15);
+}
+
+.flow-rate-modal-content #flow-status-area {
+    transition: all 0.3s ease;
+    min-height: 42px;
+}
+
+.flow-rate-modal-content .pill-btn:active {
+    transform: scale(0.97);
+}
+
+#flow-req-btn:hover:not(:disabled) {
+    background: rgba(var(--accent-color-rgb), 0.06);
+    border-color: var(--accent-color);
+}
+
+#flow-req-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+#flow-save-btn:hover {
+    opacity: 0.85;
+}
+
+/* 使 modal 内的滚动条隐藏 */
+#modal .modal-content .opp-time-modal {
+    overflow: visible;
+}
