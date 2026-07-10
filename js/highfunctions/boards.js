@@ -222,8 +222,8 @@ function generatePartnerReply() {
     // 3. 留言板专属 Emoji 策略（模拟活人打字节奏）
     let finalText = '';
     const hasStickers = pickedStickers.length > 0;
-    // 决定这一整段留言里，最多能加几个 Emoji（有表情包就最多1个，没有就最多4个）
-    const maxEmoji = hasStickers ? 1 : 3; 
+    // 决定这一整段留言里，最多能加几个 Emoji（有表情包就最多2个，没有就最多4个）
+    const maxEmoji = hasStickers ? 2 : 4; 
     let usedEmoji = 0;
 
     // 70% 概率开启“加表情模式”
