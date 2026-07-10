@@ -2731,4 +2731,4 @@ function getPartnerDisplayTime(originalTimestamp) {
     var adjustedTime = originalTimestamp + elapsed * _timeFlowRate;
     return new Date(adjustedTime);
 }
-});
+}
