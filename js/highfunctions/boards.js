@@ -733,7 +733,8 @@ function removeSelectedImage() {
 
 async function submitPost() {
   const text = document.getElementById('bv2-compose-text')?.value.trim() || '';
-  if (!text && !selectedImage) {
+  const hasStickers = window._bv2_selectedStickers && window._bv2_selectedStickers.length > 0;
+  if (!text && !selectedImage && !hasStickers) {
     if(typeof showNotification === 'function') showNotification('内容不能为空', 'warning');
     return;
   }
