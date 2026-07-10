@@ -1220,6 +1220,8 @@ function openStickerPickerForCompose() {
         return;
     }
 
+  // 保存打开前的状态（备份）
+window._bv2_stickerBackup = [...(window._bv2_selectedStickers || [])];
     // 如果已存在选择器，直接显示，不重新创建
     let overlay = document.getElementById('bv2-sticker-picker-overlay');
     if (overlay) {
