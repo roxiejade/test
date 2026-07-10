@@ -1207,7 +1207,7 @@ loadData().then(() => { setInterval(checkStatus, 60000); checkStatus(); });
   console.log('✅ boards.js 执行完成，renderEnvelopeBoard:', typeof window.renderEnvelopeBoard);
 
   // ============================================================
-// 新增：表情包选择器（写留言专用）
+// 表情包选择器（写留言专用）- 完整版
 // ============================================================
 
 // 打开表情包选择器
@@ -1235,10 +1235,9 @@ function openStickerPickerForCompose() {
     overlay.style.cssText = `
         position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9999;
         display:flex; align-items:center; justify-content:center;
-        animation: fadeIn 0.2s ease;
     `;
 
-    // 点击外部关闭
+    // 点击外部关闭（放弃选择）
     overlay.addEventListener('click', function(e) {
         if (e.target === overlay) {
             closeStickerPicker(false);
@@ -1252,7 +1251,6 @@ function openStickerPickerForCompose() {
         max-width:400px; width:90%; max-height:70vh;
         box-shadow:0 20px 60px rgba(0,0,0,0.3);
         display:flex; flex-direction:column;
-        animation: popIn 0.22s cubic-bezier(0.34,1.56,0.64,1);
     `;
     panel.addEventListener('click', function(e) {
         e.stopPropagation();
@@ -1277,11 +1275,17 @@ function openStickerPickerForCompose() {
     `;
     panel.appendChild(header);
 
-    // 网格容器（固定高度，独立滚动）
+    // 网格容器
     const gridWrapper = document.createElement('div');
     gridWrapper.style.cssText = `
         overflow-y:auto; flex:1; padding:4px 0; min-height:0;
     `;
+    // 保存滚动位置
+    let scrollTop = 0;
+    gridWrapper.addEventListener('scroll', function() {
+        scrollTop = this.scrollTop;
+    });
+
     const grid = document.createElement('div');
     grid.id = 'bv2-sticker-picker-grid';
     grid.style.cssText = `
@@ -1316,7 +1320,14 @@ function openStickerPickerForCompose() {
     // 渲染网格
     renderPickerGrid();
 
-    // 绑定叉号关闭
+    // 恢复滚动位置
+    setTimeout(function() {
+        if (gridWrapper) {
+            gridWrapper.scrollTop = scrollTop;
+        }
+    }, 50);
+
+    // 绑定叉号关闭（放弃选择）
     document.getElementById('bv2-sticker-picker-close').onclick = function() {
         closeStickerPicker(false);
     };
@@ -1337,6 +1348,10 @@ function renderPickerGrid() {
 
     const stickers = (typeof stickerLibrary !== 'undefined' && stickerLibrary.length > 0) ? stickerLibrary : [];
     const selected = window._bv2_selectedStickers || [];
+
+    // 保存当前滚动位置
+    const gridWrapper = grid.parentElement;
+    const scrollTop = gridWrapper ? gridWrapper.scrollTop : 0;
 
     grid.innerHTML = '';
 
@@ -1365,33 +1380,42 @@ function renderPickerGrid() {
         };
         grid.appendChild(item);
     });
+
+    // 恢复滚动位置
+    if (gridWrapper) {
+        gridWrapper.scrollTop = scrollTop;
+    }
 }
 
 // 更新底部按钮状态
 function updatePickerFooter() {
     const confirmBtn = document.getElementById('bv2-sticker-picker-confirm');
-    const header = document.querySelector('#bv2-sticker-picker-overlay .bv2-sticker-picker-header span');
     if (!confirmBtn) return;
 
     const selected = window._bv2_selectedStickers || [];
     const count = selected.length;
     confirmBtn.textContent = `确定（${count}/2）`;
 
-    if (header) {
-        header.innerHTML = `选择表情包 <span style="font-size:12px;font-weight:400;color:var(--text-secondary);">（${count}/2）</span>`;
+    // 更新标题中的计数
+    const headerSpan = document.querySelector('#bv2-sticker-picker-overlay .bv2-sticker-picker-header span');
+    if (headerSpan) {
+        headerSpan.innerHTML = `选择表情包 <span style="font-size:12px;font-weight:400;color:var(--text-secondary);">（${count}/2）</span>`;
     }
 }
 
 // 关闭选择器
+// save = true: 保存选择，关闭弹窗
+// save = false: 放弃选择，关闭弹窗
 function closeStickerPicker(save) {
     const overlay = document.getElementById('bv2-sticker-picker-overlay');
     if (!overlay) return;
 
     if (!save) {
-        // 放弃选择：清空已选
+        // 放弃选择：清空已选（恢复到打开前的状态）
         window._bv2_selectedStickers = [];
     }
 
+    // 关闭弹窗
     overlay.style.display = 'none';
     setTimeout(function() {
         if (overlay.parentNode) {
@@ -1399,8 +1423,10 @@ function closeStickerPicker(save) {
         }
     }, 200);
 
+    // 更新预览区
     updateStickerPreview();
 
+    // 如果有保存，更新计数
     if (save) {
         const hint = document.getElementById('bv2-sticker-hint');
         const count = window._bv2_selectedStickers?.length || 0;
@@ -1412,6 +1438,95 @@ function closeStickerPicker(save) {
                 hint.style.display = 'none';
             }
         }
+    }
+}
+
+// 切换表情包选择
+function toggleStickerSelection(stickerUrl) {
+    if (!window._bv2_selectedStickers) window._bv2_selectedStickers = [];
+    const index = window._bv2_selectedStickers.indexOf(stickerUrl);
+    if (index >= 0) {
+        window._bv2_selectedStickers.splice(index, 1);
+    } else {
+        if (window._bv2_selectedStickers.length >= 2) {
+            if (typeof showNotification === 'function') {
+                showNotification('最多选 2 个表情包', 'warning', 1500);
+            }
+            return;
+        }
+        window._bv2_selectedStickers.push(stickerUrl);
+    }
+}
+
+// 更新表情包预览
+function updateStickerPreview() {
+    const container = document.getElementById('bv2-sticker-preview');
+    const hint = document.getElementById('bv2-sticker-hint');
+    const previewArea = document.getElementById('bv2-preview-area');
+    if (!container) return;
+
+    const selected = window._bv2_selectedStickers || [];
+    container.innerHTML = '';
+
+    if (selected.length === 0) {
+        container.style.display = 'none';
+        if (hint) hint.style.display = 'none';
+        const imgPreview = document.getElementById('bv2-img-preview');
+        if ((!imgPreview || imgPreview.style.display === 'none') && previewArea) {
+            previewArea.style.display = 'none';
+        }
+        return;
+    }
+
+    container.style.display = 'flex';
+    if (previewArea) previewArea.style.display = 'flex';
+
+    selected.forEach((url, idx) => {
+        const wrap = document.createElement('div');
+        wrap.style.cssText = `
+            position:relative; width:64px; height:64px;
+            border-radius:8px; overflow:hidden;
+            border:1px solid var(--border-color);
+            background:var(--primary-bg);
+            flex-shrink:0;
+        `;
+        wrap.innerHTML = `
+            <img src="${url}" style="width:100%;height:100%;object-fit:contain;display:block;">
+            <button data-idx="${idx}" style="
+                position:absolute; top:-6px; right:-6px;
+                width:22px; height:22px; border-radius:50%;
+                border:2px solid var(--border-color);
+                background:var(--secondary-bg);
+                color:var(--text-secondary);
+                font-size:12px; cursor:pointer;
+                display:flex; align-items:center; justify-content:center;
+                padding:0; line-height:1; z-index:2;
+                box-shadow:0 2px 6px rgba(0,0,0,0.15);
+                transition:all 0.2s;
+            ">×</button>
+        `;
+        const removeBtn = wrap.querySelector('button');
+        removeBtn.onclick = function(e) {
+            e.stopPropagation();
+            window._bv2_selectedStickers.splice(parseInt(this.dataset.idx), 1);
+            updateStickerPreview();
+            const hint = document.getElementById('bv2-sticker-hint');
+            const count = window._bv2_selectedStickers?.length || 0;
+            if (hint) {
+                if (count > 0) {
+                    hint.style.display = 'inline';
+                    hint.textContent = `已选 ${count}/2 个表情包`;
+                } else {
+                    hint.style.display = 'none';
+                }
+            }
+        };
+        container.appendChild(wrap);
+    });
+
+    if (hint) {
+        hint.style.display = 'inline';
+        hint.textContent = `已选 ${selected.length}/2 个表情包`;
     }
 }
   
