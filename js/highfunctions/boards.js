@@ -623,8 +623,9 @@ function openDetail(threadId, type) {
     }
 
     document.getElementById('board-detail-body').innerHTML = bodyHtml + actionHtml;
-    document.getElementById('board-detail-date').textContent = new Date(thread.createdAt).toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' });
-    
+const d = new Date(thread.createdAt);
+document.getElementById('board-detail-date').textContent = d.toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' }) + ' ' + d.toLocaleDateString('zh-CN', { weekday: 'long' });
+  
     const continueBtn = document.getElementById('board-continue-btn');
     const replyBtn = document.getElementById('board-reply-btn');
     if (continueBtn) continueBtn.onclick = () => window._bv2_openCompose('continue', threadId, 'me');
