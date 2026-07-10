@@ -2397,45 +2397,7 @@ document.addEventListener('DOMContentLoaded', function() {
         observer.observe(historyLoader);
     }
 
-        // ============================================================
-// 点击时间戳弹出菜单
-// ============================================================
 
-
-function updateTimestampDisplay(messageId, timestamp) {
-    var el = document.querySelector('[data-msg-id="' + messageId + '"] .timestamp');
-    if (el) {
-        var ts = new Date(timestamp);
-        var timeStr = ts.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false });
-        el.textContent = timeStr;
-        el.style.transition = 'color 0.3s';
-        el.style.color = 'var(--accent-color)';
-        setTimeout(function() { el.style.color = ''; }, 500);
-    }
-}
-
-function insertSystemMessage(text) {
-    var systemMsg = {
-        id: 'sys_' + Date.now(),
-        sender: 'system',
-        text: text,
-        timestamp: Date.now(),
-        type: 'system'
-    };
-    if (typeof messages !== 'undefined') messages.push(systemMsg);
-    else if (window.messages) window.messages.push(systemMsg);
-    if (typeof renderMessages === 'function') renderMessages();
-}
-
-function findMessageById(messageId) {
-    if (typeof messages !== 'undefined') {
-        return messages.find(function(m) { return String(m.id) === String(messageId); });
-    }
-    if (window.messages) {
-        return window.messages.find(function(m) { return String(m.id) === String(messageId); });
-    }
-    return null;
-}
 
         // ============================================================
 // 时间戳点击弹窗 - 完整功能
