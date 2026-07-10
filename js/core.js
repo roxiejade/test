@@ -1103,49 +1103,36 @@ function createMessageFragment(msg, prevMsg, nextMsg, lastSenderRef) {
 
     let metaHTML = '';
     if (showTimestamp) {
-        // ★★★ 修改开始：应用流速 + 使用 openTimeModal ★★★
-    var displayTime;
-    if (msg.sender !== 'user') {
-        // 对方消息应用流速
-        var adjusted = getPartnerDisplayTime(msg.timestamp);
-        displayTime = adjusted || new Date(msg.timestamp);
-    } else {
-        displayTime = new Date(msg.timestamp);
+        // ★★★ 应用流速 + 使用 openTimeModal ★★★
+        var displayTime;
+        if (msg.sender !== 'user') {
+            // 对方消息应用流速
+            var adjusted = getPartnerDisplayTime(msg.timestamp);
+            displayTime = adjusted || new Date(msg.timestamp);
+        } else {
+            displayTime = new Date(msg.timestamp);
+        }
+        var ts = displayTime;
+        
+        let timeStr;
+        const fmt = settings.timeFormat || 'HH:mm';
+        if (fmt === 'HH:mm:ss') {
+            timeStr = ts.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+        } else if (fmt === 'h:mm AM/PM') {
+            timeStr = ts.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+        } else if (fmt === 'h:mm:ss AM/PM') {
+            timeStr = ts.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true });
+        } else {
+            timeStr = ts.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false });
+        }
+        // 只有对方消息的时间戳可点击
+        if (msg.sender !== 'user') {
+            metaHTML += `<div class="timestamp" style="cursor:pointer;" onclick="openTimeModal('${msg.id}')">${timeStr}</div>`;
+        } else {
+            metaHTML += `<div class="timestamp">${timeStr}</div>`;
+        }
+        // ★★★ 修改结束 ★★★
     }
-    var ts = displayTime;
-    
-    let metaHTML = '';
-if (showTimestamp) {
-    // ★★★ 修改开始：应用流速 + 使用 openTimeModal ★★★
-    var displayTime;
-    if (msg.sender !== 'user') {
-        // 对方消息应用流速
-        var adjusted = getPartnerDisplayTime(msg.timestamp);
-        displayTime = adjusted || new Date(msg.timestamp);
-    } else {
-        displayTime = new Date(msg.timestamp);
-    }
-    var ts = displayTime;
-    
-    let timeStr;
-    const fmt = settings.timeFormat || 'HH:mm';
-    if (fmt === 'HH:mm:ss') {
-        timeStr = ts.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
-    } else if (fmt === 'h:mm AM/PM') {
-        timeStr = ts.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
-    } else if (fmt === 'h:mm:ss AM/PM') {
-        timeStr = ts.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true });
-    } else {
-        timeStr = ts.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false });
-    }
-    // 只有对方消息的时间戳可点击
-    if (msg.sender !== 'user') {
-        metaHTML += `<div class="timestamp" style="cursor:pointer;" onclick="openTimeModal('${msg.id}')">${timeStr}</div>`;
-    } else {
-        metaHTML += `<div class="timestamp">${timeStr}</div>`;
-    }
-    // ★★★ 修改结束 ★★★
-}
 
 if (msg.sender === 'user' && settings.readReceiptsEnabled && isLastInSenderGroup) {
     const rrStyle = settings.readReceiptStyle || 'icon';
