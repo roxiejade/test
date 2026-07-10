@@ -2514,4 +2514,13 @@ function findMessageById(messageId) {
     }
     return null;
 }
+      
+        // 挂载到 window 供 onclick 调用
+window.showTimeMenu = showTimeMenu;
+window.hideTimeMenu = hideTimeMenu;
+window.randomizeTime = randomizeTime;
+window.requestTimeChange = requestTimeChange;
+window.updateTimestampDisplay = updateTimestampDisplay;
+window.insertSystemMessage = insertSystemMessage;
+window.findMessageById = findMessageById;
 });
