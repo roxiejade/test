@@ -207,7 +207,7 @@ function generatePartnerReply() {
     if (pool.length === 0 && stickers.length === 0) return null;
 
     // 1. 拆分出句子（按标点符号断句，保留标点）
-    const count = 8 + Math.floor(Math.random() * 5);
+    const count = 5 + Math.floor(Math.random() * 8); // 5-12 条
     const uniquePool = getUniqueShuffled(pool, count);
     const punctuations = ['。', '！', '…', '～', '，', '、'];
     const rawSentences = uniquePool.map(s => s + punctuations[Math.floor(Math.random() * punctuations.length)]);
