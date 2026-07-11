@@ -81,6 +81,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         updateLoader('连接成功，欢迎回来。', '100%');
         setTimeout(hideWelcomeScreen, 3500);
 
+                // ===== 启动虚拟时钟定时器（新增）=====
+        setTimeout(function() {
+            if (window.VirtualClock && window._startVirtualClockTimer) {
+                window._startVirtualClockTimer();
+                console.log('[app] 虚拟时钟定时器已启动');
+            }
+        }, 2000);
+        // ===== 虚拟时钟定时器启动结束 =====
+
         document.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'hidden') {
                 try {
