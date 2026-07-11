@@ -63,32 +63,33 @@
     }
 
     function sendWaitingMessage(action) {
-        var label = action === 'time' ? '申请修改时间' : '申请修改流速';
-        insertVirtualClockMessage('我' + label, '✦', 'waiting');
-    }
+    var myName = getMyName();
+    var label = action === 'time' ? '申请修改时间' : '申请修改流速';
+    insertVirtualClockMessage('✏️ ' + myName + ' ' + label, null, 'waiting');
+}
 
     function sendSuccessMessage(action) {
-        var partnerName = getPartnerName();
-        var text = '';
-        var emoji = '';
+    var partnerName = getPartnerName();
+    var text = '';
+    var emoji = '';
 
-        if (action === 'time') {
-            text = partnerName + '修改了时间';
-            emoji = '✨';
-        } else if (action === 'speed') {
-            text = partnerName + '修改了流速';
-            emoji = '⚡';
-        } else if (action === 'save-speed') {
-            text = '流速已更新';
-            emoji = '⚡';
-        }
-        insertVirtualClockMessage(text, emoji, 'success');
+    if (action === 'time') {
+        text = partnerName + ' 修改了时间';
+        emoji = '✨';
+    } else if (action === 'speed') {
+        text = partnerName + ' 修改了流速';
+        emoji = '⚡';
+    } else if (action === 'save-speed') {
+        text = '已更新流速';
+        emoji = '⚡';
     }
+    insertVirtualClockMessage(text, emoji, 'success');
+}
 
     function sendFailMessage(action) {
-        var partnerName = getPartnerName();
-        insertVirtualClockMessage(partnerName + '拒绝了请求', '💫', 'fail');
-    }
+    var partnerName = getPartnerName();
+    insertVirtualClockMessage(partnerName + ' 拒绝了请求', '💫', 'fail');
+}
 
     // ============================================================
     // 【时刻】弹窗
