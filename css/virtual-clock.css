@@ -47,12 +47,14 @@
 }
 
 .virtual-timestamp .vt-speed {
-    font-size: 9px;
-    font-weight: 600;
+    font-size: 11px;                /* 改：9px → 11px，与时间戳一致 */
+    font-weight: 500;               /* 与时间戳字重一致 */
     color: var(--accent-color, #c5a47e);
     opacity: 0.75;
     margin-left: 2px;
-    display: none;
+    display: inline;                /* 保持行内，与时间戳在同一行 */
+    vertical-align: baseline;       /* 新增：基线对齐 */
+    line-height: 1;                 /* 新增：防止行高差异 */
 }
 
 .virtual-timestamp .vt-speed.visible {
