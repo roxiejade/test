@@ -187,11 +187,12 @@ function loadMoreHistory() {
         bottomCollapseMode: false,
         emojiMixEnabled: true,
 
-        // ===== 虚拟时钟配置（新增）=====
+                // ===== 虚拟时钟配置（新增）=====
         oppTime: '00:00:00',
         oppTimeSetAt: null,
         oppTimeSpeed: 1.0,
-        oppCustomTime: true
+        oppCustomTime: true,
+        oppTimeFormat: 'HH:mm'
         // ===== 虚拟时钟配置结束 =====
     };
 }
