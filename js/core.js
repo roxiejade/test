@@ -187,6 +187,14 @@ autoSendInterval: 5,
         soundVolume: 0.15,
         bottomCollapseMode: false,
         emojiMixEnabled: true
+
+                    // ===== 虚拟时钟配置（新增）=====
+        oppTime: '00:00:00',           // 基准时间
+        oppTimeSetAt: null,            // 基准时间设置时的真实时间戳
+        oppTimeSpeed: 1.0,             // 时间流速（默认 1.0x）
+        oppCustomTime: true,           // 虚拟时间戳开关（默认开启）
+        // ===== 虚拟时钟配置结束 =====
+                    
             };
         }
 
@@ -1152,6 +1160,44 @@ function createMessageFragment(msg, prevMsg, nextMsg, lastSenderRef) {
         contentWrapper.append(actionsDiv, messageDiv);
     }
     wrapper.appendChild(contentWrapper);
+
+        // ===== 虚拟时间戳渲染（新增）=====
+    if (msg.sender !== 'user' && window.VirtualClock && window.VirtualClock.isEnabled()) {
+        var latestOppMsg = null;
+        for (var i = messages.length - 1; i >= 0; i--) {
+            if (messages[i].sender !== 'user' && messages[i].type !== 'system') {
+                latestOppMsg = messages[i];
+                break;
+            }
+        }
+        if (latestOppMsg && String(latestOppMsg.id) === String(msg.id)) {
+            var timeFormat = (typeof settings !== 'undefined' && settings.timeFormat) ? settings.timeFormat : 'HH:mm';
+            var showVirtual = timeFormat !== 'off';
+            if (showVirtual) {
+                var vtDisplay = window.VirtualClock.getVirtualTimeDisplay();
+                if (vtDisplay) {
+                    var speed = window.VirtualClock.getSpeed();
+                    var speedHtml = '';
+                    if (Math.abs(speed - 1.0) > 0.01) {
+                        speedHtml = '<span class="vt-speed visible">⚡' + speed.toFixed(1) + 'x</span>';
+                    }
+                    var vtWrapper = document.createElement('div');
+                    vtWrapper.className = 'virtual-timestamp';
+                    vtWrapper.setAttribute('data-msg-id', msg.id);
+                    vtWrapper.innerHTML = '<span class="vt-time">' + vtDisplay + '</span>' + speedHtml;
+                    vtWrapper.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        if (window.VirtualClockUI && typeof window.VirtualClockUI.openTimeModal === 'function') {
+                            window.VirtualClockUI.openTimeModal();
+                        }
+                    });
+                    contentWrapper.appendChild(vtWrapper);
+                }
+            }
+        }
+    }
+    // ===== 虚拟时间戳渲染结束 =====
+        
     fragment.appendChild(wrapper);
 
     lastSenderRef.current = groupMember ? ('group_' + groupMember.name) : msg.sender;
@@ -1211,7 +1257,7 @@ function renderMessages(preserveScroll = false) {
         fragment.appendChild(msgFragment);
     });
 
-    container.appendChild(fragment);
+        container.appendChild(fragment);
 
     if (preserveScroll) {
         const newScrollHeight = container.scrollHeight;
@@ -1221,6 +1267,13 @@ function renderMessages(preserveScroll = false) {
             container.scrollTop = container.scrollHeight;
         });
     }
+
+    // 重新渲染后更新虚拟时间戳
+    setTimeout(function() {
+        if (window._updateVirtualTimeDisplay) {
+            window._updateVirtualTimeDisplay();
+        }
+    }, 50);
 }
 
 const addMessage = (message) => {
@@ -2381,5 +2434,89 @@ document.addEventListener('DOMContentLoaded', function() {
         observer.observe(historyLoader);
     }
 
+        
+// ============================================================
+// 虚拟时钟定时更新
+// ============================================================
+
+var _vtUpdateTimer = null;
+
+/**
+ * 更新页面中所有虚拟时间戳的显示
+ */
+window._updateVirtualTimeDisplay = function() {
+    if (!window.VirtualClock) return;
+    if (!window.VirtualClock.isEnabled()) {
+        // 如果功能关闭，隐藏所有虚拟时间戳
+        document.querySelectorAll('.virtual-timestamp').forEach(function(el) {
+            el.classList.add('hidden');
+        });
+        return;
+    }
+
+    var vtDisplay = window.VirtualClock.getVirtualTimeDisplay();
+    if (!vtDisplay) {
+        document.querySelectorAll('.virtual-timestamp').forEach(function(el) {
+            el.classList.add('hidden');
+        });
+        return;
+    }
+
+    var speed = window.VirtualClock.getSpeed();
+    var speedHtml = '';
+    if (Math.abs(speed - 1.0) > 0.01) {
+        speedHtml = '⚡' + speed.toFixed(1) + 'x';
+    }
+
+    document.querySelectorAll('.virtual-timestamp').forEach(function(el) {
+        var timeSpan = el.querySelector('.vt-time');
+        var speedSpan = el.querySelector('.vt-speed');
+        if (timeSpan) {
+            timeSpan.textContent = vtDisplay;
+        }
+        if (speedSpan) {
+            if (Math.abs(speed - 1.0) > 0.01) {
+                speedSpan.textContent = '⚡' + speed.toFixed(1) + 'x';
+                speedSpan.classList.add('visible');
+            } else {
+                speedSpan.classList.remove('visible');
+            }
+        } else if (Math.abs(speed - 1.0) > 0.01) {
+            // 如果没有 speed span，创建它
+            var newSpeed = document.createElement('span');
+            newSpeed.className = 'vt-speed visible';
+            newSpeed.textContent = '⚡' + speed.toFixed(1) + 'x';
+            el.appendChild(newSpeed);
+        }
+        el.classList.remove('hidden');
+    });
+};
+
+/**
+ * 启动虚拟时钟定时器（每秒更新一次）
+ */
+window._startVirtualClockTimer = function() {
+    if (_vtUpdateTimer) {
+        clearInterval(_vtUpdateTimer);
+        _vtUpdateTimer = null;
+    }
+    // 先立即更新一次
+    setTimeout(function() {
+        window._updateVirtualTimeDisplay();
+    }, 100);
+    _vtUpdateTimer = setInterval(function() {
+        window._updateVirtualTimeDisplay();
+    }, 1000);
+};
+
+/**
+ * 停止虚拟时钟定时器
+ */
+window._stopVirtualClockTimer = function() {
+    if (_vtUpdateTimer) {
+        clearInterval(_vtUpdateTimer);
+        _vtUpdateTimer = null;
+    }
+};
         
 });
