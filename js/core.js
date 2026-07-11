@@ -136,46 +136,45 @@ function loadMoreHistory() {
 
 
         function getDefaultSettings() {
-            return {
-                partnerName: "梦角",
-                myName: "我",
-                myStatus: "在线",
-                partnerStatus: "在线",
-                isDarkMode: window.matchMedia('(prefers-color-scheme: dark)').matches,
-                colorTheme: "gold",
-                soundEnabled: true,
-                typingIndicatorEnabled: true,
-                readReceiptsEnabled: true,
-                replyEnabled: true,
-                lastStatusChange: Date.now(),
-                nextStatusChange: 1 + Math.random() * 7,
-                fontSize: 16,
-                bubbleStyle: 'standard',
-                messageFontFamily: "'Noto Serif SC', serif",
-                messageFontWeight: 400,
-                messageLineHeight: 1.5,
-                musicPlayerEnabled: false,
-                replyDelayMin: 3000,
-                replyDelayMax: 7000,
-                inChatAvatarEnabled: true,
-                inChatAvatarSize: 36,
-                inChatAvatarPosition: 'center',
-                alwaysShowAvatar: false,
-                showPartnerNameInChat: false,
-                customFontUrl: "", 
+    return {
+        partnerName: "梦角",
+        myName: "我",
+        myStatus: "在线",
+        partnerStatus: "在线",
+        isDarkMode: window.matchMedia('(prefers-color-scheme: dark)').matches,
+        colorTheme: "gold",
+        soundEnabled: true,
+        typingIndicatorEnabled: true,
+        readReceiptsEnabled: true,
+        replyEnabled: true,
+        lastStatusChange: Date.now(),
+        nextStatusChange: 1 + Math.random() * 7,
+        fontSize: 16,
+        bubbleStyle: 'standard',
+        messageFontFamily: "'Noto Serif SC', serif",
+        messageFontWeight: 400,
+        messageLineHeight: 1.5,
+        musicPlayerEnabled: false,
+        replyDelayMin: 3000,
+        replyDelayMax: 7000,
+        inChatAvatarEnabled: true,
+        inChatAvatarSize: 36,
+        inChatAvatarPosition: 'center',
+        alwaysShowAvatar: false,
+        showPartnerNameInChat: false,
+        customFontUrl: "",
         customBubbleCss: "",
         customGlobalCss: "",
-                myAvatarFrame: null, 
-                partnerAvatarFrame: null,
-                myAvatarShape: 'circle',
-                partnerAvatarShape: 'circle',
-autoSendEnabled: false,
-autoSendInterval: 5,
-        allowReadNoReply: false, 
+        myAvatarFrame: null,
+        partnerAvatarFrame: null,
+        myAvatarShape: 'circle',
+        partnerAvatarShape: 'circle',
+        autoSendEnabled: false,
+        autoSendInterval: 5,
+        allowReadNoReply: false,
         readNoReplyChance: 0.2,
         timeFormat: 'HH:mm',
         customSoundUrl: '',
-        // 音效：两方分别可选（若对应 URL 为空则使用内置预设）
         mySendSoundPreset: 'tone_low',
         mySendCustomSoundUrl: '',
         partnerMessageSoundPreset: 'tone_low',
@@ -188,16 +187,14 @@ autoSendInterval: 5,
         bottomCollapseMode: false,
         emojiMixEnabled: true,
 
-                    // ===== 虚拟时钟配置（新增）=====
-        oppTime: '00:00:00',           // 基准时间
-        oppTimeSetAt: null,            // 基准时间设置时的真实时间戳
-        oppTimeSpeed: 1.0,             // 时间流速（默认 1.0x）
-        oppCustomTime: true,           // 虚拟时间戳开关（默认开启）
+        // ===== 虚拟时钟配置（新增）=====
+        oppTime: '00:00:00',
+        oppTimeSetAt: null,
+        oppTimeSpeed: 1.0,
+        oppCustomTime: true
         // ===== 虚拟时钟配置结束 =====
-                    
-            };
-        }
-
+    };
+}
 
         function renderBackgroundGallery() {
             const list = document.getElementById('background-gallery-list');
