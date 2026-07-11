@@ -6,64 +6,7 @@
    虚拟时间戳（显示在对方最新消息下方）
    ============================================================ */
 
-.virtual-timestamp {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    margin-top: 3px;
-    padding: 2px 12px;
-    font-size: 11px;
-    font-family: inherit;
-    font-weight: 400;
-    cursor: pointer;
-    color: var(--text-secondary);
-    transition: opacity 0.2s, background 0.15s, transform 0.15s;
-    user-select: none;
-    -webkit-user-select: none;
-    border-radius: 10px;
-    margin-left: 0;
-    margin-right: auto;                 /* ← 左对齐 */
-    width: auto;
-    letter-spacing: 0.5px;
-    background: rgba(var(--secondary-bg-rgb, 255, 255, 255), 0.30);  /* ← 透明度降低 */
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-    text-shadow: none !important;
-    border: none;                       /* ← 去掉边框，纯毛玻璃 */
-}
 
-.virtual-timestamp:hover {
-    opacity: 1;
-    background: rgba(var(--accent-color-rgb, 197, 164, 126), 0.12);
-}
-
-.virtual-timestamp:active {
-    transform: scale(0.95);
-}
-
-.virtual-timestamp .vt-time {
-    font-variant-numeric: tabular-nums;
-    letter-spacing: 0.5px;
-}
-
-.virtual-timestamp .vt-speed {
-    font-size: 9px;                     /* 改回小号 */
-    font-weight: 600;                   /* 加粗一点，小字更清晰 */
-    color: var(--accent-color, #c5a47e);
-    opacity: 0.75;
-    margin-left: 2px;
-    display: inline;
-    vertical-align: baseline;           /* 保持基线对齐 */
-    line-height: 1;
-}
-
-.virtual-timestamp .vt-speed.visible {
-    display: inline;
-}
-
-.virtual-timestamp.hidden {
-    display: none !important;
-}
 
 /* ============================================================
    等待动画点（系统消息中用）
