@@ -559,6 +559,7 @@ if (vfmtOptions.length > 0) {
         opt.classList.toggle('active', isActive);
 
         opt.addEventListener('click', function() {
+            // 只操作虚拟时间样式选项
             vfmtOptions.forEach(function(o) {
                 o.classList.remove('active');
             });
