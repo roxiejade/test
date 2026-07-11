@@ -126,6 +126,7 @@ html[data-theme="dark"] #vc-speed-display-area:hover {
    ============================================================ */
 
 /* 父容器：与 .message-meta 完全一致的 margin */
+/* 父容器：与 .message-meta 完全一致的 margin */
 .virtual-timestamp-meta {
     display: flex;
     align-items: center;
@@ -136,11 +137,15 @@ html[data-theme="dark"] #vc-speed-display-area:hover {
     color: var(--text-secondary);
     position: relative;
     height: 20px;
-   /* ===== 新增：边框描边 ===== */
     border: 1px solid rgba(var(--accent-color-rgb), 0.15);
     border-radius: 10px;
     padding: 0 8px;
-    /* ======================== */
+    transition: background 0.2s ease;  /* ← 新增：过渡动画 */
+}
+
+/* 父容器 hover 时背景填满整个边框 */
+.virtual-timestamp-meta:hover {
+    background: rgba(var(--accent-color-rgb), 0.08);  /* ← 新增 */
 }
 
 /* 子元素：自身没有 margin，由父容器控制位置 */
@@ -154,19 +159,19 @@ html[data-theme="dark"] #vc-speed-display-area:hover {
     font-weight: 400;
     cursor: pointer;
     color: var(--text-secondary);
-    transition: opacity 0.2s, background 0.15s, transform 0.15s;
     user-select: none;
     -webkit-user-select: none;
-    border-radius: 10px;
     letter-spacing: 0.5px;
     text-shadow: none !important;
     border: none;
-    margin: 0 !important;              /* 自身没有 margin，由父容器控制 */
+    margin: 0 !important;
+    background: transparent !important;   /* ← 新增：透明背景 */
+    border-radius: 0;                    /* ← 新增：不需要圆角 */
 }
 
+/* 子元素 hover 不做任何事（由父容器统一处理） */
 .virtual-timestamp:hover {
-    opacity: 1;
-    background: rgba(var(--accent-color-rgb, 197, 164, 126), 0.12);
+    background: transparent !important;   /* ← 覆盖掉原来的 hover */
 }
 
 .virtual-timestamp:active {
