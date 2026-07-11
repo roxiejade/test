@@ -638,6 +638,9 @@ const saveData = async () => {
     _backupCriticalData();
 };
 
+// 暴露到全局，供其他模块调用
+window.saveData = saveData;
+
         function initializeRandomUI() {
 
 
