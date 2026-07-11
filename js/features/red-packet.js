@@ -38,25 +38,17 @@ function getFestivals() {
     var todayMonth = now.getMonth() + 1;
     var todayDay = now.getDate();
     
-    // ---- 获取农历日期（使用 lunar-ts 库） ----
+    // ---- 获取农历日期（使用 lunar-javascript 库） ----
     var lunarMonth = 0;
     var lunarDay = 0;
     
     try {
-        // lunar-ts 的 API：Solar.fromDate() 获取公历对象，然后调用 getLunar()
-        // 注意：lunar-ts 的 Solar 类可能需要用 Solar.fromDate()
-        if (typeof Solar !== 'undefined') {
-            var solar = Solar.fromDate(now);
-            var lunar = solar.getLunar();
-            lunarMonth = lunar.getMonth();
-            lunarDay = lunar.getDay();
-        } else if (typeof Lunar !== 'undefined') {
-            // 兼容备用：如果加载的是 lunar-javascript 库
+        // lunar-javascript 的 API：Lunar.fromDate()
+        if (typeof Lunar !== 'undefined') {
             var lunar = Lunar.fromDate(now);
             lunarMonth = lunar.getMonth();
             lunarDay = lunar.getDay();
         } else {
-            // 如果库没有加载成功，返回空（不匹配任何农历节日）
             console.warn('农历库未加载，无法检测农历节日');
         }
     } catch (e) {
@@ -76,9 +68,6 @@ function getFestivals() {
         { month: 12, day: 24, name: '南方小年', messages: ['小年快乐', '迎祥纳福', '年年有余', '平安喜乐'] }
     ];
     
-    // 注意：除夕需要特殊处理（腊月二十九或三十，取决于当年腊月大小月）
-    // lunar-ts 可以获取农历月的天数，我们稍后动态判断
-    
     // 检查农历节日
     if (lunarMonth > 0 && lunarDay > 0) {
         for (var i = 0; i < lunarFestivals.length; i++) {
@@ -90,10 +79,10 @@ function getFestivals() {
         
         // 特殊处理：除夕（腊月最后一天）
         try {
-            if (typeof Solar !== 'undefined') {
-                var solar = Solar.fromDate(now);
-                var lunar = solar.getLunar();
-                var lunarMonthDays = lunar.getDayCount(); // 获取当前农历月天数
+            if (typeof Lunar !== 'undefined') {
+                var lunar = Lunar.fromDate(now);
+                // 获取农历月的天数
+                var lunarMonthDays = lunar.getDayCount();
                 // 如果是腊月（12月）且是最后一天
                 if (lunarMonth === 12 && lunarDay === lunarMonthDays) {
                     return [{ month: 12, day: lunarDay, name: '除夕', messages: ['除夕快乐', '辞旧迎新', '团圆年夜饭', '新的一年万事如意'] }];
