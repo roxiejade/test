@@ -288,6 +288,7 @@ function loadMoreHistory() {
 const loadData = async () => {
     try {
         settings = getDefaultSettings();
+            window.settings = settings;
 
             // ===== 虚拟时钟初始化 =====
         // 如果 oppTime 没设过或还是 00:00:00，设为当前真实时间
@@ -359,6 +360,7 @@ const loadData = async () => {
         if (savedPartnerPersonas) partnerPersonas = savedPartnerPersonas;
 
         if (savedSettings) Object.assign(settings, savedSettings);
+            window.settings = settings;
 
         if (savedTransferData) transferData = savedTransferData;
 
@@ -909,7 +911,9 @@ function manageAutoSendTimer() {
             const _immToggle = document.getElementById('immersive-toggle');
             if (_immToggle) _immToggle.classList.toggle('active', document.body.classList.contains('immersive-mode'));
 
-            renderMessages();
+            window.settings = settings;
+                
+                renderMessages();
         };
 
         const updateAvatar = (element, src) => {
