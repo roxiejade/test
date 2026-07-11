@@ -7,7 +7,7 @@
    ============================================================ */
 
 .virtual-timestamp {
-    display: flex;
+    display: inline-flex;           /* 改：flex → inline-flex，让容器宽度由内容决定 */
     align-items: center;
     gap: 6px;
     margin-top: 3px;
@@ -21,8 +21,9 @@
     user-select: none;
     -webkit-user-select: none;
     border-radius: 10px;
-    margin-left: 0;
-    width: fit-content;
+    margin-left: 0;                 /* 保持左对齐 */
+    margin-right: auto;             /* 新增：让容器靠左，不占右侧空间 */
+    width: auto;                    /* 新增：不撑满 */
     letter-spacing: 0.5px;
     background: rgba(var(--secondary-bg-rgb, 255, 255, 255), 0.55);
     backdrop-filter: blur(6px);
