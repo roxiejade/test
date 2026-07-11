@@ -142,64 +142,63 @@
      * 设置虚拟时间（基准时间 + 起始时刻）
      */
     function setVirtualTime(timeStr) {
-        const settings = window.settings || {};
-        settings.oppTime = timeStr || generateRandomTime();
-        settings.oppTimeSetAt = Date.now();
-        if (typeof window.throttledSaveData === 'function') {
-            window.throttledSaveData();
-        }
-        // 触发更新
-        if (typeof window._updateVirtualTimeDisplay === 'function') {
-            window._updateVirtualTimeDisplay();
-        }
+    if (!window.settings) return;
+    window.settings.oppTime = timeStr || generateRandomTime();
+    window.settings.oppTimeSetAt = Date.now();
+    if (typeof window.saveData === 'function') {
+        window.saveData();
     }
+    if (typeof window._updateVirtualTimeDisplay === 'function') {
+        window._updateVirtualTimeDisplay();
+    }
+}
 
     /**
      * 同步到真实时间
      */
     function syncToRealTime() {
-        const now = new Date();
-        const timeStr = String(now.getHours()).padStart(2, '0') + ':' +
-                        String(now.getMinutes()).padStart(2, '0') + ':' +
-                        String(now.getSeconds()).padStart(2, '0');
-        const settings = window.settings || {};
-        settings.oppTime = timeStr;
-        settings.oppTimeSetAt = Date.now();
-        settings.oppTimeSpeed = 1.0; // 同步时重置流速为1.0
-        if (typeof window.throttledSaveData === 'function') {
-            window.throttledSaveData();
-        }
-        if (typeof window._updateVirtualTimeDisplay === 'function') {
-            window._updateVirtualTimeDisplay();
-        }
+    if (!window.settings) return;
+    const now = new Date();
+    const timeStr = String(now.getHours()).padStart(2, '0') + ':' +
+                    String(now.getMinutes()).padStart(2, '0') + ':' +
+                    String(now.getSeconds()).padStart(2, '0');
+    window.settings.oppTime = timeStr;
+    window.settings.oppTimeSetAt = Date.now();
+    window.settings.oppTimeSpeed = 1.0;
+    if (typeof window.saveData === 'function') {
+        window.saveData();
     }
+    if (typeof window._updateVirtualTimeDisplay === 'function') {
+        window._updateVirtualTimeDisplay();
+    }
+}
 
     /**
      * 设置流速
      */
     function setSpeed(value) {
-        const settings = window.settings || {};
-        // 重新计算基准时间，保持当前显示时间不变
-        const current = getVirtualTime();
-        const currentTotal = current.totalSeconds;
-        const now = Date.now();
+    if (!window.settings) return;
+    // 重新计算基准时间，保持当前显示时间不变
+    const current = getVirtualTime();
+    const currentTotal = current.totalSeconds;
+    const now = Date.now();
 
-        // 反向计算：新的基准时间 = 当前显示时间 - 已流逝时间（按新流速）
-        // 但我们直接设置基准时间为当前显示时间，起始时刻为现在
-        const timeStr = String(current.hours).padStart(2, '0') + ':' +
-                        String(current.minutes).padStart(2, '0') + ':' +
-                        String(current.seconds).padStart(2, '0');
+    // 反向计算：新的基准时间 = 当前显示时间 - 已流逝时间（按新流速）
+    // 但我们直接设置基准时间为当前显示时间，起始时刻为现在
+    const timeStr = String(current.hours).padStart(2, '0') + ':' +
+                    String(current.minutes).padStart(2, '0') + ':' +
+                    String(current.seconds).padStart(2, '0');
 
-        settings.oppTime = timeStr;
-        settings.oppTimeSetAt = now;
-        settings.oppTimeSpeed = parseFloat(value) || 1.0;
-        if (typeof window.throttledSaveData === 'function') {
-            window.throttledSaveData();
-        }
-        if (typeof window._updateVirtualTimeDisplay === 'function') {
-            window._updateVirtualTimeDisplay();
-        }
+    window.settings.oppTime = timeStr;
+    window.settings.oppTimeSetAt = now;
+    window.settings.oppTimeSpeed = parseFloat(value) || 1.0;
+    if (typeof window.saveData === 'function') {
+        window.saveData();
     }
+    if (typeof window._updateVirtualTimeDisplay === 'function') {
+        window._updateVirtualTimeDisplay();
+    }
+}
 
     /**
      * 获取当前真实时间的 HH:mm:ss 字符串
