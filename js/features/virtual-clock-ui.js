@@ -49,7 +49,7 @@
         }
 
         if (status === 'waiting') {
-            finalText += ' <span class="vc-waiting-dots">· · ·</span>';
+            finalText += ' <span class="vc-waiting-dots"></span>';
         }
 
         window.addMessage({
