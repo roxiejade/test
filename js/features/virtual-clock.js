@@ -76,30 +76,27 @@
      * 获取虚拟时间显示字符串（遵循时间格式设置）
      */
     function getVirtualTimeDisplay() {
-        const settings = window.settings || {};
-        const timeFormat = settings.timeFormat || 'HH:mm';
-        const vt = getVirtualTime();
+    const settings = window.settings || {};
+    // 优先使用虚拟时间独立样式，如果没有则回退到全局时间格式
+    const timeFormat = settings.oppTimeFormat || settings.timeFormat || 'HH:mm';
+    const vt = getVirtualTime();
 
-        // 如果时间格式为 'off'，不显示
-        if (timeFormat === 'off') return null;
+    if (timeFormat === 'off') return null;
 
-        // 判断是否显示秒
-        const withSeconds = timeFormat === 'HH:mm:ss' || timeFormat === 'h:mm:ss AM/PM';
+    const withSeconds = timeFormat === 'HH:mm:ss' || timeFormat === 'h:mm:ss AM/PM';
 
-        // 根据格式返回
-        if (timeFormat === 'HH:mm' || timeFormat === 'HH:mm:ss') {
-            return vt.display(withSeconds);
-        }
-
-        // 12小时制
-        let h = vt.hours;
-        const ampm = h >= 12 ? 'PM' : 'AM';
-        h = h % 12 || 12;
-        if (withSeconds) {
-            return h + ':' + String(vt.minutes).padStart(2, '0') + ':' + String(vt.seconds).padStart(2, '0') + ' ' + ampm;
-        }
-        return h + ':' + String(vt.minutes).padStart(2, '0') + ' ' + ampm;
+    if (timeFormat === 'HH:mm' || timeFormat === 'HH:mm:ss') {
+        return vt.display(withSeconds);
     }
+
+    let h = vt.hours;
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    h = h % 12 || 12;
+    if (withSeconds) {
+        return h + ':' + String(vt.minutes).padStart(2, '0') + ':' + String(vt.seconds).padStart(2, '0') + ' ' + ampm;
+    }
+    return h + ':' + String(vt.minutes).padStart(2, '0') + ' ' + ampm;
+}
 
     /**
      * 获取当前流速
