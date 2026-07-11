@@ -608,7 +608,10 @@
             if (success) {
                 var vc = window.VirtualClock;
                 if (vc) {
-                    vc.setSpeed(targetSpeed);
+                   // ===== 修改这里：生成随机流速，而不是用输入框的值 =====
+                var randomSpeed = vc.generateRandomSpeed();
+                vc.setSpeed(randomSpeed);
+                // ===================================================
                 }
                 if (statusEl) {
                     statusEl.textContent = '✅ 对方同意了';
