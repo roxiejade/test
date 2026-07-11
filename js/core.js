@@ -2498,31 +2498,37 @@ window._updateVirtualTimeDisplay = function() {
     }
 
     var speed = window.VirtualClock.getSpeed();
-    var speedHtml = '';
-    if (Math.abs(speed - 1.0) > 0.01) {
-        speedHtml = '⚡' + speed.toFixed(1) + 'x';
-    }
+    var showSpeed = Math.abs(speed - 1.0) > 0.01;
 
     document.querySelectorAll('.virtual-timestamp').forEach(function(el) {
+        // 更新时间
         var timeSpan = el.querySelector('.vt-time');
-        var speedSpan = el.querySelector('.vt-speed');
         if (timeSpan) {
             timeSpan.textContent = vtDisplay;
         }
-        if (speedSpan) {
-            if (Math.abs(speed - 1.0) > 0.01) {
+
+        // 更新流速（所有消息同步更新）
+        var speedSpan = el.querySelector('.vt-speed');
+        if (showSpeed) {
+            if (speedSpan) {
                 speedSpan.textContent = '⚡' + speed.toFixed(1) + 'x';
                 speedSpan.classList.add('visible');
+                speedSpan.style.display = '';  // 恢复显示
             } else {
-                speedSpan.classList.remove('visible');
+                // 不存在则创建
+                var newSpeed = document.createElement('span');
+                newSpeed.className = 'vt-speed visible';
+                newSpeed.textContent = '⚡' + speed.toFixed(1) + 'x';
+                el.appendChild(newSpeed);
             }
-        } else if (Math.abs(speed - 1.0) > 0.01) {
-            // 如果没有 speed span，创建它
-            var newSpeed = document.createElement('span');
-            newSpeed.className = 'vt-speed visible';
-            newSpeed.textContent = '⚡' + speed.toFixed(1) + 'x';
-            el.appendChild(newSpeed);
+        } else {
+            // speed === 1.0，彻底隐藏流速标签
+            if (speedSpan) {
+                speedSpan.classList.remove('visible');
+                speedSpan.style.display = 'none';
+            }
         }
+
         el.classList.remove('hidden');
     });
 };
