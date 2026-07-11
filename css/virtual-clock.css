@@ -47,13 +47,13 @@
 }
 
 .virtual-timestamp .vt-speed {
-    font-size: 11px;                    /* ← 与时间戳一致 */
-    font-weight: 500;
+    font-size: 9px;                     /* 改回小号 */
+    font-weight: 600;                   /* 加粗一点，小字更清晰 */
     color: var(--accent-color, #c5a47e);
     opacity: 0.75;
     margin-left: 2px;
     display: inline;
-    vertical-align: baseline;           /* ← 基线对齐 */
+    vertical-align: baseline;           /* 保持基线对齐 */
     line-height: 1;
 }
 
@@ -180,4 +180,22 @@ html[data-theme="dark"] #vc-speed-display-area:hover {
     .vc-modal-sheet {
         padding: 4px 12px 20px !important;
     }
+}
+
+/* ============================================================
+   强制对齐覆盖（放在文件末尾确保优先级）
+   ============================================================ */
+
+/* 接收消息：虚拟时间戳左对齐 */
+.message-wrapper.received .message-content-wrapper .virtual-timestamp {
+    margin-left: 0 !important;
+    margin-right: auto !important;
+    align-self: flex-start !important;
+}
+
+/* 发送消息：虚拟时间戳右对齐 */
+.message-wrapper.sent .message-content-wrapper .virtual-timestamp {
+    margin-left: auto !important;
+    margin-right: 0 !important;
+    align-self: flex-end !important;
 }
