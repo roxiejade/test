@@ -529,6 +529,29 @@ if (_chatSettingsEl) _chatSettingsEl.addEventListener('click', () => {
     if (rrIconBtn) { rrIconBtn.className = rrStyle === 'icon' ? 'modal-btn modal-btn-primary' : 'modal-btn modal-btn-secondary'; rrIconBtn.style.cssText = 'padding:5px 12px;font-size:12px;'; }
     if (rrTextBtn) { rrTextBtn.className = rrStyle === 'text' ? 'modal-btn modal-btn-primary' : 'modal-btn modal-btn-secondary'; rrTextBtn.style.cssText = 'padding:5px 12px;font-size:12px;'; }
     
+            // ===== 虚拟时间戳设置项（新增）=====
+        var vtToggle = document.getElementById('virtual-timestamp-toggle');
+        if (vtToggle) {
+            var isEnabled = (typeof settings !== 'undefined' && settings.oppCustomTime !== undefined) ? settings.oppCustomTime : true;
+            vtToggle.classList.toggle('active', isEnabled);
+            // 移除旧监听器，防止重复绑定
+            var newToggle = vtToggle.cloneNode(true);
+            vtToggle.parentNode.replaceChild(newToggle, vtToggle);
+            newToggle.addEventListener('click', function() {
+                if (typeof settings === 'undefined') return;
+                settings.oppCustomTime = !settings.oppCustomTime;
+                if (typeof window.throttledSaveData === 'function') window.throttledSaveData();
+                this.classList.toggle('active', !!settings.oppCustomTime);
+                if (typeof window._updateVirtualTimeDisplay === 'function') {
+                    window._updateVirtualTimeDisplay();
+                }
+                if (typeof window.showNotification === 'function') {
+                    window.showNotification('虚拟时间戳已' + (settings.oppCustomTime ? '开启' : '关闭'), 'success', 1500);
+                }
+            });
+        }
+        // ===== 虚拟时间戳设置项结束 =====
+    
     showModal(DOMElements.chatModal.modal);
     setupAvatarFrameSettings();
 });
