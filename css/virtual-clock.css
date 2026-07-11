@@ -1,0 +1,174 @@
+/**
+ * virtual-clock.css - 虚拟时钟功能样式
+ */
+
+/* ============================================================
+   虚拟时间戳（显示在对方最新消息下方）
+   ============================================================ */
+
+.virtual-timestamp {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 2px;
+    padding: 2px 6px;
+    font-size: 11px;
+    font-family: 'Courier New', monospace;
+    cursor: pointer;
+    color: var(--text-secondary);
+    opacity: 0.7;
+    transition: opacity 0.2s, background 0.15s, transform 0.15s;
+    user-select: none;
+    -webkit-user-select: none;
+    border-radius: 6px;
+    margin-left: -4px;
+    width: fit-content;
+}
+
+.virtual-timestamp:hover {
+    opacity: 1;
+    background: rgba(var(--accent-color-rgb, 197, 164, 126), 0.08);
+}
+
+.virtual-timestamp:active {
+    transform: scale(0.95);
+}
+
+.virtual-timestamp .vt-time {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.5px;
+}
+
+.virtual-timestamp .vt-speed {
+    font-size: 9px;
+    font-weight: 600;
+    color: var(--accent-color, #c5a47e);
+    opacity: 0.75;
+    margin-left: 2px;
+    display: none;
+}
+
+.virtual-timestamp .vt-speed.visible {
+    display: inline;
+}
+
+.virtual-timestamp.hidden {
+    display: none !important;
+}
+
+/* ============================================================
+   等待动画点（系统消息中用）
+   ============================================================ */
+
+.vc-waiting-dots {
+    display: inline-block;
+    min-width: 18px;
+    text-align: left;
+    animation: vcDotsPulse 1.2s ease-in-out infinite;
+}
+
+.vc-waiting-dots::after {
+    content: '· · ·';
+    letter-spacing: 2px;
+}
+
+@keyframes vcDotsPulse {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
+}
+
+/* ============================================================
+   弹窗动画
+   ============================================================ */
+
+@keyframes vcModalFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes vcSheetSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.96);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.vc-modal-sheet::-webkit-scrollbar {
+    display: none;
+}
+.vc-modal-sheet {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+/* ============================================================
+   暗色模式适配
+   ============================================================ */
+
+html[data-theme="dark"] .virtual-timestamp {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+html[data-theme="dark"] .virtual-timestamp:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+html[data-theme="dark"] .virtual-timestamp .vt-speed {
+    color: var(--accent-color-dark, #d97a8c);
+}
+
+html[data-theme="dark"] .vc-modal-sheet {
+    background: var(--secondary-bg, #1e1e1e);
+    border-color: var(--border-color, #2f2f2f);
+}
+
+html[data-theme="dark"] #vc-speed-display-area {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+html[data-theme="dark"] #vc-speed-display-area:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+/* ============================================================
+   响应式：小屏适配
+   ============================================================ */
+
+@media (max-width: 420px) {
+    .virtual-timestamp {
+        font-size: 10px;
+        padding: 1px 4px;
+        gap: 4px;
+    }
+    .virtual-timestamp .vt-speed {
+        font-size: 8px;
+    }
+    #vc-time-big-display {
+        font-size: 34px !important;
+    }
+    .vc-modal-sheet {
+        padding: 6px 16px 24px !important;
+    }
+    #vc-speed-display-area {
+        padding: 4px 10px !important;
+        font-size: 12px;
+    }
+    .vc-modal-sheet button {
+        font-size: 12px !important;
+        padding: 10px 0 !important;
+    }
+}
+
+@media (max-width: 360px) {
+    #vc-time-big-display {
+        font-size: 28px !important;
+    }
+    .vc-modal-sheet {
+        padding: 4px 12px 20px !important;
+    }
+}
