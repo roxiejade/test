@@ -1184,47 +1184,50 @@ function createMessageFragment(msg, prevMsg, nextMsg, lastSenderRef) {
     wrapper.appendChild(contentWrapper);
 
             // ===== 虚拟时间戳渲染（新增）=====
-    if (msg.sender !== 'user' && window.VirtualClock && window.VirtualClock.isEnabled()) {
-        // 检查当前渲染的消息列表中，是否还有比当前消息更新的对方消息
-        // 传入的 nextMsg 是当前消息的下一条消息（在渲染列表中）
-        // 如果下一条消息是对方消息，则当前消息不是最新的对方消息，不显示虚拟时间戳
-        var shouldShow = true;
-        if (nextMsg) {
-            // 如果下一条是对方消息（非 system），则当前消息不是最新
-            if (nextMsg.sender !== 'user' && nextMsg.type !== 'system') {
-                shouldShow = false;
-            }
+if (msg.sender !== 'user' && window.VirtualClock && window.VirtualClock.isEnabled()) {
+    var shouldShow = true;
+    if (nextMsg) {
+        if (nextMsg.sender !== 'user' && nextMsg.type !== 'system') {
+            shouldShow = false;
         }
-        if (shouldShow) {
-            var timeFormat = (typeof settings !== 'undefined' && settings.timeFormat) ? settings.timeFormat : 'HH:mm';
-            var showVirtual = timeFormat !== 'off';
-            if (showVirtual) {
-                var vtDisplay = window.VirtualClock.getVirtualTimeDisplay();
-                if (vtDisplay) {
-                    var speed = window.VirtualClock.getSpeed();
-                    var speedHtml = '';
-                    if (Math.abs(speed - 1.0) > 0.01) {
-                        speedHtml = '<span class="vt-speed visible">⚡' + speed.toFixed(1) + 'x</span>';
-                    }
-                    var vtWrapper = document.createElement('div');
-vtWrapper.className = 'virtual-timestamp';
-vtWrapper.setAttribute('data-msg-id', msg.id);
-// ===== 新增：强制内联样式，确保左对齐 =====
-vtWrapper.style.cssText = 'margin-left: 0 !important; margin-right: auto !important; align-self: flex-start !important; display: inline-flex !important;';
-// ===========================================
-vtWrapper.innerHTML = '<span class="vt-time">' + vtDisplay + '</span>' + speedHtml;
-vtWrapper.addEventListener('click', function(e) {
-    e.stopPropagation();
-    if (window.VirtualClockUI && typeof window.VirtualClockUI.openTimeModal === 'function') {
-        window.VirtualClockUI.openTimeModal();
     }
-});
-contentWrapper.appendChild(vtWrapper);
+    if (shouldShow) {
+        var timeFormat = (typeof settings !== 'undefined' && settings.timeFormat) ? settings.timeFormat : 'HH:mm';
+        var showVirtual = timeFormat !== 'off';
+        if (showVirtual) {
+            var vtDisplay = window.VirtualClock.getVirtualTimeDisplay();
+            if (vtDisplay) {
+                var speed = window.VirtualClock.getSpeed();
+                var speedHtml = '';
+                if (Math.abs(speed - 1.0) > 0.01) {
+                    speedHtml = '<span class="vt-speed visible">⚡' + speed.toFixed(1) + 'x</span>';
                 }
+
+                // ===== 新增：创建父容器（模拟 .message-meta）=====
+                var vtMeta = document.createElement('div');
+                vtMeta.className = 'virtual-timestamp-meta';
+                // ===============================================
+
+                var vtWrapper = document.createElement('div');
+                vtWrapper.className = 'virtual-timestamp';
+                vtWrapper.setAttribute('data-msg-id', msg.id);
+                vtWrapper.innerHTML = '<span class="vt-time">' + vtDisplay + '</span>' + speedHtml;
+                vtWrapper.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    if (window.VirtualClockUI && typeof window.VirtualClockUI.openTimeModal === 'function') {
+                        window.VirtualClockUI.openTimeModal();
+                    }
+                });
+
+                // ===== 修改：把 vtWrapper 放入 vtMeta，再把 vtMeta 放入 contentWrapper =====
+                vtMeta.appendChild(vtWrapper);
+                contentWrapper.appendChild(vtMeta);
+                // ========================================================================
             }
         }
     }
-    // ===== 虚拟时间戳渲染结束 =====
+}
+// ===== 虚拟时间戳渲染结束 =====
         
     fragment.appendChild(wrapper);
 
