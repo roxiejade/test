@@ -1362,6 +1362,9 @@ const addMessage = (message) => {
     }
 };
 
+// 暴露到全局
+window.addMessage = addMessage;
+
         window._addCallEvent = (icon, label, detail) => {
             addMessage({
                 id: Date.now() + Math.random(),
