@@ -1184,7 +1184,7 @@ function createMessageFragment(msg, prevMsg, nextMsg, lastSenderRef) {
     wrapper.appendChild(contentWrapper);
 
             // ===== 虚拟时间戳渲染（新增）=====
-if (showTimestamp && window.VirtualClock && window.VirtualClock.isEnabled()) {
+if (showTimestamp && msg.sender !== 'user' && window.VirtualClock && window.VirtualClock.isEnabled()) {
     var timeFormat = (typeof settings !== 'undefined' && settings.timeFormat) ? settings.timeFormat : 'HH:mm';
     var showVirtualTime = timeFormat !== 'off';
     if (showVirtualTime) {
