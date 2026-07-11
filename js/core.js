@@ -1207,16 +1207,19 @@ function createMessageFragment(msg, prevMsg, nextMsg, lastSenderRef) {
                         speedHtml = '<span class="vt-speed visible">⚡' + speed.toFixed(1) + 'x</span>';
                     }
                     var vtWrapper = document.createElement('div');
-                    vtWrapper.className = 'virtual-timestamp';
-                    vtWrapper.setAttribute('data-msg-id', msg.id);
-                    vtWrapper.innerHTML = '<span class="vt-time">' + vtDisplay + '</span>' + speedHtml;
-                    vtWrapper.addEventListener('click', function(e) {
-                        e.stopPropagation();
-                        if (window.VirtualClockUI && typeof window.VirtualClockUI.openTimeModal === 'function') {
-                            window.VirtualClockUI.openTimeModal();
-                        }
-                    });
-                    contentWrapper.appendChild(vtWrapper);
+vtWrapper.className = 'virtual-timestamp';
+vtWrapper.setAttribute('data-msg-id', msg.id);
+// ===== 新增：强制内联样式，确保左对齐 =====
+vtWrapper.style.cssText = 'margin-left: 0 !important; margin-right: auto !important; align-self: flex-start !important; display: inline-flex !important;';
+// ===========================================
+vtWrapper.innerHTML = '<span class="vt-time">' + vtDisplay + '</span>' + speedHtml;
+vtWrapper.addEventListener('click', function(e) {
+    e.stopPropagation();
+    if (window.VirtualClockUI && typeof window.VirtualClockUI.openTimeModal === 'function') {
+        window.VirtualClockUI.openTimeModal();
+    }
+});
+contentWrapper.appendChild(vtWrapper);
                 }
             }
         }
