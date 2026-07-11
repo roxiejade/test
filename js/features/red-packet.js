@@ -33,7 +33,7 @@
 
     // ========== 节日检测 ==========
 
-function getFestivals() {
+window.getFestivals = function getFestivals() {
     var now = new Date();
     var todayMonth = now.getMonth() + 1;
     var todayDay = now.getDate();
