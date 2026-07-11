@@ -186,7 +186,7 @@ autoSendInterval: 5,
         partnerPokeCustomSoundUrl: '',
         soundVolume: 0.15,
         bottomCollapseMode: false,
-        emojiMixEnabled: true
+        emojiMixEnabled: true,
 
                     // ===== 虚拟时钟配置（新增）=====
         oppTime: '00:00:00',           // 基准时间
