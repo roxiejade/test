@@ -1183,16 +1183,19 @@ function createMessageFragment(msg, prevMsg, nextMsg, lastSenderRef) {
     }
     wrapper.appendChild(contentWrapper);
 
-        // ===== 虚拟时间戳渲染（新增）=====
+            // ===== 虚拟时间戳渲染（新增）=====
     if (msg.sender !== 'user' && window.VirtualClock && window.VirtualClock.isEnabled()) {
-        var latestOppMsg = null;
-        for (var i = messages.length - 1; i >= 0; i--) {
-            if (messages[i].sender !== 'user' && messages[i].type !== 'system') {
-                latestOppMsg = messages[i];
-                break;
+        // 检查当前渲染的消息列表中，是否还有比当前消息更新的对方消息
+        // 传入的 nextMsg 是当前消息的下一条消息（在渲染列表中）
+        // 如果下一条消息是对方消息，则当前消息不是最新的对方消息，不显示虚拟时间戳
+        var shouldShow = true;
+        if (nextMsg) {
+            // 如果下一条是对方消息（非 system），则当前消息不是最新
+            if (nextMsg.sender !== 'user' && nextMsg.type !== 'system') {
+                shouldShow = false;
             }
         }
-        if (latestOppMsg && String(latestOppMsg.id) === String(msg.id)) {
+        if (shouldShow) {
             var timeFormat = (typeof settings !== 'undefined' && settings.timeFormat) ? settings.timeFormat : 'HH:mm';
             var showVirtual = timeFormat !== 'off';
             if (showVirtual) {
