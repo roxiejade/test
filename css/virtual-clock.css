@@ -10,10 +10,11 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    margin-top: 2px;
-    padding: 2px 6px;
+    margin-top: 3px;
+    padding: 0;
     font-size: 11px;
-    font-family: 'Courier New', monospace;
+    font-family: inherit;          /* ← 继承父级字体，和原本时间戳一致 */
+    font-weight: 400;              /* ← 和原本时间戳一样的字重 */
     cursor: pointer;
     color: var(--text-secondary);
     opacity: 0.7;
@@ -21,8 +22,9 @@
     user-select: none;
     -webkit-user-select: none;
     border-radius: 6px;
-    margin-left: -4px;
+    margin-left: 0;                /* ← 左对齐，不偏移 */
     width: fit-content;
+    letter-spacing: 0.5px;         /* ← 和原本时间戳保持一致 */
 }
 
 .virtual-timestamp:hover {
