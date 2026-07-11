@@ -551,7 +551,7 @@ if (vtToggle) {
 }
 // ===== 虚拟时间戳设置项结束 =====
     // ===== 虚拟时间戳样式选项（新增）=====
-var vfmtOptions = document.querySelectorAll('#virtual-time-format-options .time-fmt-opt');
+var vfmtOptions = document.querySelectorAll('#virtual-time-format-options .v-time-fmt-opt');
 if (vfmtOptions.length > 0) {
     vfmtOptions.forEach(function(opt) {
         var isActive = settings.oppTimeFormat === opt.dataset.vfmt ||
