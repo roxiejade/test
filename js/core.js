@@ -958,7 +958,7 @@ function manageAutoSendTimer() {
             }
         };
 
-function createMessageFragment(msg, prevMsg, nextMsg, lastSenderRef, showVirtual) {
+function createMessageFragment(msg, prevMsg, nextMsg, lastSenderRef) {
     const fragment = new DocumentFragment();
     const messageDate = new Date(msg.timestamp).toDateString();
     const prevDate = prevMsg ? new Date(prevMsg.timestamp).toDateString() : null;
@@ -1184,7 +1184,7 @@ function createMessageFragment(msg, prevMsg, nextMsg, lastSenderRef, showVirtual
     wrapper.appendChild(contentWrapper);
 
             // ===== 虚拟时间戳渲染（新增）=====
-if (showVirtual && window.VirtualClock && window.VirtualClock.isEnabled()) {
+if (showTimestamp && window.VirtualClock && window.VirtualClock.isEnabled()) {
     var timeFormat = (typeof settings !== 'undefined' && settings.timeFormat) ? settings.timeFormat : 'HH:mm';
     var showVirtualTime = timeFormat !== 'off';
     if (showVirtualTime) {
@@ -1274,24 +1274,7 @@ function renderMessages(preserveScroll = false) {
         const prevMsg = i > 0 ? msgsToRender[i - 1] : (startIndex > 0 ? messages[startIndex - 1] : null);
         const nextMsg = i < msgsToRender.length - 1 ? msgsToRender[i + 1] : null;
 
-        // ===== 判断虚拟时间戳是否显示 =====
-var shouldShowVirtual = false;
-if (msg.sender !== 'user' && msg.type !== 'system') {
-    // 判断这条消息是否显示原本时间戳（60秒内连续消息不显示）
-    var mShowTimestamp = true;
-    if (nextMsg) {
-        var currentTs = new Date(msg.timestamp).getTime();
-        var nextTs = new Date(nextMsg.timestamp).getTime();
-        if (nextMsg.sender === msg.sender && nextMsg.type !== 'system' && (nextTs - currentTs < 60000)) {
-            mShowTimestamp = false;
-        }
-    }
-    // 只要原本时间戳显示，虚拟时间戳就显示
-    shouldShowVirtual = mShowTimestamp;
-}
-// ===== 判断结束 =====
-
-        const msgFragment = createMessageFragment(msg, prevMsg, nextMsg, lastSenderRef, shouldShowVirtual);
+        const msgFragment = createMessageFragment(msg, prevMsg, nextMsg, lastSenderRef);
         fragment.appendChild(msgFragment);
     });
 
@@ -1356,22 +1339,7 @@ const addMessage = (message) => {
         lastSenderRef.current = prevGroupMember ? ('group_' + prevGroupMember.name) : prevMsg.sender;
     }
     
-    // 判断新消息是否应该显示虚拟时间戳
-var newShowVirtual = false;
-if (message.sender !== 'user' && message.type !== 'system') {
-    // 新消息没有 nextMsg，所以 mShowTimestamp 始终为 true
-    var newMShowTimestamp = true;
-    // 检查前一条消息是否是同一发送者在60秒内
-    if (prevMsg) {
-        var prevTs = new Date(prevMsg.timestamp).getTime();
-        var currTs = new Date(message.timestamp).getTime();
-        if (prevMsg.sender === message.sender && prevMsg.type !== 'system' && (currTs - prevTs < 60000)) {
-            newMShowTimestamp = false;
-        }
-    }
-    newShowVirtual = newMShowTimestamp;
-}
-const newMsgFragment = createMessageFragment(message, prevMsg, null, lastSenderRef, newShowVirtual);
+    const newMsgFragment = createMessageFragment(message, prevMsg, null, lastSenderRef);
     
     const spacer = container.querySelector('div[style*="flex: 1"]');
     if (spacer && spacer === container.lastElementChild) {
