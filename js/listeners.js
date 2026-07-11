@@ -550,6 +550,31 @@ if (vtToggle) {
     });
 }
 // ===== 虚拟时间戳设置项结束 =====
+    // ===== 虚拟时间戳样式选项（新增）=====
+var vfmtOptions = document.querySelectorAll('#virtual-time-format-options .time-fmt-opt');
+if (vfmtOptions.length > 0) {
+    vfmtOptions.forEach(function(opt) {
+        var isActive = settings.oppTimeFormat === opt.dataset.vfmt ||
+                       (!settings.oppTimeFormat && opt.dataset.vfmt === 'HH:mm');
+        opt.classList.toggle('active', isActive);
+
+        opt.addEventListener('click', function() {
+            vfmtOptions.forEach(function(o) {
+                o.classList.remove('active');
+            });
+            this.classList.add('active');
+            settings.oppTimeFormat = this.dataset.vfmt;
+            if (typeof window.saveData === 'function') window.saveData();
+            if (typeof window._updateVirtualTimeDisplay === 'function') {
+                window._updateVirtualTimeDisplay();
+            }
+            if (typeof window.showNotification === 'function') {
+                window.showNotification('虚拟时间格式已更新', 'success', 1500);
+            }
+        });
+    });
+}
+// ===== 虚拟时间戳样式选项结束 =====
     
     showModal(DOMElements.chatModal.modal);
     setupAvatarFrameSettings();
