@@ -1274,44 +1274,22 @@ function renderMessages(preserveScroll = false) {
         const prevMsg = i > 0 ? msgsToRender[i - 1] : (startIndex > 0 ? messages[startIndex - 1] : null);
         const nextMsg = i < msgsToRender.length - 1 ? msgsToRender[i + 1] : null;
 
-        // ===== 新增：判断虚拟时间戳是否显示 =====
-        var shouldShowVirtual = false;
-        if (msg.sender !== 'user' && msg.type !== 'system') {
-            // 先判断这条消息是否显示原本时间戳
-            var mShowTimestamp = true;
-            if (nextMsg) {
-                var currentTs = new Date(msg.timestamp).getTime();
-                var nextTs = new Date(nextMsg.timestamp).getTime();
-                if (nextMsg.sender === msg.sender && nextMsg.type !== 'system' && (nextTs - currentTs < 60000)) {
-                    mShowTimestamp = false;
-                }
-            }
-            // 如果显示原本时间戳，再检查是否在最近5条"显示原本时间戳"的对方消息中
-            if (mShowTimestamp) {
-                var count = 0;
-                for (var j = i; j >= 0 && count < 5; j--) {
-                    var m = msgsToRender[j];
-                    // 判断 m 是否显示原本时间戳
-                    var mTsShow = true;
-                    if (j < msgsToRender.length - 1) {
-                        var mNext = msgsToRender[j + 1];
-                        var mCurTs = new Date(m.timestamp).getTime();
-                        var mNextTs = new Date(mNext.timestamp).getTime();
-                        if (mNext.sender === m.sender && mNext.type !== 'system' && (mNextTs - mCurTs < 60000)) {
-                            mTsShow = false;
-                        }
-                    }
-                    if (m.sender !== 'user' && m.type !== 'system' && mTsShow) {
-                        count++;
-                        if (m === msg) {
-                            shouldShowVirtual = true;
-                            break;
-                        }
-                    }
-                }
-            }
+        // ===== 判断虚拟时间戳是否显示 =====
+var shouldShowVirtual = false;
+if (msg.sender !== 'user' && msg.type !== 'system') {
+    // 判断这条消息是否显示原本时间戳（60秒内连续消息不显示）
+    var mShowTimestamp = true;
+    if (nextMsg) {
+        var currentTs = new Date(msg.timestamp).getTime();
+        var nextTs = new Date(nextMsg.timestamp).getTime();
+        if (nextMsg.sender === msg.sender && nextMsg.type !== 'system' && (nextTs - currentTs < 60000)) {
+            mShowTimestamp = false;
         }
-        // ===== 判断结束 =====
+    }
+    // 只要原本时间戳显示，虚拟时间戳就显示
+    shouldShowVirtual = mShowTimestamp;
+}
+// ===== 判断结束 =====
 
         const msgFragment = createMessageFragment(msg, prevMsg, nextMsg, lastSenderRef, shouldShowVirtual);
         fragment.appendChild(msgFragment);
