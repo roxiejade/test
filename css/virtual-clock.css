@@ -182,22 +182,77 @@ html[data-theme="dark"] #vc-speed-display-area:hover {
     }
 }
 
+
 /* ============================================================
-   强制对齐覆盖（放在文件末尾确保优先级）
+   虚拟时间戳父容器（模拟 .message-meta）
    ============================================================ */
 
-/* 接收消息：虚拟时间戳与原本时间戳左对齐 */
-.message-wrapper.received .message-content-wrapper .virtual-timestamp {
-    padding-left: 10px !important;
-    margin-left: 0 !important;
-    margin-right: auto !important;
-    align-self: flex-start !important;
+/* 父容器：与 .message-meta 完全一致的 margin */
+.virtual-timestamp-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 6px 10px 0 10px;   /* 和 .message-meta 完全一致 */
+    opacity: 0.7;
+    font-size: 11px;
+    color: var(--text-secondary);
+    position: relative;
+    height: 20px;
 }
 
-/* 发送消息：虚拟时间戳与原本时间戳右对齐 */
-.message-wrapper.sent .message-content-wrapper .virtual-timestamp {
-    padding-right: 10px !important;
-    margin-left: auto !important;
-    margin-right: 0 !important;
-    align-self: flex-end !important;
+/* 子元素：自身没有 margin，由父容器控制位置 */
+.virtual-timestamp {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 12px;
+    font-size: 11px;
+    font-family: inherit;
+    font-weight: 400;
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: opacity 0.2s, background 0.15s, transform 0.15s;
+    user-select: none;
+    -webkit-user-select: none;
+    border-radius: 10px;
+    letter-spacing: 0.5px;
+    background: rgba(var(--secondary-bg-rgb, 255, 255, 255), 0.30);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    text-shadow: none !important;
+    border: none;
+    margin: 0 !important;              /* 自身没有 margin，由父容器控制 */
+}
+
+.virtual-timestamp:hover {
+    opacity: 1;
+    background: rgba(var(--accent-color-rgb, 197, 164, 126), 0.12);
+}
+
+.virtual-timestamp:active {
+    transform: scale(0.95);
+}
+
+.virtual-timestamp .vt-time {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.5px;
+}
+
+.virtual-timestamp .vt-speed {
+    font-size: 9px;
+    font-weight: 600;
+    color: var(--accent-color, #c5a47e);
+    opacity: 0.75;
+    margin-left: 2px;
+    display: inline;
+    vertical-align: baseline;
+    line-height: 1;
+}
+
+.virtual-timestamp .vt-speed.visible {
+    display: inline;
+}
+
+.virtual-timestamp.hidden {
+    display: none !important;
 }
