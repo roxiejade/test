@@ -958,7 +958,7 @@ function manageAutoSendTimer() {
             }
         };
 
-function createMessageFragment(msg, prevMsg, nextMsg, lastSenderRef) {
+function createMessageFragment(msg, prevMsg, nextMsg, lastSenderRef, showVirtual) {
     const fragment = new DocumentFragment();
     const messageDate = new Date(msg.timestamp).toDateString();
     const prevDate = prevMsg ? new Date(prevMsg.timestamp).toDateString() : null;
@@ -1184,46 +1184,35 @@ function createMessageFragment(msg, prevMsg, nextMsg, lastSenderRef) {
     wrapper.appendChild(contentWrapper);
 
             // ===== 虚拟时间戳渲染（新增）=====
-if (msg.sender !== 'user' && window.VirtualClock && window.VirtualClock.isEnabled()) {
-    var shouldShow = true;
-    if (nextMsg) {
-        if (nextMsg.sender !== 'user' && nextMsg.type !== 'system') {
-            shouldShow = false;
-        }
-    }
-    if (shouldShow) {
-        var timeFormat = (typeof settings !== 'undefined' && settings.timeFormat) ? settings.timeFormat : 'HH:mm';
-        var showVirtual = timeFormat !== 'off';
-        if (showVirtual) {
-            var vtDisplay = window.VirtualClock.getVirtualTimeDisplay();
-            if (vtDisplay) {
-                var speed = window.VirtualClock.getSpeed();
-                var speedHtml = '';
-                if (Math.abs(speed - 1.0) > 0.01) {
-                    speedHtml = '<span class="vt-speed visible">⚡' + speed.toFixed(1) + 'x</span>';
-                }
-
-                // ===== 新增：创建父容器（模拟 .message-meta）=====
-                var vtMeta = document.createElement('div');
-                vtMeta.className = 'virtual-timestamp-meta';
-                // ===============================================
-
-                var vtWrapper = document.createElement('div');
-                vtWrapper.className = 'virtual-timestamp';
-                vtWrapper.setAttribute('data-msg-id', msg.id);
-                vtWrapper.innerHTML = '<span class="vt-time">' + vtDisplay + '</span>' + speedHtml;
-                vtWrapper.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    if (window.VirtualClockUI && typeof window.VirtualClockUI.openTimeModal === 'function') {
-                        window.VirtualClockUI.openTimeModal();
-                    }
-                });
-
-                // ===== 修改：把 vtWrapper 放入 vtMeta，再把 vtMeta 放入 contentWrapper =====
-                vtMeta.appendChild(vtWrapper);
-                contentWrapper.appendChild(vtMeta);
-                // ========================================================================
+if (showVirtual && window.VirtualClock && window.VirtualClock.isEnabled()) {
+    var timeFormat = (typeof settings !== 'undefined' && settings.timeFormat) ? settings.timeFormat : 'HH:mm';
+    var showVirtualTime = timeFormat !== 'off';
+    if (showVirtualTime) {
+        var vtDisplay = window.VirtualClock.getVirtualTimeDisplay();
+        if (vtDisplay) {
+            var speed = window.VirtualClock.getSpeed();
+            var speedHtml = '';
+            if (Math.abs(speed - 1.0) > 0.01) {
+                speedHtml = '<span class="vt-speed visible">⚡' + speed.toFixed(1) + 'x</span>';
             }
+
+            // 创建父容器（模拟 .message-meta）
+            var vtMeta = document.createElement('div');
+            vtMeta.className = 'virtual-timestamp-meta';
+
+            var vtWrapper = document.createElement('div');
+            vtWrapper.className = 'virtual-timestamp';
+            vtWrapper.setAttribute('data-msg-id', msg.id);
+            vtWrapper.innerHTML = '<span class="vt-time">' + vtDisplay + '</span>' + speedHtml;
+            vtWrapper.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (window.VirtualClockUI && typeof window.VirtualClockUI.openTimeModal === 'function') {
+                    window.VirtualClockUI.openTimeModal();
+                }
+            });
+
+            vtMeta.appendChild(vtWrapper);
+            contentWrapper.appendChild(vtMeta);
         }
     }
 }
@@ -1284,7 +1273,47 @@ function renderMessages(preserveScroll = false) {
     msgsToRender.forEach((msg, i) => {
         const prevMsg = i > 0 ? msgsToRender[i - 1] : (startIndex > 0 ? messages[startIndex - 1] : null);
         const nextMsg = i < msgsToRender.length - 1 ? msgsToRender[i + 1] : null;
-        const msgFragment = createMessageFragment(msg, prevMsg, nextMsg, lastSenderRef);
+
+        // ===== 新增：判断虚拟时间戳是否显示 =====
+        var shouldShowVirtual = false;
+        if (msg.sender !== 'user' && msg.type !== 'system') {
+            // 先判断这条消息是否显示原本时间戳
+            var mShowTimestamp = true;
+            if (nextMsg) {
+                var currentTs = new Date(msg.timestamp).getTime();
+                var nextTs = new Date(nextMsg.timestamp).getTime();
+                if (nextMsg.sender === msg.sender && nextMsg.type !== 'system' && (nextTs - currentTs < 60000)) {
+                    mShowTimestamp = false;
+                }
+            }
+            // 如果显示原本时间戳，再检查是否在最近5条"显示原本时间戳"的对方消息中
+            if (mShowTimestamp) {
+                var count = 0;
+                for (var j = i; j >= 0 && count < 5; j--) {
+                    var m = msgsToRender[j];
+                    // 判断 m 是否显示原本时间戳
+                    var mTsShow = true;
+                    if (j < msgsToRender.length - 1) {
+                        var mNext = msgsToRender[j + 1];
+                        var mCurTs = new Date(m.timestamp).getTime();
+                        var mNextTs = new Date(mNext.timestamp).getTime();
+                        if (mNext.sender === m.sender && mNext.type !== 'system' && (mNextTs - mCurTs < 60000)) {
+                            mTsShow = false;
+                        }
+                    }
+                    if (m.sender !== 'user' && m.type !== 'system' && mTsShow) {
+                        count++;
+                        if (m === msg) {
+                            shouldShowVirtual = true;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        // ===== 判断结束 =====
+
+        const msgFragment = createMessageFragment(msg, prevMsg, nextMsg, lastSenderRef, shouldShowVirtual);
         fragment.appendChild(msgFragment);
     });
 
