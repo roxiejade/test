@@ -1265,12 +1265,19 @@ function renderMessages(preserveScroll = false) {
         });
     }
 
-    // 重新渲染后更新虚拟时间戳
+        // 重新渲染后更新虚拟时间戳
     setTimeout(function() {
         if (window._updateVirtualTimeDisplay) {
             window._updateVirtualTimeDisplay();
         }
     }, 50);
+
+    // 保底：1秒后再更新一次
+    setTimeout(function() {
+        if (window._updateVirtualTimeDisplay) {
+            window._updateVirtualTimeDisplay();
+        }
+    }, 1000);
 }
 
 const addMessage = (message) => {
