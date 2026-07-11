@@ -2543,5 +2543,22 @@ window._stopVirtualClockTimer = function() {
         _vtUpdateTimer = null;
     }
 };
+
+// ============================================================
+// 暴露核心函数到全局，供虚拟时钟等模块使用
+// ============================================================
+
+if (typeof addMessage === 'function') {
+    window.addMessage = addMessage;
+}
+
+if (typeof saveData === 'function') {
+    window.saveData = saveData;
+}
+
+window._vtUpdateTimer = _vtUpdateTimer || null;
+
+console.log('[core] 全局函数已暴露: addMessage, saveData, _vtUpdateTimer');
+
         
 });
