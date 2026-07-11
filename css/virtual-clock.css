@@ -136,6 +136,11 @@ html[data-theme="dark"] #vc-speed-display-area:hover {
     color: var(--text-secondary);
     position: relative;
     height: 20px;
+   /* ===== 新增：边框描边 ===== */
+    border: 1px solid rgba(var(--accent-color-rgb), 0.15);
+    border-radius: 10px;
+    padding: 0 8px;
+    /* ======================== */
 }
 
 /* 子元素：自身没有 margin，由父容器控制位置 */
@@ -154,9 +159,6 @@ html[data-theme="dark"] #vc-speed-display-area:hover {
     -webkit-user-select: none;
     border-radius: 10px;
     letter-spacing: 0.5px;
-    background: rgba(var(--secondary-bg-rgb, 255, 255, 255), 0.30);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
     text-shadow: none !important;
     border: none;
     margin: 0 !important;              /* 自身没有 margin，由父容器控制 */
