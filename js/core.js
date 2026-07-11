@@ -288,6 +288,23 @@ const loadData = async () => {
     try {
         settings = getDefaultSettings();
 
+            // ===== 虚拟时钟初始化 =====
+        // 如果 oppTime 没设过或还是 00:00:00，设为当前真实时间
+        if (!settings.oppTime || settings.oppTime === '00:00:00') {
+            const now = new Date();
+            settings.oppTime = String(now.getHours()).padStart(2, '0') + ':' +
+                               String(now.getMinutes()).padStart(2, '0') + ':' +
+                               String(now.getSeconds()).padStart(2, '0');
+            settings.oppTimeSetAt = Date.now();
+            settings.oppTimeSpeed = 1.0;
+            settings.oppCustomTime = true;
+        }
+        // 如果没有 oppTimeFormat，默认用 'HH:mm'
+        if (!settings.oppTimeFormat) {
+            settings.oppTimeFormat = 'HH:mm';
+        }
+        // ===== 虚拟时钟初始化结束 =====
+
         
         const results = await Promise.allSettled([
             localforage.getItem(getStorageKey('chatSettings')),
