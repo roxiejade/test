@@ -1356,7 +1356,22 @@ const addMessage = (message) => {
         lastSenderRef.current = prevGroupMember ? ('group_' + prevGroupMember.name) : prevMsg.sender;
     }
     
-    const newMsgFragment = createMessageFragment(message, prevMsg, null, lastSenderRef);
+    // 判断新消息是否应该显示虚拟时间戳
+var newShowVirtual = false;
+if (message.sender !== 'user' && message.type !== 'system') {
+    // 新消息没有 nextMsg，所以 mShowTimestamp 始终为 true
+    var newMShowTimestamp = true;
+    // 检查前一条消息是否是同一发送者在60秒内
+    if (prevMsg) {
+        var prevTs = new Date(prevMsg.timestamp).getTime();
+        var currTs = new Date(message.timestamp).getTime();
+        if (prevMsg.sender === message.sender && prevMsg.type !== 'system' && (currTs - prevTs < 60000)) {
+            newMShowTimestamp = false;
+        }
+    }
+    newShowVirtual = newMShowTimestamp;
+}
+const newMsgFragment = createMessageFragment(message, prevMsg, null, lastSenderRef, newShowVirtual);
     
     const spacer = container.querySelector('div[style*="flex: 1"]');
     if (spacer && spacer === container.lastElementChild) {
