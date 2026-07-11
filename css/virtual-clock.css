@@ -7,7 +7,7 @@
    ============================================================ */
 
 .virtual-timestamp {
-    display: inline-flex;           /* 改：flex → inline-flex，让容器宽度由内容决定 */
+    display: inline-flex;
     align-items: center;
     gap: 6px;
     margin-top: 3px;
@@ -21,15 +21,15 @@
     user-select: none;
     -webkit-user-select: none;
     border-radius: 10px;
-    margin-left: 0;                 /* 保持左对齐 */
-    margin-right: auto;             /* 新增：让容器靠左，不占右侧空间 */
-    width: auto;                    /* 新增：不撑满 */
+    margin-left: 0;
+    margin-right: auto;                 /* ← 左对齐 */
+    width: auto;
     letter-spacing: 0.5px;
-    background: rgba(var(--secondary-bg-rgb, 255, 255, 255), 0.55);
+    background: rgba(var(--secondary-bg-rgb, 255, 255, 255), 0.30);  /* ← 透明度降低 */
     backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
     text-shadow: none !important;
-    border: 1px solid rgba(var(--accent-color-rgb, 197, 164, 126), 0.08);
+    border: none;                       /* ← 去掉边框，纯毛玻璃 */
 }
 
 .virtual-timestamp:hover {
@@ -47,14 +47,14 @@
 }
 
 .virtual-timestamp .vt-speed {
-    font-size: 11px;                /* 改：9px → 11px，与时间戳一致 */
-    font-weight: 500;               /* 与时间戳字重一致 */
+    font-size: 11px;                    /* ← 与时间戳一致 */
+    font-weight: 500;
     color: var(--accent-color, #c5a47e);
     opacity: 0.75;
     margin-left: 2px;
-    display: inline;                /* 保持行内，与时间戳在同一行 */
-    vertical-align: baseline;       /* 新增：基线对齐 */
-    line-height: 1;                 /* 新增：防止行高差异 */
+    display: inline;
+    vertical-align: baseline;           /* ← 基线对齐 */
+    line-height: 1;
 }
 
 .virtual-timestamp .vt-speed.visible {
