@@ -10,7 +10,7 @@
 #vc-time-big-display {
     font-size: 44px !important;
     font-weight: 300 !important;
-    letter-spacing: 0.18em !important;
+    letter-spacing: 0.25em !important;
     font-family: 'JetBrains Mono', 'Fira Code', monospace !important;
     color: var(--text-primary) !important;
 }
@@ -105,7 +105,7 @@ html[data-theme="dark"] #vc-speed-display-area:hover {
     }
     #vc-time-big-display {
         font-size: 34px !important;
-        letter-spacing: 0.18em !important;  /* ← 新增这行 */
+        letter-spacing: 0.25em !important;  /* ← 新增这行 */
     }
     .vc-modal-sheet {
         padding: 6px 16px 24px !important;
@@ -123,7 +123,7 @@ html[data-theme="dark"] #vc-speed-display-area:hover {
 @media (max-width: 360px) {
     #vc-time-big-display {
         font-size: 28px !important;
-        letter-spacing: 0.18em !important;  /* ← 新增这行 */
+        letter-spacing: 0.25em !important;  /* ← 新增这行 */
     }
     .vc-modal-sheet {
         padding: 4px 12px 20px !important;
