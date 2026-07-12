@@ -139,7 +139,7 @@ html[data-theme="dark"] #vc-speed-display-area:hover {
     /* 无填充圆角边框，颜色跟随主题 */
     border: 1px solid rgba(var(--accent-color-rgb, 197, 164, 126), 0.15);
     border-radius: 10px;
-    padding: 0 8px;
+    padding: 0;
     
     /* 过渡效果 */
     transition: background 0.2s ease, border-color 0.2s ease;
