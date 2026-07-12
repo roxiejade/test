@@ -2508,11 +2508,14 @@ window._updateVirtualTimeDisplay = function() {
     var speed = window.VirtualClock.getSpeed();
     var showSpeed = Math.abs(speed - 1.0) > 0.01;
 
-    document.querySelectorAll('.virtual-timestamp').forEach(function(el) {
-            // ===== 新增：如果父容器被隐藏，跳过更新 =====
+   document.querySelectorAll('.virtual-timestamp').forEach(function(el) {
     var vtMeta = el.closest('.virtual-timestamp-meta');
+    console.log('🔄 更新检查:', vtMeta ? vtMeta.style.display : '无父容器');
+
+    // ===== 新增：如果父容器被隐藏，跳过更新 =====
     if (vtMeta && vtMeta.style.display === 'none') {
-        return; // 已经被隐藏，跳过，不重新显示
+        console.log('⏭️ 跳过更新（已隐藏）');
+        return;
     }
         // 更新时间
         var timeSpan = el.querySelector('.vt-time');
