@@ -1244,35 +1244,6 @@ function _updateReadReceiptsDOM() {
     });
 }
 
-function syncVirtualTimestamps() {
-     const container = DOMElements.chatContainer;
-     const wrappers = container.querySelectorAll('.message-wrapper.received');
-     wrappers.forEach(function(wrapper, index) {
-         const msgId = wrapper.dataset.msgId;
-         const msg = messages.find(function(m) { return String(m.id) === String(msgId); });
-         if (!msg) return;
-
-         var nextWrapper = wrappers[index + 1] || null;
-         var nextMsg = null;
-         if (nextWrapper) {
-             var nextId = nextWrapper.dataset.msgId;
-             nextMsg = messages.find(function(m) { return String(m.id) === String(nextId); });
-         }
-
-         var shouldShow = true;
-         if (nextMsg && nextMsg.sender === msg.sender && nextMsg.type !== 'system') {
-             var currentTs = new Date(msg.timestamp).getTime();
-             var nextTs = new Date(nextMsg.timestamp).getTime();
-             if (nextTs - currentTs < 60000) {
-                 shouldShow = false;
-             }
-         }
-        var vtMeta = wrapper.querySelector('.virtual-timestamp-meta');
-        if (vtMeta) {
-             vtMeta.style.display = shouldShow ? '' : 'none';
-         }
-     });
- }
 
 function renderMessages(preserveScroll = false) {
     const container = DOMElements.chatContainer;
@@ -1331,11 +1302,6 @@ function renderMessages(preserveScroll = false) {
             window._updateVirtualTimeDisplay();
         }
     }, 1000);
-
-        // ===== 新增：同步虚拟时间戳显示状态 =====
-setTimeout(function() {
-    syncVirtualTimestamps();
-}, 200);
 }
 
 const addMessage = (message) => {
@@ -1395,12 +1361,13 @@ if (lastWrapper && prevMsg) {
 
     throttledSaveData();
 
-        // ===== 同步虚拟时间戳 =====
-     setTimeout(function() {
-         if (typeof syncVirtualTimestamps === 'function') {
-             syncVirtualTimestamps();
-        }
-     }, 50);
+        // ===== 延迟重新渲染，确保虚拟时间戳状态正确 =====
+    setTimeout(function() {
+        renderMessages(false);
+        requestAnimationFrame(function() {
+            container.scrollTop = container.scrollHeight;
+        });
+    }, 50);
 
     // 钩子：通知陪伴模块"梦角刚说了一句话"，让陪伴页可以同步显示气泡
     // 只对梦角的普通消息触发（不是用户消息、不是 system call-event 等）
