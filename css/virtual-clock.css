@@ -173,7 +173,7 @@ html[data-theme="dark"] #vc-speed-display-area:hover {
 .virtual-timestamp .vt-time {
     font-weight: 500 !important;
     font-variant-numeric: tabular-nums !important;
-    letter-spacing: 0.2px !important;
+    letter-spacing: 0px !important;
     font-size: inherit !important;
     line-height: 1 !important;
 }
