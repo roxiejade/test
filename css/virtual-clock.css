@@ -119,134 +119,101 @@ html[data-theme="dark"] #vc-speed-display-area:hover {
 
 
 /* ============================================================
-   虚拟时间戳 - 两层容器结构
+   虚拟时间戳 - 强制生效版本
    ============================================================ */
 
-/* 
-   第一层：与原本时间戳 .message-meta 的样式完全一致
-   - 使用 inline-flex，宽度由内容决定
-   - 边框用伪元素，不占空间不偏移
-*/
 .virtual-timestamp-meta {
-    display: inline-flex; /* 改为 inline-flex，宽度由内容决定 */
-    align-items: center;
-    gap: 8px;
-    margin: 6px 10px 0 10px;
-    opacity: 0.7;
-    font-size: 11px;
-    color: var(--text-secondary);
-    position: relative;
-    height: 20px;
-    padding: 0 6px; /* 增加左右内边距，让文字和边框之间有呼吸空间 */
-    box-sizing: border-box;
-    transition: background 0.2s ease;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    margin: 6px 10px 0 10px !important;
+    opacity: 0.7 !important;
+    font-size: 11px !important;
+    color: var(--text-secondary) !important;
+    position: relative !important;
+    height: 20px !important;
+    padding: 0 8px !important;
+    box-sizing: border-box !important;
+    border: 1px solid rgba(var(--accent-color-rgb, 197, 164, 126), 0.15) !important;
+    border-radius: 10px !important;
+    transition: border-color 0.2s ease, background 0.2s ease !important;
 }
 
-/* 伪元素画边框 - 从父容器边缘开始，不占空间 */
-.virtual-timestamp-meta::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border: 1px solid rgba(var(--accent-color-rgb, 197, 164, 126), 0.15);
-    border-radius: 10px;
-    pointer-events: none;
-    transition: border-color 0.2s ease;
-}
-
-/* hover 时背景和边框变化 */
 .virtual-timestamp-meta:hover {
-    background: rgba(var(--accent-color-rgb, 197, 164, 126), 0.06);
+    background: rgba(var(--accent-color-rgb, 197, 164, 126), 0.06) !important;
+    border-color: rgba(var(--accent-color-rgb, 197, 164, 126), 0.25) !important;
 }
 
-.virtual-timestamp-meta:hover::before {
-    border-color: rgba(var(--accent-color-rgb, 197, 164, 126), 0.25);
-}
-
-/* 
-   第二层：文字容器
-   align-items:center 保证时间数字和流速水平中线对齐
-*/
 .virtual-timestamp {
-    display: inline-flex;
-    align-items: center;
-    gap: 3px;
-    padding: 0;
-    font-size: 10px;
-    font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', 'Menlo', 'Consolas', monospace;
-    font-weight: 500;
-    cursor: pointer;
-    color: var(--text-secondary);
-    opacity: 1;
-    user-select: none;
-    -webkit-user-select: none;
-    letter-spacing: 0.2px;
-    text-shadow: none !important;
-    border: none;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 3px !important;
+    padding: 0 !important;
+    font-size: 10px !important;
+    font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', 'Menlo', 'Consolas', monospace !important;
+    font-weight: 500 !important;
+    cursor: pointer !important;
+    color: var(--text-secondary) !important;
+    opacity: 1 !important;
+    user-select: none !important;
+    -webkit-user-select: none !important;
+    letter-spacing: 0.2px !important;
+    border: none !important;
     margin: 0 !important;
     background: transparent !important;
-    border-radius: 0;
-    line-height: 1;
-    height: auto;
+    border-radius: 0 !important;
+    line-height: 1 !important;
+    height: auto !important;
 }
 
-/* 点击反馈 */
 .virtual-timestamp:active {
-    transform: scale(0.95);
+    transform: scale(0.95) !important;
 }
 
-/* 时间数字 */
 .virtual-timestamp .vt-time {
-    font-weight: 500;
-    font-variant-numeric: tabular-nums;
-    letter-spacing: 0.2px;
-    font-size: inherit;
-    line-height: 1;
+    font-weight: 500 !important;
+    font-variant-numeric: tabular-nums !important;
+    letter-spacing: 0.2px !important;
+    font-size: inherit !important;
+    line-height: 1 !important;
 }
 
-/* 速度标识 - 由父容器 align-items:center 保证中线对齐 */
 .virtual-timestamp .vt-speed {
-    font-size: 8px;
-    font-weight: 600;
-    color: var(--accent-color, #c5a47e);
-    opacity: 0.75;
-    margin-left: 0px;
-    display: inline;
-    line-height: 1;
-    font-family: inherit;
+    font-size: 8px !important;
+    font-weight: 600 !important;
+    color: var(--accent-color, #c5a47e) !important;
+    opacity: 0.75 !important;
+    margin-left: 0px !important;
+    display: inline !important;
+    line-height: 1 !important;
+    font-family: inherit !important;
 }
 
-/* 速度标识可见性 */
 .virtual-timestamp .vt-speed.visible {
-    display: inline;
+    display: inline !important;
 }
 
-/* 隐藏状态 */
 .virtual-timestamp.hidden {
     display: none !important;
 }
 
-
-/* 
-   ============================================================
-   暗色模式边框
-   ============================================================ */
-html[data-theme="dark"] .virtual-timestamp-meta::before {
-    border-color: rgba(var(--accent-color-rgb, 197, 164, 126), 0.20);
+html[data-theme="dark"] .virtual-timestamp-meta {
+    border-color: rgba(var(--accent-color-rgb, 197, 164, 126), 0.20) !important;
 }
 
 html[data-theme="dark"] .virtual-timestamp-meta:hover {
-    background: rgba(var(--accent-color-rgb, 197, 164, 126), 0.10);
+    background: rgba(var(--accent-color-rgb, 197, 164, 126), 0.10) !important;
+    border-color: rgba(var(--accent-color-rgb, 197, 164, 126), 0.35) !important;
 }
 
-html[data-theme="dark"] .virtual-timestamp-meta:hover::before {
-    border-color: rgba(var(--accent-color-rgb, 197, 164, 126), 0.35);
+html[data-theme="dark"] .virtual-timestamp {
+    color: var(--text-secondary) !important;
 }
 
+html[data-theme="dark"] .virtual-timestamp .vt-speed {
+    color: var(--accent-color-dark, #d97a8c) !important;
+}
 
-/* 
-   ============================================================
-   不同配色主题下速度标识颜色跟随
-   ============================================================ */
 html[data-color-theme="gold"] .virtual-timestamp .vt-speed,
 html[data-color-theme="blue"] .virtual-timestamp .vt-speed,
 html[data-color-theme="purple"] .virtual-timestamp .vt-speed,
@@ -256,9 +223,11 @@ html[data-color-theme="pastel"] .virtual-timestamp .vt-speed,
 html[data-color-theme="sunset"] .virtual-timestamp .vt-speed,
 html[data-color-theme="forest"] .virtual-timestamp .vt-speed,
 html[data-color-theme="ocean"] .virtual-timestamp .vt-speed {
-    color: var(--accent-color);
+    color: var(--accent-color) !important;
 }
 
 html[data-color-theme="black-white"] .virtual-timestamp .vt-speed {
+    color: var(--accent-color, #333333) !important;
+}
     color: var(--accent-color, #333333);
 }
