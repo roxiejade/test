@@ -1331,6 +1331,8 @@ const addMessage = (message) => {
         if (avatarEl) avatarEl.style.marginBottom = '';
 
         const vtMeta2 = lastWrapper.querySelector('.virtual-timestamp-meta');
+console.log('🔍 vtMeta2 是否存在:', !!vtMeta2);
+console.log('🔍 lastWrapper dataset:', lastWrapper.dataset);
 if (vtMeta2) {
     vtMeta2.style.display = 'none';
     console.log('✅ 隐藏了消息:', lastWrapper.dataset.msgId);
