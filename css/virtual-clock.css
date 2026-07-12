@@ -1,6 +1,6 @@
 /**
  * virtual-clock.css - 虚拟时钟功能样式
- * 两层容器 + 伪元素边框 + 水平中线对齐
+ * 修复：父容器 inline-flex，宽度由内容决定，边框只框住内容
  */
 
 
@@ -123,11 +123,12 @@ html[data-theme="dark"] #vc-speed-display-area:hover {
    ============================================================ */
 
 /* 
-   第一层：与原本时间戳 .message-meta 完全一致
-   margin、padding、height、opacity、color 完全相同
+   第一层：与原本时间戳 .message-meta 的样式完全一致
+   - 使用 inline-flex，宽度由内容决定
+   - 边框用伪元素，不占空间不偏移
 */
 .virtual-timestamp-meta {
-    display: flex;
+    display: inline-flex; /* 改为 inline-flex，宽度由内容决定 */
     align-items: center;
     gap: 8px;
     margin: 6px 10px 0 10px;
@@ -136,11 +137,12 @@ html[data-theme="dark"] #vc-speed-display-area:hover {
     color: var(--text-secondary);
     position: relative;
     height: 20px;
-    padding: 0;
+    padding: 0 6px; /* 增加左右内边距，让文字和边框之间有呼吸空间 */
     box-sizing: border-box;
+    transition: background 0.2s ease;
 }
 
-/* 伪元素画边框 - 不占空间，不偏移，从父容器边缘开始 */
+/* 伪元素画边框 - 从父容器边缘开始，不占空间 */
 .virtual-timestamp-meta::before {
     content: '';
     position: absolute;
@@ -151,18 +153,22 @@ html[data-theme="dark"] #vc-speed-display-area:hover {
     transition: border-color 0.2s ease;
 }
 
-/* hover 时边框颜色加深 */
+/* hover 时背景和边框变化 */
+.virtual-timestamp-meta:hover {
+    background: rgba(var(--accent-color-rgb, 197, 164, 126), 0.06);
+}
+
 .virtual-timestamp-meta:hover::before {
     border-color: rgba(var(--accent-color-rgb, 197, 164, 126), 0.25);
 }
 
 /* 
    第二层：文字容器
-   使用 inline-flex + align-items:center 实现水平中线对齐
+   align-items:center 保证时间数字和流速水平中线对齐
 */
 .virtual-timestamp {
     display: inline-flex;
-    align-items: center; /* 水平中线对齐 */
+    align-items: center;
     gap: 3px;
     padding: 0;
     font-size: 10px;
@@ -197,7 +203,7 @@ html[data-theme="dark"] #vc-speed-display-area:hover {
     line-height: 1;
 }
 
-/* 速度标识 - 无需额外偏移，由父容器的 align-items:center 保证中线对齐 */
+/* 速度标识 - 由父容器 align-items:center 保证中线对齐 */
 .virtual-timestamp .vt-speed {
     font-size: 8px;
     font-weight: 600;
@@ -226,6 +232,10 @@ html[data-theme="dark"] #vc-speed-display-area:hover {
    ============================================================ */
 html[data-theme="dark"] .virtual-timestamp-meta::before {
     border-color: rgba(var(--accent-color-rgb, 197, 164, 126), 0.20);
+}
+
+html[data-theme="dark"] .virtual-timestamp-meta:hover {
+    background: rgba(var(--accent-color-rgb, 197, 164, 126), 0.10);
 }
 
 html[data-theme="dark"] .virtual-timestamp-meta:hover::before {
