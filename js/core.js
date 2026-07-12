@@ -1322,6 +1322,36 @@ const addMessage = (message) => {
     if (lastWrapper && prevMsg) {
     const currentTs = new Date(message.timestamp).getTime();
     const prevTs = new Date(prevMsg.timestamp).getTime();
+    const timeDiff = currentTs - prevTs;
+
+    // ===== 添加日志 =====
+    console.log('========== 调试 ==========');
+    console.log('上一条消息发送者:', prevMsg.sender);
+    console.log('当前消息发送者:', message.sender);
+    console.log('时间差(ms):', timeDiff);
+    console.log('是否<60000ms?', timeDiff < 60000);
+
+    const vtMeta = lastWrapper.querySelector('.virtual-timestamp-meta');
+    console.log('虚拟时间戳元素存在?', !!vtMeta);
+    if (vtMeta) {
+        console.log('虚拟时间戳 display:', vtMeta.style.display);
+    }
+
+    if (message.sender === prevMsg.sender && message.type === 'normal' && prevMsg.type === 'normal' && timeDiff < 60000) {
+        console.log('→ 执行：隐藏原本时间戳 + 虚拟时间戳');
+        const metaEl = lastWrapper.querySelector('.message-meta');
+        if (metaEl) metaEl.style.display = 'none';
+        const avatarEl = lastWrapper.querySelector('.message-avatar');
+        if (avatarEl) avatarEl.style.marginBottom = '';
+
+        const vtMeta2 = lastWrapper.querySelector('.virtual-timestamp-meta');
+        if (vtMeta2) vtMeta2.style.display = 'none';
+    } else {
+        console.log('→ 执行：恢复显示虚拟时间戳');
+        const vtMeta3 = lastWrapper.querySelector('.virtual-timestamp-meta');
+        if (vtMeta3) vtMeta3.style.display = '';
+    }
+}
 
     if (message.sender === prevMsg.sender && message.type === 'normal' && prevMsg.type === 'normal' && (currentTs - prevTs < 60000)) {
         const metaEl = lastWrapper.querySelector('.message-meta');
