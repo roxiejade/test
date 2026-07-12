@@ -2525,12 +2525,11 @@ window._updateVirtualTimeDisplay = function() {
                 el.appendChild(newSpeed);
             }
         } else {
-            // speed === 1.0，彻底隐藏流速标签
-            if (speedSpan) {
-                speedSpan.classList.remove('visible');
-                speedSpan.style.display = 'none';
-            }
-        }
+    // speed === 1.0，彻底移除流速标签
+    if (speedSpan) {
+        speedSpan.remove();  // 从 DOM 移除
+    }
+}
 
         el.classList.remove('hidden');
     });
