@@ -1,6 +1,6 @@
 /**
  * virtual-clock.css - 虚拟时钟功能样式
- * 修改：伪元素边框，不占空间不偏移
+ * 两层容器 + 伪元素边框 + 水平中线对齐
  */
 
 
@@ -58,7 +58,7 @@
    ============================================================ */
 
 html[data-theme="dark"] .virtual-timestamp {
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--text-secondary);
 }
 
 html[data-theme="dark"] .virtual-timestamp .vt-speed {
@@ -87,7 +87,7 @@ html[data-theme="dark"] #vc-speed-display-area:hover {
     .virtual-timestamp {
         font-size: 10px;
         padding: 0;
-        gap: 4px;
+        gap: 3px;
     }
     .virtual-timestamp .vt-speed {
         font-size: 8px;
@@ -119,27 +119,28 @@ html[data-theme="dark"] #vc-speed-display-area:hover {
 
 
 /* ============================================================
-   虚拟时间戳 - 两层容器结构（与原本时间戳一致）
+   虚拟时间戳 - 两层容器结构
    ============================================================ */
 
 /* 
-   第一层容器：与原本时间戳的 .message-meta 完全一致
-   - margin、padding、height 完全相同
-   - 边框用伪元素实现，不占空间不偏移
+   第一层：与原本时间戳 .message-meta 完全一致
+   margin、padding、height、opacity、color 完全相同
 */
 .virtual-timestamp-meta {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     margin: 6px 10px 0 10px;
-    height: 20px;
+    opacity: 0.7;
+    font-size: 11px;
+    color: var(--text-secondary);
     position: relative;
+    height: 20px;
     padding: 0;
     box-sizing: border-box;
-    transition: background 0.2s ease;
 }
 
-/* 伪元素画边框 - 不占空间，不偏移 */
+/* 伪元素画边框 - 不占空间，不偏移，从父容器边缘开始 */
 .virtual-timestamp-meta::before {
     content: '';
     position: absolute;
@@ -147,36 +148,32 @@ html[data-theme="dark"] #vc-speed-display-area:hover {
     border: 1px solid rgba(var(--accent-color-rgb, 197, 164, 126), 0.15);
     border-radius: 10px;
     pointer-events: none;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    transition: border-color 0.2s ease;
 }
 
-/* hover 时边框颜色变化 */
-.virtual-timestamp-meta:hover {
-    background: rgba(var(--accent-color-rgb, 197, 164, 126), 0.08);
-}
-
+/* hover 时边框颜色加深 */
 .virtual-timestamp-meta:hover::before {
     border-color: rgba(var(--accent-color-rgb, 197, 164, 126), 0.25);
 }
 
 /* 
-   第二层容器：直接包含文本内容
-   - 透明背景，无额外内边距
-   - 使用等宽紧凑字体，比原本时间戳稍小
+   第二层：文字容器
+   使用 inline-flex + align-items:center 实现水平中线对齐
 */
 .virtual-timestamp {
     display: inline-flex;
-    align-items: center;
-    gap: 4px;
+    align-items: center; /* 水平中线对齐 */
+    gap: 3px;
     padding: 0;
     font-size: 10px;
-    font-family: 'SF Mono', 'Menlo', 'Monaco', 'Consolas', 'Courier New', monospace;
+    font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', 'Menlo', 'Consolas', monospace;
     font-weight: 500;
     cursor: pointer;
     color: var(--text-secondary);
+    opacity: 1;
     user-select: none;
     -webkit-user-select: none;
-    letter-spacing: 0.3px;
+    letter-spacing: 0.2px;
     text-shadow: none !important;
     border: none;
     margin: 0 !important;
@@ -191,28 +188,28 @@ html[data-theme="dark"] #vc-speed-display-area:hover {
     transform: scale(0.95);
 }
 
-/* 时间数字样式 */
+/* 时间数字 */
 .virtual-timestamp .vt-time {
     font-weight: 500;
     font-variant-numeric: tabular-nums;
     letter-spacing: 0.2px;
     font-size: inherit;
+    line-height: 1;
 }
 
-/* 速度标识样式 - 更小更精致 */
+/* 速度标识 - 无需额外偏移，由父容器的 align-items:center 保证中线对齐 */
 .virtual-timestamp .vt-speed {
     font-size: 8px;
     font-weight: 600;
     color: var(--accent-color, #c5a47e);
     opacity: 0.75;
-    margin-left: 1px;
+    margin-left: 0px;
     display: inline;
-    vertical-align: baseline;
     line-height: 1;
     font-family: inherit;
 }
 
-/* 速度标识可见性控制 */
+/* 速度标识可见性 */
 .virtual-timestamp .vt-speed.visible {
     display: inline;
 }
@@ -225,14 +222,10 @@ html[data-theme="dark"] #vc-speed-display-area:hover {
 
 /* 
    ============================================================
-   暗色模式边框适配
+   暗色模式边框
    ============================================================ */
 html[data-theme="dark"] .virtual-timestamp-meta::before {
     border-color: rgba(var(--accent-color-rgb, 197, 164, 126), 0.20);
-}
-
-html[data-theme="dark"] .virtual-timestamp-meta:hover {
-    background: rgba(var(--accent-color-rgb, 197, 164, 126), 0.12);
 }
 
 html[data-theme="dark"] .virtual-timestamp-meta:hover::before {
@@ -256,7 +249,6 @@ html[data-color-theme="ocean"] .virtual-timestamp .vt-speed {
     color: var(--accent-color);
 }
 
-/* 黑白主题特殊处理 */
 html[data-color-theme="black-white"] .virtual-timestamp .vt-speed {
     color: var(--accent-color, #333333);
 }
