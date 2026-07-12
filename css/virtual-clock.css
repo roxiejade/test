@@ -149,8 +149,8 @@ html[data-theme="dark"] #vc-speed-display-area:hover {
     align-items: center !important;
     gap: 3px !important;
     padding: 0 !important;
-    font-size: 10px !important;
-    font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', 'Menlo', 'Consolas', monospace !important;
+    font-size: 11px !important;
+    font-family: 'Noto Serif SC', 'JetBrains Mono', 'Fira Code', 'SF Mono', 'Consolas', monospace !important;
     font-weight: 500 !important;
     cursor: pointer !important;
     color: var(--text-secondary) !important;
@@ -179,7 +179,7 @@ html[data-theme="dark"] #vc-speed-display-area:hover {
 }
 
 .virtual-timestamp .vt-speed {
-    font-size: 8px !important;
+    font-size: 9px !important;
     font-weight: 600 !important;
     color: var(--accent-color, #c5a47e) !important;
     opacity: 0.75 !important;
