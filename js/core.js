@@ -1320,17 +1320,24 @@ const addMessage = (message) => {
     const existingWrappers = container.querySelectorAll('.message-wrapper');
     const lastWrapper = existingWrappers.length > 0 ? existingWrappers[existingWrappers.length - 1] : null;
     if (lastWrapper && prevMsg) {
-        const currentTs = new Date(message.timestamp).getTime();
-        const prevTs = new Date(prevMsg.timestamp).getTime();
+    const currentTs = new Date(message.timestamp).getTime();
+    const prevTs = new Date(prevMsg.timestamp).getTime();
 
-        if (message.sender === prevMsg.sender && message.type === 'normal' && prevMsg.type === 'normal' && (currentTs - prevTs < 60000)) {
-            const metaEl = lastWrapper.querySelector('.message-meta');
-            if (metaEl) metaEl.style.display = 'none';
-            const avatarEl = lastWrapper.querySelector('.message-avatar');
-            if (avatarEl) avatarEl.style.marginBottom = '';
+    if (message.sender === prevMsg.sender && message.type === 'normal' && prevMsg.type === 'normal' && (currentTs - prevTs < 60000)) {
+        const metaEl = lastWrapper.querySelector('.message-meta');
+        if (metaEl) metaEl.style.display = 'none';
+        const avatarEl = lastWrapper.querySelector('.message-avatar');
+        if (avatarEl) avatarEl.style.marginBottom = '';
 
-        }
+        // ===== 新增：同步隐藏虚拟时间戳 =====
+        const vtMeta = lastWrapper.querySelector('.virtual-timestamp-meta');
+        if (vtMeta) vtMeta.style.display = 'none';
+    } else {
+        // ===== 新增：不满足隐藏条件时，恢复虚拟时间戳显示 =====
+        const vtMeta = lastWrapper.querySelector('.virtual-timestamp-meta');
+        if (vtMeta) vtMeta.style.display = '';
     }
+}
     
     // --- Append new message ---
     let lastSenderRef = { current: null };
