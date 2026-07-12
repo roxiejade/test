@@ -3,6 +3,17 @@
  * 修复：父容器 inline-flex，宽度由内容决定，边框只框住内容
  */
 
+/* ============================================================
+   时刻数字样式
+   ============================================================ */
+
+#vc-time-big-display {
+    font-size: 44px !important;
+    font-weight: 300 !important;
+    letter-spacing: 0.18em !important;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace !important;
+    color: var(--text-primary) !important;
+}
 
 /* ============================================================
    等待动画点（系统消息中用）
@@ -94,6 +105,7 @@ html[data-theme="dark"] #vc-speed-display-area:hover {
     }
     #vc-time-big-display {
         font-size: 34px !important;
+        letter-spacing: 0.18em !important;  /* ← 新增这行 */
     }
     .vc-modal-sheet {
         padding: 6px 16px 24px !important;
@@ -111,12 +123,12 @@ html[data-theme="dark"] #vc-speed-display-area:hover {
 @media (max-width: 360px) {
     #vc-time-big-display {
         font-size: 28px !important;
+        letter-spacing: 0.18em !important;  /* ← 新增这行 */
     }
     .vc-modal-sheet {
         padding: 4px 12px 20px !important;
     }
 }
-
 
 /* ============================================================
    虚拟时间戳 - 强制生效版本
