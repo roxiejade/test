@@ -1184,6 +1184,7 @@ function createMessageFragment(msg, prevMsg, nextMsg, lastSenderRef) {
     wrapper.appendChild(contentWrapper);
 
             // ===== 虚拟时间戳渲染（新增）=====
+// 只有在原本时间戳显示时才显示虚拟时间戳
 if (showTimestamp && msg.sender !== 'user' && window.VirtualClock && window.VirtualClock.isEnabled()) {
     var timeFormat = (typeof settings !== 'undefined' && settings.timeFormat) ? settings.timeFormat : 'HH:mm';
     var showVirtualTime = timeFormat !== 'off';
@@ -1196,7 +1197,6 @@ if (showTimestamp && msg.sender !== 'user' && window.VirtualClock && window.Virt
                 speedHtml = '<span class="vt-speed visible">⚡' + speed.toFixed(1) + 'x</span>';
             }
 
-            // 创建父容器（模拟 .message-meta）
             var vtMeta = document.createElement('div');
             vtMeta.className = 'virtual-timestamp-meta';
 
@@ -1216,7 +1216,6 @@ if (showTimestamp && msg.sender !== 'user' && window.VirtualClock && window.Virt
         }
     }
 }
-// ===== 虚拟时间戳渲染结束 =====
         
     fragment.appendChild(wrapper);
 
@@ -1330,10 +1329,6 @@ const addMessage = (message) => {
             const avatarEl = lastWrapper.querySelector('.message-avatar');
             if (avatarEl) avatarEl.style.marginBottom = '';
 
-                // ===== 新增：隐藏上一条消息的虚拟时间戳 =====
-        const vtMeta = lastWrapper.querySelector('.virtual-timestamp-meta');
-        if (vtMeta) vtMeta.style.display = 'none';
-        // =========================================
         }
     }
     
