@@ -135,7 +135,7 @@ html[data-theme="dark"] #vc-speed-display-area:hover {
    ============================================================ */
 
 .virtual-timestamp-meta {
-    display: inline-flex !important;
+    display: inline-flex;
     align-items: center !important;
     gap: 6px !important;
     margin: 2px 10px 0 2px !important;
