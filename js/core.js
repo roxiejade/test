@@ -1361,13 +1361,25 @@ if (lastWrapper && prevMsg) {
 
     throttledSaveData();
 
-        // ===== 延迟重新渲染，确保虚拟时间戳状态正确 =====
-    setTimeout(function() {
-        renderMessages(false);
-        requestAnimationFrame(function() {
-            container.scrollTop = container.scrollHeight;
-        });
-    }, 50);
+            // ===== 控制上一条消息的虚拟时间戳显示 =====
+    if (lastWrapper && prevMsg) {
+        const vtMeta = lastWrapper.querySelector('.virtual-timestamp-meta');
+        if (vtMeta) {
+            const currentTs = new Date(message.timestamp).getTime();
+            const prevTs = new Date(prevMsg.timestamp).getTime();
+            // 判断是否需要隐藏虚拟时间戳（同一发送者且间隔 < 60 秒）
+            if (message.sender === prevMsg.sender && message.type === 'normal' && prevMsg.type === 'normal' && (currentTs - prevTs < 60000)) {
+                vtMeta.style.display = 'none';
+            } else {
+                vtMeta.style.display = '';
+            }
+        }
+    }
+
+    // 滚动到底部
+    requestAnimationFrame(function() {
+        container.scrollTop = container.scrollHeight;
+    });
 
     // 钩子：通知陪伴模块"梦角刚说了一句话"，让陪伴页可以同步显示气泡
     // 只对梦角的普通消息触发（不是用户消息、不是 system call-event 等）
