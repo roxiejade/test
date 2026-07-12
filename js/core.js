@@ -1353,21 +1353,6 @@ const addMessage = (message) => {
     }
 }
 
-    if (message.sender === prevMsg.sender && message.type === 'normal' && prevMsg.type === 'normal' && (currentTs - prevTs < 60000)) {
-        const metaEl = lastWrapper.querySelector('.message-meta');
-        if (metaEl) metaEl.style.display = 'none';
-        const avatarEl = lastWrapper.querySelector('.message-avatar');
-        if (avatarEl) avatarEl.style.marginBottom = '';
-
-        // ===== 新增：同步隐藏虚拟时间戳 =====
-        const vtMeta = lastWrapper.querySelector('.virtual-timestamp-meta');
-        if (vtMeta) vtMeta.style.display = 'none';
-    } else {
-        // ===== 新增：不满足隐藏条件时，恢复虚拟时间戳显示 =====
-        const vtMeta = lastWrapper.querySelector('.virtual-timestamp-meta');
-        if (vtMeta) vtMeta.style.display = '';
-    }
-}
     
     // --- Append new message ---
     let lastSenderRef = { current: null };
