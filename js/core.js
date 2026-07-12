@@ -2524,10 +2524,12 @@ window._updateVirtualTimeDisplay = function() {
                 newSpeed.textContent = '⚡' + speed.toFixed(1) + 'x';
                 el.appendChild(newSpeed);
             }
-        } else {
-    // speed === 1.0，彻底移除流速标签
+       } else {
+    // speed === 1.0，清空内容并隐藏
     if (speedSpan) {
-        speedSpan.remove();  // 从 DOM 移除
+        speedSpan.textContent = '';  // 清空文字，不留残留
+        speedSpan.classList.remove('visible');
+        speedSpan.style.display = 'none';
     }
 }
 
