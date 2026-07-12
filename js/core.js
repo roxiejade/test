@@ -1329,6 +1329,11 @@ const addMessage = (message) => {
             if (metaEl) metaEl.style.display = 'none';
             const avatarEl = lastWrapper.querySelector('.message-avatar');
             if (avatarEl) avatarEl.style.marginBottom = '';
+
+                // ===== 新增：隐藏上一条消息的虚拟时间戳 =====
+        const vtMeta = lastWrapper.querySelector('.virtual-timestamp-meta');
+        if (vtMeta) vtMeta.style.display = 'none';
+        // =========================================
         }
     }
     
