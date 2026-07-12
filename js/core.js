@@ -1244,6 +1244,36 @@ function _updateReadReceiptsDOM() {
     });
 }
 
+function syncVirtualTimestamps() {
+     const container = DOMElements.chatContainer;
+     const wrappers = container.querySelectorAll('.message-wrapper.received');
+     wrappers.forEach(function(wrapper, index) {
+         const msgId = wrapper.dataset.msgId;
+         const msg = messages.find(function(m) { return String(m.id) === String(msgId); });
+         if (!msg) return;
+
+         var nextWrapper = wrappers[index + 1] || null;
+         var nextMsg = null;
+         if (nextWrapper) {
+             var nextId = nextWrapper.dataset.msgId;
+             nextMsg = messages.find(function(m) { return String(m.id) === String(nextId); });
+         }
+
+         var shouldShow = true;
+         if (nextMsg && nextMsg.sender === msg.sender && nextMsg.type !== 'system') {
+             var currentTs = new Date(msg.timestamp).getTime();
+             var nextTs = new Date(nextMsg.timestamp).getTime();
+             if (nextTs - currentTs < 60000) {
+                 shouldShow = false;
+             }
+         }
+        var vtMeta = wrapper.querySelector('.virtual-timestamp-meta');
+        if (vtMeta) {
+             vtMeta.style.display = shouldShow ? '' : 'none';
+         }
+     });
+ }
+
 function renderMessages(preserveScroll = false) {
     const container = DOMElements.chatContainer;
     const totalMessages = messages.length;
@@ -1301,6 +1331,11 @@ function renderMessages(preserveScroll = false) {
             window._updateVirtualTimeDisplay();
         }
     }, 1000);
+
+        // ===== 新增：同步虚拟时间戳显示状态 =====
+setTimeout(function() {
+    syncVirtualTimestamps();
+}, 200);
 }
 
 const addMessage = (message) => {
@@ -1317,29 +1352,23 @@ const addMessage = (message) => {
     }
 
     // --- Update previous message if needed ---
-    const existingWrappers = container.querySelectorAll('.message-wrapper');
-    const lastWrapper = existingWrappers.length > 0 ? existingWrappers[existingWrappers.length - 1] : null;
-    if (lastWrapper && prevMsg) {
+const existingWrappers = container.querySelectorAll('.message-wrapper');
+const lastWrapper = existingWrappers.length > 0 ? existingWrappers[existingWrappers.length - 1] : null;
+if (lastWrapper && prevMsg) {
     const currentTs = new Date(message.timestamp).getTime();
     const prevTs = new Date(prevMsg.timestamp).getTime();
-    const timeDiff = currentTs - prevTs;
 
-    if (message.sender === prevMsg.sender && message.type === 'normal' && prevMsg.type === 'normal' && timeDiff < 60000) {
+    if (message.sender === prevMsg.sender && message.type === 'normal' && prevMsg.type === 'normal' && (currentTs - prevTs < 60000)) {
         const metaEl = lastWrapper.querySelector('.message-meta');
         if (metaEl) metaEl.style.display = 'none';
         const avatarEl = lastWrapper.querySelector('.message-avatar');
         if (avatarEl) avatarEl.style.marginBottom = '';
 
-        const vtMeta2 = lastWrapper.querySelector('.virtual-timestamp-meta');
-console.log('🔍 vtMeta2 是否存在:', !!vtMeta2);
-console.log('🔍 lastWrapper dataset:', lastWrapper.dataset);
-if (vtMeta2) {
-    vtMeta2.style.display = 'none';
-    console.log('✅ 隐藏了消息:', lastWrapper.dataset.msgId);
-}
+        const vtMeta = lastWrapper.querySelector('.virtual-timestamp-meta');
+        if (vtMeta) vtMeta.style.display = 'none';
     } else {
-        const vtMeta3 = lastWrapper.querySelector('.virtual-timestamp-meta');
-        if (vtMeta3) vtMeta3.style.display = '';
+        const vtMeta = lastWrapper.querySelector('.virtual-timestamp-meta');
+        if (vtMeta) vtMeta.style.display = '';
     }
 }
 
@@ -1365,6 +1394,13 @@ if (vtMeta2) {
     });
 
     throttledSaveData();
+
+        // ===== 同步虚拟时间戳 =====
+     setTimeout(function() {
+         if (typeof syncVirtualTimestamps === 'function') {
+             syncVirtualTimestamps();
+        }
+     }, 50);
 
     // 钩子：通知陪伴模块"梦角刚说了一句话"，让陪伴页可以同步显示气泡
     // 只对梦角的普通消息触发（不是用户消息、不是 system call-event 等）
@@ -2508,20 +2544,18 @@ window._updateVirtualTimeDisplay = function() {
     var speed = window.VirtualClock.getSpeed();
     var showSpeed = Math.abs(speed - 1.0) > 0.01;
 
-   document.querySelectorAll('.virtual-timestamp').forEach(function(el) {
-    var vtMeta = el.closest('.virtual-timestamp-meta');
-    console.log('🔄 更新检查:', vtMeta ? vtMeta.style.display : '无父容器');
+     document.querySelectorAll('.virtual-timestamp').forEach(function(el) {
+     // ===== 如果父容器被隐藏，跳过更新 =====
+     var vtMeta = el.closest('.virtual-timestamp-meta');
+     if (vtMeta && vtMeta.style.display === 'none') {
+         return;
+     }
 
-    // ===== 新增：如果父容器被隐藏，跳过更新 =====
-    if (vtMeta && vtMeta.style.display === 'none') {
-        console.log('⏭️ 跳过更新（已隐藏）');
-        return;
-    }
-        // 更新时间
-        var timeSpan = el.querySelector('.vt-time');
-        if (timeSpan) {
-            timeSpan.textContent = vtDisplay;
-        }
+      // 更新时间
+      var timeSpan = el.querySelector('.vt-time');
+      if (timeSpan) {
+          timeSpan.textContent = vtDisplay;
+      }
 
         // 更新流速（所有消息同步更新）
         var speedSpan = el.querySelector('.vt-speed');
