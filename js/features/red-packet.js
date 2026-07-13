@@ -556,23 +556,22 @@ if (typeof addMessage === 'function') {
                 // 保存
                 if (typeof window.throttledSaveData === 'function') window.throttledSaveData();
 
-                // 更新弹窗为已领取状态
+                                // 更新弹窗为已领取状态（preview45B 拉丝银葱风格）
                 var panel = overlay.querySelector('#rp-receive-panel');
-                panel.style.background = 'linear-gradient(180deg,#e0d8d8 0%,#ccc 100%)';
+                panel.style.background = 'radial-gradient(ellipse at 20% 15%, rgba(245,225,180,0.06) 0%, transparent 50%), radial-gradient(ellipse at 80% 85%, rgba(200,180,150,0.04) 0%, transparent 45%), repeating-linear-gradient(15deg, transparent 0px, transparent 2px, rgba(190,195,210,0.04) 2px, rgba(190,195,210,0.04) 2.5px, transparent 2.5px, transparent 4px, rgba(220,225,240,0.08) 4px, rgba(220,225,240,0.08) 4.5px, transparent 4.5px, transparent 6px), radial-gradient(ellipse at 30% 20%, rgba(245,215,142,0.04) 0%, transparent 60%), linear-gradient(180deg, #FDFBF7 0%, #F5F0EB 100%)';
 
-                // 更新弹窗为已领取状态（领取后不再显示退回按钮）
                 panel.innerHTML =
-                    '<div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,#ffd700 20%,#ffd700 80%,transparent);"></div>' +
+                    '<div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,#C4A882 20%,#C4A882 80%,transparent);"></div>' +
                     '<div style="padding:30px 16px 20px;display:flex;flex-direction:column;align-items:center;flex:1;justify-content:center;">' +
-                        '<div style="width:48px;height:48px;border-radius:50%;background:var(--accent-color,#b8a9c9);border:2px solid rgba(255,215,0,0.5);margin-bottom:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;">' +
-                            '<i class="fas fa-heart"></i>' +
+                        '<div style="width:48px;height:48px;border-radius:50%;background:#d5cdcd;border:2px solid rgba(0,0,0,0.06);margin-bottom:10px;display:flex;align-items:center;justify-content:center;color:#888;font-size:20px;">' +
+                            '<i class="fas fa-check-circle"></i>' +
                         '</div>' +
-                        '<div style="font-size:13px;color:rgba(255,255,255,0.9);margin-bottom:6px;">' + senderName + ' 发来的红包</div>' +
-                        '<div style="font-size:18px;font-weight:700;color:#ffd700;">' + record.message + '</div>' +
-                        '<div style="font-size:24px;font-weight:700;color:#c4453c;margin-top:8px;">&yen;' + fmt(record.amount) + '</div>' +
+                        '<div style="font-size:13px;color:rgba(0,0,0,0.5);margin-bottom:6px;">' + senderName + ' 发来的红包</div>' +
+                        '<div style="font-size:18px;font-weight:700;color:#7A5C1A;">' + record.message + '</div>' +
+                        '<div style="font-size:28px;font-weight:700;color:#7A5C1A;margin-top:8px;">&yen;' + fmt(record.amount) + '</div>' +
                     '</div>' +
-                    '<div style="padding:20px 20px 30px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#ccc;">' +
-                        '<button style="width:60px;height:60px;border-radius:50%;background:#ddd;color:#999;font-size:22px;font-weight:700;border:none;box-shadow:none;cursor:default;">已领取</button>' +
+                    '<div style="padding:20px 20px 30px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(255,255,255,0.15);">' +
+                        '<button style="width:60px;height:60px;border-radius:50%;background:#d5cdcd;color:#888;font-size:22px;font-weight:700;border:none;box-shadow:none;cursor:default;">已领取</button>' +
                     '</div>';
 
                 // 播放声音
