@@ -986,17 +986,46 @@ function createMessageFragment(msg, prevMsg, nextMsg, lastSenderRef) {
         lastSenderRef.current = 'system';
         return fragment;
         } else if (msg.type === 'red-packet') {
-    // 红包消息渲染（原版 + 缩进）
+    // 红包消息渲染（独立头像 + 红包卡片）
     const rpDiv = document.createElement('div');
     rpDiv.className = `message-wrapper ${msg.sender === 'user' ? 'sent' : 'received'}`;
     rpDiv.dataset.id = msg.id;
+
+    // ===== 独立构建头像（红包始终显示，不受 lastSenderRef 影响）=====
+    const avatarDiv = document.createElement('div');
+    avatarDiv.className = 'message-avatar';
+    if (settings.inChatAvatarPosition === 'custom' && settings.inChatAvatarCustomOffset !== undefined) {
+        avatarDiv.style.marginTop = settings.inChatAvatarCustomOffset + 'px';
+    }
+
+    if (settings.inChatAvatarEnabled) {
+        const isUser = msg.sender === 'user';
+        const avatarElement = isUser ? DOMElements.me.avatar : DOMElements.partner.avatar;
+        const frameSettings = isUser ? settings.myAvatarFrame : settings.partnerAvatarFrame;
+        const avatarShape = isUser ? (settings.myAvatarShape || 'circle') : (settings.partnerAvatarShape || 'circle');
+        avatarDiv.innerHTML = avatarElement.innerHTML;
+        if (typeof applyAvatarFrame === 'function') {
+            applyAvatarFrame(avatarDiv, frameSettings);
+        }
+        ['circle', 'square', 'pentagon', 'heart'].forEach(s => avatarDiv.classList.remove('shape-' + s));
+        if (avatarShape !== 'none') avatarDiv.classList.add('shape-' + avatarShape);
+        // 红包强制显示头像，不隐藏
+    } else {
+        avatarDiv.style.display = 'none';
+    }
+    rpDiv.appendChild(avatarDiv);
+    // ===== 头像构建结束 =====
+
+    // ===== 内容区 =====
+    const contentWrapper = document.createElement('div');
+    contentWrapper.className = 'message-content-wrapper';
+
     if (typeof window.renderRedPacketMessage === 'function') {
         const padding = msg.sender === 'user' ? 'padding-right: 46px;' : 'padding-left: 46px;';
         const rpHtml = window.renderRedPacketMessage(msg);
-        rpDiv.innerHTML = `<div style="${padding}">${rpHtml}</div>`;
+        contentWrapper.innerHTML = `<div style="${padding}">${rpHtml}</div>`;
 
-            // ===== 新增：绑定红包卡片点击事件 =====
-        const card = rpDiv.querySelector('.red-packet-card');
+        const card = contentWrapper.querySelector('.red-packet-card');
         if (card) {
             card.addEventListener('click', function(e) {
                 e.stopPropagation();
@@ -1006,11 +1035,10 @@ function createMessageFragment(msg, prevMsg, nextMsg, lastSenderRef) {
                 }
             });
         }
-        // ===== 新增结束 =====
-            
     } else {
-        rpDiv.innerHTML = '<div style="padding:10px;background:#c4453c;color:#fff;border-radius:8px;">红包</div>';
+        contentWrapper.innerHTML = '<div style="padding:10px;background:#c4453c;color:#fff;border-radius:8px;">红包</div>';
     }
+    rpDiv.appendChild(contentWrapper);
     fragment.appendChild(rpDiv);
     lastSenderRef.current = msg.sender;
     return fragment;
