@@ -924,9 +924,7 @@ if (status === 'pending') {
     return card;
 };
 
-    // ============================================================
-// 强制覆盖 showRedPacketReceiveModal 为 preview45B 风格
-// ============================================================
+    // ===== 完整修复版 =====
 window.showRedPacketReceiveModal = function (recordId) {
     function fmt(n) {
         return (n / 100).toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -977,25 +975,15 @@ window.showRedPacketReceiveModal = function (recordId) {
         }
     } catch(e) {}
 
-    // ===== preview45B 配色 =====
-    var amountColor = '#5D4037';
-    var label = isReceived ? '已领取' : '已退回';
-    var titleText = isReceived ? record.message : '已退回';
-    var icon = isReceived ? 'fa-check' : 'fa-undo';
-    var innerColor = isReceived ? '#5D8A5E' : '#A69B94';
-    var decorLine = isReceived ? '#A5D6A7' : '#D7CCC8';
-    var middleColor = '#F5F0EB';
+    var avatarHtml = senderAvatar
+        ? '<img src="' + senderAvatar + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">'
+        : '<i class="fas fa-user" style="color:#B8A9C9;font-size:18px;"></i>';
 
-    var metalBorder = isReceived
-        ? 'radial-gradient(circle at 30% 30%, rgba(165,214,167,0.9) 0%, rgba(200,230,201,0.6) 50%, rgba(165,214,167,0.9) 100%)'
-        : 'radial-gradient(circle at 30% 30%, rgba(180,170,165,0.9) 0%, rgba(210,200,195,0.6) 50%, rgba(180,170,165,0.9) 100%)';
-
-    var topBg = isPending
-        ? 'background:#c4453c;'
-        : 'background: ' +
-          'radial-gradient(ellipse at 20% 15%, rgba(245,225,180,0.06) 0%, transparent 50%), ' +
-          'radial-gradient(ellipse at 80% 85%, rgba(200,180,150,0.04) 0%, transparent 45%), ' +
-          'repeating-linear-gradient(15deg, ' +
+    // ===== 拉丝银葱背景（已领取/已退回使用） =====
+    var silkBg = 'background: ' +
+        'radial-gradient(ellipse at 20% 15%, rgba(245,225,180,0.06) 0%, transparent 50%), ' +
+        'radial-gradient(ellipse at 80% 85%, rgba(200,180,150,0.04) 0%, transparent 45%), ' +
+        'repeating-linear-gradient(15deg, ' +
             'transparent 0px, ' +
             'transparent 2px, ' +
             'rgba(190,195,210,0.04) 2px, ' +
@@ -1006,65 +994,119 @@ window.showRedPacketReceiveModal = function (recordId) {
             'rgba(220,225,240,0.08) 4.5px, ' +
             'transparent 4.5px, ' +
             'transparent 6px' +
-          '), ' +
-          'radial-gradient(ellipse at 30% 20%, rgba(245,215,142,0.04) 0%, transparent 60%), ' +
-          'linear-gradient(180deg, #FDFBF7 0%, #F5F0EB 100%);';
+        '), ' +
+        'radial-gradient(ellipse at 30% 20%, rgba(245,215,142,0.04) 0%, transparent 60%), ' +
+        'linear-gradient(180deg, #FDFBF7 0%, #F5F0EB 100%);';
 
-    var bottomBg = isPending
-        ? 'background:#c4453c;'
-        : 'background: #FAF6F2; box-shadow: inset 0 6px 8px -4px rgba(0,0,0,0.04);';
+    var bottomBg = 'background: #FAF6F2; box-shadow: inset 0 6px 8px -4px rgba(0,0,0,0.04);';
 
-    var avatarHtml = senderAvatar
-        ? '<img src="' + senderAvatar + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">'
-        : '<i class="fas fa-user" style="color:#B8A9C9;font-size:18px;"></i>';
+    // ===== 构建已领取弹窗 =====
+    function buildReceivedPanel() {
+        var resultDecorLine = '#A5D6A7';
+        var resultMetalBorder = 'radial-gradient(circle at 30% 30%, rgba(165,214,167,0.9) 0%, rgba(200,230,201,0.6) 50%, rgba(165,214,167,0.9) 100%)';
+        var resultInnerColor = '#5D8A5E';
+        var resultIcon = 'fa-check';
+        var resultLabel = '已领取';
 
-    var bottomIconHtml = '';
-    if (!isPending) {
-        bottomIconHtml = 
-            '<div style="width:56px;height:56px;border-radius:50%;background:' + metalBorder + ';display:flex;align-items:center;justify-content:center;padding:3px;">' +
-                '<div style="width:100%;height:100%;border-radius:50%;background:' + middleColor + ';display:flex;align-items:center;justify-content:center;">' +
-                    '<div style="width:28px;height:28px;border-radius:50%;background:' + innerColor + ';display:flex;align-items:center;justify-content:center;">' +
-                        '<i class="fas ' + icon + '" style="font-size:12px;color:#fff;"></i>' +
-                    '</div>' +
-                '</div>' +
-            '</div>';
-    }
-
-    var btnHtml = isPending
-        ? '<button id="rp-open-btn" style="width:60px;height:60px;border-radius:50%;background:#ffd700;color:#c4453c;font-size:22px;font-weight:700;border:none;cursor:pointer;box-shadow:0 2px 10px rgba(255,215,0,0.5);">開</button>'
-        : bottomIconHtml;
-
-    var statusLabel = isReceived ? '已领取' : (isReturned ? '已退回' : '');
-
-    var isSystemSender = record.from === 'system';
-    var returnBtnHtml = (isPending && isSystemSender)
-        ? '<button id="rp-return-btn" style="width:100%;max-width:200px;padding:10px 16px;border:none;border-radius:10px;background:linear-gradient(135deg,#ff6b35,#f7931e);color:#fff;font-size:14px;font-weight:600;cursor:pointer;margin-top:12px;transition:all 0.25s cubic-bezier(0.4,0,0.2,1);box-shadow:0 2px 8px rgba(255,107,53,0.35);">退回红包</button>'
-        : '';
-
-    var html =
-        '<div style="text-align:center;position:relative;overflow:hidden;border-radius:16px;width:260px;min-height:380px;box-shadow:0 20px 60px rgba(0,0,0,0.15);display:flex;flex-direction:column;">' +
-            '<div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,' + decorLine + ' 20%,' + decorLine + ' 80%,transparent);z-index:2;"></div>' +
-            '<div style="' + topBg + 'padding:30px 20px 16px;display:flex;flex-direction:column;align-items:center;flex:1;justify-content:center;position:relative;overflow:hidden;">' +
+        return '<div style="text-align:center;position:relative;overflow:hidden;border-radius:16px;width:260px;min-height:380px;box-shadow:0 20px 60px rgba(0,0,0,0.15);display:flex;flex-direction:column;">' +
+            '<div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,' + resultDecorLine + ' 20%,' + resultDecorLine + ' 80%,transparent);z-index:2;"></div>' +
+            '<div style="' + silkBg + 'padding:30px 20px 16px;display:flex;flex-direction:column;align-items:center;flex:1;justify-content:center;position:relative;overflow:hidden;">' +
                 '<div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;">' +
                     '<div style="width:48px;height:48px;border-radius:50%;background:#D7CCC8;margin-bottom:10px;display:flex;align-items:center;justify-content:center;overflow:hidden;font-size:18px;color:#fff;">' +
                         avatarHtml +
                     '</div>' +
-                    '<div style="font-size:13px;color:' + (isPending ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.5)') + ';margin-bottom:4px;">' + senderName + ' 发来的红包</div>' +
-                    '<div style="font-size:16px;color:' + (isPending ? '#fff' : '#5D4037') + ';font-weight:500;margin-bottom:6px;">' + (isReturned ? '已退回' : record.message) + '</div>' +
-                    (!isPending ? '<div style="font-size:36px;font-weight:700;color:' + amountColor + ';">&yen;' + fmt(record.amount) + '</div>' : '') +
+                    '<div style="font-size:13px;color:rgba(0,0,0,0.5);margin-bottom:4px;">' + senderName + ' 发来的红包</div>' +
+                    '<div style="font-size:16px;color:#5D4037;font-weight:500;margin-bottom:6px;">' + record.message + '</div>' +
+                    '<div style="font-size:36px;font-weight:700;color:#5D4037;">&yen;' + fmt(record.amount) + '</div>' +
                 '</div>' +
             '</div>' +
             '<div style="' + bottomBg + 'padding:16px 20px 24px;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:0 0 16px 16px;position:relative;">' +
                 '<div style="position:absolute;inset:0;background:linear-gradient(180deg, rgba(255,255,255,0.3) 0%, transparent 50%);border-radius:0 0 16px 16px;pointer-events:none;"></div>' +
                 '<div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;">' +
-                    btnHtml +
-                    (isPending ? returnBtnHtml : '') +
-                    (!isPending ? '<div style="font-size:14px;color:#5D4037;font-weight:500;margin-top:8px;">' + statusLabel + '</div>' : '') +
+                    '<div style="width:56px;height:56px;border-radius:50%;background:' + resultMetalBorder + ';display:flex;align-items:center;justify-content:center;padding:3px;">' +
+                        '<div style="width:100%;height:100%;border-radius:50%;background:#F5F0EB;display:flex;align-items:center;justify-content:center;">' +
+                            '<div style="width:28px;height:28px;border-radius:50%;background:' + resultInnerColor + ';display:flex;align-items:center;justify-content:center;">' +
+                                '<i class="fas ' + resultIcon + '" style="font-size:12px;color:#fff;"></i>' +
+                            '</div>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div style="font-size:14px;color:#5D4037;font-weight:500;margin-top:8px;">' + resultLabel + '</div>' +
                 '</div>' +
             '</div>' +
         '</div>';
+    }
 
-    overlay.innerHTML = html;
+    // ===== 构建已退回弹窗 =====
+    function buildReturnedPanel() {
+        var resultDecorLine = '#D7CCC8';
+        var resultMetalBorder = 'radial-gradient(circle at 30% 30%, rgba(180,170,165,0.9) 0%, rgba(210,200,195,0.6) 50%, rgba(180,170,165,0.9) 100%)';
+        var resultInnerColor = '#A69B94';
+        var resultIcon = 'fa-undo';
+        var resultLabel = '已退回';
+
+        return '<div style="text-align:center;position:relative;overflow:hidden;border-radius:16px;width:260px;min-height:380px;box-shadow:0 20px 60px rgba(0,0,0,0.15);display:flex;flex-direction:column;">' +
+            '<div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,' + resultDecorLine + ' 20%,' + resultDecorLine + ' 80%,transparent);z-index:2;"></div>' +
+            '<div style="' + silkBg + 'padding:30px 20px 16px;display:flex;flex-direction:column;align-items:center;flex:1;justify-content:center;position:relative;overflow:hidden;">' +
+                '<div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;">' +
+                    '<div style="width:48px;height:48px;border-radius:50%;background:#D7CCC8;margin-bottom:10px;display:flex;align-items:center;justify-content:center;overflow:hidden;font-size:18px;color:#fff;">' +
+                        avatarHtml +
+                    '</div>' +
+                    '<div style="font-size:13px;color:rgba(0,0,0,0.5);margin-bottom:4px;">' + senderName + ' 发来的红包</div>' +
+                    '<div style="font-size:16px;color:#5D4037;font-weight:500;margin-bottom:6px;">已退回</div>' +
+                    '<div style="font-size:36px;font-weight:700;color:#5D4037;">&yen;' + fmt(record.amount) + '</div>' +
+                '</div>' +
+            '</div>' +
+            '<div style="' + bottomBg + 'padding:16px 20px 24px;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:0 0 16px 16px;position:relative;">' +
+                '<div style="position:absolute;inset:0;background:linear-gradient(180deg, rgba(255,255,255,0.3) 0%, transparent 50%);border-radius:0 0 16px 16px;pointer-events:none;"></div>' +
+                '<div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;">' +
+                    '<div style="width:56px;height:56px;border-radius:50%;background:' + resultMetalBorder + ';display:flex;align-items:center;justify-content:center;padding:3px;">' +
+                        '<div style="width:100%;height:100%;border-radius:50%;background:#F5F0EB;display:flex;align-items:center;justify-content:center;">' +
+                            '<div style="width:28px;height:28px;border-radius:50%;background:' + resultInnerColor + ';display:flex;align-items:center;justify-content:center;">' +
+                                '<i class="fas ' + resultIcon + '" style="font-size:12px;color:#fff;"></i>' +
+                            '</div>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div style="font-size:14px;color:#5D4037;font-weight:500;margin-top:8px;">' + resultLabel + '</div>' +
+                '</div>' +
+            '</div>' +
+        '</div>';
+    }
+
+    // ===== 构建待领取弹窗 =====
+    function buildPendingPanel() {
+        var isSystemSender = record.from === 'system';
+        var returnBtnHtml = (isSystemSender)
+            ? '<button id="rp-return-btn" style="width:100%;max-width:200px;padding:10px 16px;border:none;border-radius:10px;background:linear-gradient(135deg,#ff6b35,#f7931e);color:#fff;font-size:14px;font-weight:600;cursor:pointer;margin-top:12px;transition:all 0.25s cubic-bezier(0.4,0,0.2,1);box-shadow:0 2px 8px rgba(255,107,53,0.35);">退回红包</button>'
+            : '';
+
+        return '<div style="text-align:center;position:relative;overflow:hidden;border-radius:16px;width:260px;min-height:380px;box-shadow:0 20px 60px rgba(0,0,0,0.15);display:flex;flex-direction:column;">' +
+            '<div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,#ffd700 20%,#ffd700 80%,transparent);z-index:2;"></div>' +
+            '<div style="background:#c4453c;padding:30px 20px 16px;display:flex;flex-direction:column;align-items:center;flex:1;justify-content:center;position:relative;overflow:hidden;">' +
+                '<div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;">' +
+                    '<div style="width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,0.2);margin-bottom:10px;display:flex;align-items:center;justify-content:center;overflow:hidden;font-size:18px;color:#fff;">' +
+                        avatarHtml +
+                    '</div>' +
+                    '<div style="font-size:13px;color:rgba(255,255,255,0.9);margin-bottom:4px;">' + senderName + ' 发来的红包</div>' +
+                    '<div style="font-size:16px;color:#fff;font-weight:500;margin-bottom:6px;">' + record.message + '</div>' +
+                '</div>' +
+            '</div>' +
+            '<div style="background:#c4453c;padding:16px 20px 24px;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:0 0 16px 16px;position:relative;">' +
+                '<div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;">' +
+                    '<button id="rp-open-btn" style="width:60px;height:60px;border-radius:50%;background:#ffd700;color:#c4453c;font-size:22px;font-weight:700;border:none;cursor:pointer;box-shadow:0 2px 10px rgba(255,215,0,0.5);">開</button>' +
+                    returnBtnHtml +
+                '</div>' +
+            '</div>' +
+        '</div>';
+    }
+
+    // 初始渲染
+    if (isPending) {
+        overlay.innerHTML = buildPendingPanel();
+    } else if (isReceived) {
+        overlay.innerHTML = buildReceivedPanel();
+    } else if (isReturned) {
+        overlay.innerHTML = buildReturnedPanel();
+    }
     document.body.appendChild(overlay);
 
     // 绑定开按钮
@@ -1079,7 +1121,9 @@ window.showRedPacketReceiveModal = function (recordId) {
                 record.status = 'received';
                 record.receivedAt = Date.now();
                 if (typeof window.throttledSaveData === 'function') window.throttledSaveData();
-                overlay.remove();
+
+                overlay.innerHTML = buildReceivedPanel();
+
                 if (typeof renderMessages === 'function') renderMessages();
                 if (typeof window.showNotification === 'function') window.showNotification('红包已领取 &yen;' + fmt(record.amount), 'success');
             };
@@ -1087,7 +1131,7 @@ window.showRedPacketReceiveModal = function (recordId) {
     }
 
     // 绑定退回按钮
-    if (isPending && isSystemSender) {
+    if (isPending && record.from === 'system') {
         var returnBtn = overlay.querySelector('#rp-return-btn');
         if (returnBtn) {
             returnBtn.onclick = function () {
@@ -1095,7 +1139,9 @@ window.showRedPacketReceiveModal = function (recordId) {
                 record.status = 'returned';
                 record.returnedAt = Date.now();
                 if (typeof window.throttledSaveData === 'function') window.throttledSaveData();
-                overlay.remove();
+
+                overlay.innerHTML = buildReturnedPanel();
+
                 if (typeof renderMessages === 'function') renderMessages();
                 if (typeof window.showNotification === 'function') window.showNotification('红包已退回', 'info');
             };
@@ -1103,6 +1149,5 @@ window.showRedPacketReceiveModal = function (recordId) {
     }
 };
 
-console.log('✅ showRedPacketReceiveModal 已永久覆盖为 preview45B 风格');
-
+console.log('✅ 修复版已生效！已领取/已退回弹窗使用拉丝银葱背景');
 })();
