@@ -832,13 +832,15 @@ window.getFestivals = function getFestivals() {
 
     // ===== 状态文字样式 =====
     var statusHtml = '';
-    if (status === 'pending') {
-        statusHtml = '<span style="display:flex;align-items:center;gap:3px;font-weight:500;color:#c4453c;font-size:10px;"><i class="fas fa-clock" style="font-size:9px;"></i> ' + (isSentByMe ? '对方待领取' : '待领取') + '</span>';
-    } else if (status === 'received') {
-        statusHtml = '<span style="display:flex;align-items:center;gap:4px;font-weight:600;color:#2d7d46;font-size:10px;background:rgba(45,125,70,0.10);padding:2px 10px;border-radius:12px;"><i class="fas fa-check-circle" style="font-size:9px;color:#2d7d46;"></i> 已领取</span>';
-    } else {
-        statusHtml = '<span style="display:flex;align-items:center;gap:4px;font-weight:500;color:#B8956E;font-size:10px;background:rgba(196,168,130,0.12);padding:2px 10px;border-radius:12px;"><i class="fas fa-undo" style="font-size:9px;color:#B8956E;"></i> 已退回</span>';
-    }
+   // ===== 状态文字样式（已领取绿色，已退回灰色）=====
+if (status === 'pending') {
+    statusHtml = '<span style="display:flex;align-items:center;gap:3px;font-weight:500;color:#c4453c;font-size:10px;"><i class="fas fa-clock" style="font-size:9px;"></i> ' + (isSentByMe ? '对方待领取' : '待领取') + '</span>';
+} else if (status === 'received') {
+    statusHtml = '<span style="display:flex;align-items:center;gap:4px;font-weight:600;color:#2d7d46;font-size:10px;background:rgba(45,125,70,0.10);padding:2px 10px;border-radius:12px;"><i class="fas fa-check-circle" style="font-size:9px;color:#2d7d46;"></i> 已领取</span>';
+} else {
+    // 已退回：统一灰色（与卡片风格一致）
+    statusHtml = '<span style="display:flex;align-items:center;gap:4px;font-weight:500;color:#999;font-size:10px;background:rgba(153,153,153,0.10);padding:2px 10px;border-radius:12px;"><i class="fas fa-undo" style="font-size:9px;color:#999;"></i> 已退回</span>';
+}
 
     // ===== 卡片配色（灰色风格）=====
 var bodyBg = '';
