@@ -840,31 +840,31 @@ window.getFestivals = function getFestivals() {
         statusHtml = '<span style="display:flex;align-items:center;gap:4px;font-weight:500;color:#B8956E;font-size:10px;background:rgba(196,168,130,0.12);padding:2px 10px;border-radius:12px;"><i class="fas fa-undo" style="font-size:9px;color:#B8956E;"></i> 已退回</span>';
     }
 
-    // ===== 卡片配色 =====
-    var bodyBg = '';
-    var svgStroke = '';
-    var svgCircleFill = '';
-    var amountColor = '';
-    var titleColor = '';
-    var msgColor = '';
+    // ===== 卡片配色（灰色风格）=====
+var bodyBg = '';
+var svgStroke = '';
+var svgCircleFill = '';
+var amountColor = '';
+var titleColor = '';
+var msgColor = '';
 
-    if (status === 'pending') {
-        // 待领取：红色喜庆
-        bodyBg = 'background:linear-gradient(180deg,#D57C6F 0%,#b5655a 100%);';
-        svgStroke = 'stroke="#fff"';
-        svgCircleFill = 'fill="#fff"';
-        amountColor = '#fff';
-        titleColor = 'rgba(255,255,255,0.85)';
-        msgColor = 'rgba(255,255,255,0.8)';
-    } else {
-        // 已领取 & 已退回：统一米黄色，金额用深棕色清晰可见
-        bodyBg = 'background:linear-gradient(180deg,#F5E6D3 0%,#E8D5C4 100%);';
-        svgStroke = 'stroke="#8B6914"';
-        svgCircleFill = 'fill="#8B6914"';
-        amountColor = '#7A5C1A';  // 深棕色，清晰可见
-        titleColor = 'rgba(0,0,0,0.4)';
-        msgColor = 'rgba(0,0,0,0.45)';
-    }
+if (status === 'pending') {
+    // 待领取：红色喜庆
+    bodyBg = 'background:linear-gradient(180deg,#D57C6F 0%,#b5655a 100%);';
+    svgStroke = 'stroke="#fff"';
+    svgCircleFill = 'fill="#fff"';
+    amountColor = '#fff';
+    titleColor = 'rgba(255,255,255,0.85)';
+    msgColor = 'rgba(255,255,255,0.8)';
+} else {
+    // 已领取 & 已退回：微信灰色风格
+    bodyBg = 'background:linear-gradient(180deg,#e8e0e0 0%,#d5cdcd 100%);';
+    svgStroke = 'stroke="#aaa"';
+    svgCircleFill = 'fill="#aaa"';
+    amountColor = '#888';
+    titleColor = 'rgba(0,0,0,0.35)';
+    msgColor = 'rgba(0,0,0,0.35)';
+}
 
     var rpSvgCustom = '<svg width="27" height="33" viewBox="0 0 20 28" fill="none" ' + svgStroke + ' stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="16" height="18" rx="2"/><path d="M2 8l8 6 8-6"/><circle cx="10" cy="14" r="2.5" ' + svgCircleFill + ' stroke="none"/></svg>';
 
