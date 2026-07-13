@@ -991,7 +991,7 @@ function createMessageFragment(msg, prevMsg, nextMsg, lastSenderRef) {
     rpDiv.className = `message-wrapper ${msg.sender === 'user' ? 'sent' : 'received'}`;
     rpDiv.dataset.id = msg.id;
 
-    // ===== 独立构建头像（红包始终显示，不受 lastSenderRef 影响）=====
+    // ===== 独立构建头像（红包始终显示）=====
     const avatarDiv = document.createElement('div');
     avatarDiv.className = 'message-avatar';
     if (settings.inChatAvatarPosition === 'custom' && settings.inChatAvatarCustomOffset !== undefined) {
@@ -1009,14 +1009,13 @@ function createMessageFragment(msg, prevMsg, nextMsg, lastSenderRef) {
         }
         ['circle', 'square', 'pentagon', 'heart'].forEach(s => avatarDiv.classList.remove('shape-' + s));
         if (avatarShape !== 'none') avatarDiv.classList.add('shape-' + avatarShape);
-        // 红包强制显示头像，不隐藏
     } else {
         avatarDiv.style.display = 'none';
     }
     rpDiv.appendChild(avatarDiv);
     // ===== 头像构建结束 =====
 
-    // ===== 内容区 =====
+    // ===== 内容区（用 contentWrapper 包裹）=====
     const contentWrapper = document.createElement('div');
     contentWrapper.className = 'message-content-wrapper';
 
