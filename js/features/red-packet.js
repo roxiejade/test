@@ -830,37 +830,57 @@ window.getFestivals = function getFestivals() {
         }
     }
 
+    // ===== 状态文字样式 =====
     var statusHtml = '';
     if (status === 'pending') {
-        statusHtml = '<span style="display:flex;align-items:center;gap:3px;font-weight:500;color:#c4453c;font-size:9px;"><i class="fas fa-clock" style="font-size:8px;"></i> ' + (isSentByMe ? '对方待领取' : '待领取') + '</span>';
+        statusHtml = '<span style="display:flex;align-items:center;gap:3px;font-weight:500;color:#c4453c;font-size:10px;"><i class="fas fa-clock" style="font-size:9px;"></i> ' + (isSentByMe ? '对方待领取' : '待领取') + '</span>';
     } else if (status === 'received') {
-        statusHtml = '<span style="display:flex;align-items:center;gap:3px;font-weight:500;color:#2ed573;font-size:9px;"><i class="fas fa-check-circle" style="font-size:8px;"></i> 已领取</span>';
+        statusHtml = '<span style="display:flex;align-items:center;gap:4px;font-weight:600;color:#2d7d46;font-size:10px;background:rgba(45,125,70,0.10);padding:2px 10px;border-radius:12px;"><i class="fas fa-check-circle" style="font-size:9px;color:#2d7d46;"></i> 已领取</span>';
     } else {
-        statusHtml = '<span style="display:flex;align-items:center;gap:3px;font-weight:500;color:#bbb;font-size:9px;"><i class="fas fa-undo" style="font-size:8px;"></i> 已退回</span>';
+        statusHtml = '<span style="display:flex;align-items:center;gap:4px;font-weight:500;color:#B8956E;font-size:10px;background:rgba(196,168,130,0.12);padding:2px 10px;border-radius:12px;"><i class="fas fa-undo" style="font-size:9px;color:#B8956E;"></i> 已退回</span>';
     }
 
-    var bodyBg = isOpened
-        ? 'background:linear-gradient(180deg,#e0d8d8 0%,#ccc 100%);'
-        : 'background:linear-gradient(180deg,#D57C6F 0%,#b5655a 100%);';
+    // ===== 卡片配色 =====
+    var bodyBg = '';
+    var svgStroke = '';
+    var svgCircleFill = '';
+    var amountColor = '';
+    var titleColor = '';
+    var msgColor = '';
 
-    var svgStroke = isOpened ? 'stroke="#999"' : 'stroke="#fff"';
-    var svgCircleFill = isOpened ? 'fill="#999"' : 'fill="#fff"';
-    // SVG 缩小：36x44 → 27x33
+    if (status === 'pending') {
+        // 待领取：红色喜庆
+        bodyBg = 'background:linear-gradient(180deg,#D57C6F 0%,#b5655a 100%);';
+        svgStroke = 'stroke="#fff"';
+        svgCircleFill = 'fill="#fff"';
+        amountColor = '#fff';
+        titleColor = 'rgba(255,255,255,0.85)';
+        msgColor = 'rgba(255,255,255,0.8)';
+    } else {
+        // 已领取 & 已退回：统一米黄色，金额用深棕色清晰可见
+        bodyBg = 'background:linear-gradient(180deg,#F5E6D3 0%,#E8D5C4 100%);';
+        svgStroke = 'stroke="#8B6914"';
+        svgCircleFill = 'fill="#8B6914"';
+        amountColor = '#7A5C1A';  // 深棕色，清晰可见
+        titleColor = 'rgba(0,0,0,0.4)';
+        msgColor = 'rgba(0,0,0,0.45)';
+    }
+
     var rpSvgCustom = '<svg width="27" height="33" viewBox="0 0 20 28" fill="none" ' + svgStroke + ' stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="16" height="18" rx="2"/><path d="M2 8l8 6 8-6"/><circle cx="10" cy="14" r="2.5" ' + svgCircleFill + ' stroke="none"/></svg>';
 
-   var card =
-    '<div class="red-packet-card' + (isOpened ? ' opened' : '') + '" data-rp-id="' + recordId + '" style="width:195px;border-radius:5px;overflow:hidden;cursor:pointer;transition:transform 0.15s;position:relative;">' +
-        '<div class="rp-body" style="' + bodyBg + 'padding:9px 11px 11px;color:#fff;position:relative;display:flex;align-items:center;gap:9px;">' +
+    var card =
+    '<div class="red-packet-card' + (isOpened ? ' opened' : '') + '" data-rp-id="' + recordId + '" style="width:195px;border-radius:8px;overflow:hidden;cursor:pointer;transition:transform 0.15s,box-shadow 0.2s;position:relative;box-shadow:0 2px 8px rgba(0,0,0,0.08);">' +
+        '<div class="rp-body" style="' + bodyBg + 'padding:10px 12px 12px;color:#fff;position:relative;display:flex;align-items:center;gap:10px;">' +
             '<div class="rp-icon" style="width:33px;height:33px;flex-shrink:0;display:flex;align-items:center;justify-content:center;">' +
                 rpSvgCustom +
             '</div>' +
             '<div class="rp-content" style="flex:1;min-width:0;">' +
-                '<div class="rp-title" style="font-size:10px;font-weight:600;margin-bottom:1px;">红包</div>' +
-                '<div class="rp-amount-text" style="font-size:18px;font-weight:700;line-height:1.2;">¥' + fmt(amount) + '</div>' +
-                '<div class="rp-msg-text" style="font-size:9px;opacity:0.8;margin-top:1px;">' + message + '</div>' +
+                '<div class="rp-title" style="font-size:10px;font-weight:600;margin-bottom:1px;color:' + titleColor + ';">红包</div>' +
+                '<div class="rp-amount-text" style="font-size:18px;font-weight:700;line-height:1.2;color:' + amountColor + ';">¥' + fmt(amount) + '</div>' +
+                '<div class="rp-msg-text" style="font-size:9px;opacity:0.8;margin-top:1px;color:' + msgColor + ';">' + message + '</div>' +
             '</div>' +
         '</div>' +
-        '<div class="rp-footer" style="background:#fff;padding:6px 11px;display:flex;align-items:center;justify-content:space-between;font-size:9px;border-top:1px dashed rgba(196,69,60,0.3);">' +
+        '<div class="rp-footer" style="background:#fff;padding:5px 12px;display:flex;align-items:center;justify-content:space-between;font-size:9px;border-top:1px solid rgba(196,69,60,0.08);min-height:28px;">' +
             statusHtml +
             '<span style="color:#bbb;font-size:9px;">' + timeStr + '</span>' +
         '</div>' +
