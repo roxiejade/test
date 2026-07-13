@@ -407,6 +407,8 @@ window.getFestivals = function getFestivals() {
         var senderName = record.from === 'me' ? getMyName() : getPartnerName();
 
                 // ===== preview45B() 配色：拉丝银葱 + 暖金色中和 =====
+        var decorLine = isPending ? '#ffd700' : '#C4A882';
+        
         var panelBg = isPending
             ? 'background:#c4453c;'  // 待领取：红色喜庆
             : 'background: ' +
