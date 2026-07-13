@@ -406,16 +406,33 @@ window.getFestivals = function getFestivals() {
 
         var senderName = record.from === 'me' ? getMyName() : getPartnerName();
 
-        var panelBg = isOpened
-            ? 'background:linear-gradient(180deg,#e0d8d8 0%,#ccc 100%);'
-            : 'background:#c4453c;';
+                // ===== preview45B() 配色：拉丝银葱 + 暖金色中和 =====
+        var panelBg = isPending
+            ? 'background:#c4453c;'  // 待领取：红色喜庆
+            : 'background: ' +
+              'radial-gradient(ellipse at 20% 15%, rgba(245,225,180,0.06) 0%, transparent 50%), ' +
+              'radial-gradient(ellipse at 80% 85%, rgba(200,180,150,0.04) 0%, transparent 45%), ' +
+              'repeating-linear-gradient(15deg, ' +
+                'transparent 0px, ' +
+                'transparent 2px, ' +
+                'rgba(190,195,210,0.04) 2px, ' +
+                'rgba(190,195,210,0.04) 2.5px, ' +
+                'transparent 2.5px, ' +
+                'transparent 4px, ' +
+                'rgba(220,225,240,0.08) 4px, ' +
+                'rgba(220,225,240,0.08) 4.5px, ' +
+                'transparent 4.5px, ' +
+                'transparent 6px' +
+              '), ' +
+              'radial-gradient(ellipse at 30% 20%, rgba(245,215,142,0.04) 0%, transparent 60%), ' +
+              'linear-gradient(180deg, #FDFBF7 0%, #F5F0EB 100%);';
 
-        var btnBg = isOpened
-            ? 'background:#ddd;color:#999;box-shadow:none;cursor:default;'
-            : 'background:#ffd700;color:#c4453c;box-shadow:0 2px 10px rgba(255,215,0,0.5);cursor:pointer;';
+        var btnBg = isPending
+            ? 'background:#ffd700;color:#c4453c;box-shadow:0 2px 10px rgba(255,215,0,0.5);cursor:pointer;'
+            : 'background:#d5cdcd;color:#888;box-shadow:none;cursor:default;';
 
         var btnText = isPending ? '開' : (isReceived ? '已领取' : '已退回');
-        var titleColor = isPending ? 'color:#ffd700;' : (isReturned ? 'color:#999;' : 'color:#ffd700;');
+        var titleColor = isPending ? 'color:#ffd700;' : 'color:#7A5C1A;';  // 已领取/已退回用深棕色，与米色背景和谐
         var titleText = isReturned ? '已过期' : record.message;
 
         // 判断是否为系统发出的红包（我方领取），添加退回按钮
@@ -427,17 +444,17 @@ window.getFestivals = function getFestivals() {
         var html =
             '<div id="rp-receive-panel" style="text-align:center;position:relative;overflow:hidden;border-radius:16px;width:260px;min-height:380px;' + panelBg + 'display:flex;flex-direction:column;">' +
                 // 顶部金色装饰线
-                '<div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,#ffd700 20%,#ffd700 80%,transparent);"></div>' +
+                '<div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,' + decorLine + ' 20%,' + decorLine + ' 80%,transparent);"></div>' +
                 // 发送者区域
                 '<div style="padding:30px 16px 20px;display:flex;flex-direction:column;align-items:center;flex:1;justify-content:center;">' +
                     '<div style="width:48px;height:48px;border-radius:50%;background:var(--accent-color,#b8a9c9);border:2px solid rgba(255,215,0,0.5);margin-bottom:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;">' +
                         (record.from === 'me' ? '<i class="fas fa-user"></i>' : '<i class="fas fa-heart"></i>') +
                     '</div>' +
-                    '<div style="font-size:13px;color:rgba(255,255,255,0.9);margin-bottom:6px;">' + senderName + ' 发来的红包</div>' +
+                    '<div style="font-size:13px;color:' + (isPending ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.5)') + ';margin-bottom:6px;">' + senderName + ' 发来的红包</div>' +
                     '<div style="font-size:18px;font-weight:700;' + titleColor + '">' + titleText + '</div>' +
                 '</div>' +
                 // 底部按钮区域
-                '<div style="padding:30px 20px 40px;display:flex;flex-direction:column;align-items:center;justify-content:center;' + (isOpened ? 'background:#ccc;' : 'background:#c4453c;') + '">' +
+                '<div style="padding:30px 20px 40px;display:flex;flex-direction:column;align-items:center;justify-content:center;' + (isPending ? 'background:#c4453c;' : 'background:rgba(255,255,255,0.15);') + '">' +
                     '<button id="rp-open-btn" style="width:60px;height:60px;border-radius:50%;' + btnBg + 'font-size:22px;font-weight:700;border:none;transition:all 0.15s;">' + btnText + '</button>' +
                     returnBtnHtml +
                 '</div>' +
