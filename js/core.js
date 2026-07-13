@@ -991,7 +991,7 @@ function createMessageFragment(msg, prevMsg, nextMsg, lastSenderRef) {
     rpDiv.className = `message-wrapper ${msg.sender === 'user' ? 'sent' : 'received'}`;
     rpDiv.dataset.id = msg.id;
 
-    // ===== 独立构建头像（红包始终显示）=====
+    // ===== 独立构建头像 =====
     const avatarDiv = document.createElement('div');
     avatarDiv.className = 'message-avatar';
     if (settings.inChatAvatarPosition === 'custom' && settings.inChatAvatarCustomOffset !== undefined) {
@@ -1013,16 +1013,17 @@ function createMessageFragment(msg, prevMsg, nextMsg, lastSenderRef) {
         avatarDiv.style.display = 'none';
     }
     rpDiv.appendChild(avatarDiv);
-    // ===== 头像构建结束 =====
 
-    // ===== 内容区（用 contentWrapper 包裹）=====
+    // ===== 内容区 =====
     const contentWrapper = document.createElement('div');
     contentWrapper.className = 'message-content-wrapper';
 
     if (typeof window.renderRedPacketMessage === 'function') {
         const padding = msg.sender === 'user' ? 'padding-right: 46px;' : 'padding-left: 46px;';
         const rpHtml = window.renderRedPacketMessage(msg);
-        contentWrapper.innerHTML = `<div style="${padding}">${rpHtml}</div>`;
+        // 关键修改：直接放内容，padding 设置在 contentWrapper 上
+        contentWrapper.innerHTML = rpHtml;
+        contentWrapper.style.cssText = padding;
 
         const card = contentWrapper.querySelector('.red-packet-card');
         if (card) {
