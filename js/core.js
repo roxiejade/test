@@ -994,6 +994,20 @@ function createMessageFragment(msg, prevMsg, nextMsg, lastSenderRef) {
         const padding = msg.sender === 'user' ? 'padding-right: 46px;' : 'padding-left: 46px;';
         const rpHtml = window.renderRedPacketMessage(msg);
         rpDiv.innerHTML = `<div style="${padding}">${rpHtml}</div>`;
+
+            // ===== 新增：绑定红包卡片点击事件 =====
+        const card = rpDiv.querySelector('.red-packet-card');
+        if (card) {
+            card.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const recordId = this.dataset.rpId;
+                if (recordId && typeof window.showRedPacketReceiveModal === 'function') {
+                    window.showRedPacketReceiveModal(recordId);
+                }
+            });
+        }
+        // ===== 新增结束 =====
+            
     } else {
         rpDiv.innerHTML = '<div style="padding:10px;background:#c4453c;color:#fff;border-radius:8px;">红包</div>';
     }
