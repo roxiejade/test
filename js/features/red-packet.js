@@ -556,7 +556,7 @@ if (typeof addMessage === 'function') {
                 // 保存
                 if (typeof window.throttledSaveData === 'function') window.throttledSaveData();
 
-                                // 更新弹窗为已领取状态（preview45B 拉丝银葱风格）
+                                                // 更新弹窗为已领取状态（preview45B 拉丝银葱风格）
                 var panel = overlay.querySelector('#rp-receive-panel');
                 panel.style.background = 'radial-gradient(ellipse at 20% 15%, rgba(245,225,180,0.06) 0%, transparent 50%), radial-gradient(ellipse at 80% 85%, rgba(200,180,150,0.04) 0%, transparent 45%), repeating-linear-gradient(15deg, transparent 0px, transparent 2px, rgba(190,195,210,0.04) 2px, rgba(190,195,210,0.04) 2.5px, transparent 2.5px, transparent 4px, rgba(220,225,240,0.08) 4px, rgba(220,225,240,0.08) 4.5px, transparent 4.5px, transparent 6px), radial-gradient(ellipse at 30% 20%, rgba(245,215,142,0.04) 0%, transparent 60%), linear-gradient(180deg, #FDFBF7 0%, #F5F0EB 100%)';
 
@@ -573,7 +573,7 @@ if (typeof addMessage === 'function') {
                     '<div style="padding:20px 20px 30px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(255,255,255,0.15);">' +
                         '<button style="width:60px;height:60px;border-radius:50%;background:#d5cdcd;color:#888;font-size:22px;font-weight:700;border:none;box-shadow:none;cursor:default;">已领取</button>' +
                     '</div>';
-
+                
                 // 播放声音
                 if (typeof window.playSound === 'function') window.playSound('message');
 
