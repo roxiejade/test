@@ -981,21 +981,21 @@ window.showRedPacketReceiveModal = function (recordId) {
 
     // ===== 拉丝银葱背景（已领取/已退回使用） =====
     var silkBg = 'background: ' +
-        'radial-gradient(ellipse at 20% 15%, rgba(245,225,180,0.06) 0%, transparent 50%), ' +
-        'radial-gradient(ellipse at 80% 85%, rgba(200,180,150,0.04) 0%, transparent 45%), ' +
-        'repeating-linear-gradient(15deg, ' +
-            'transparent 0px, ' +
-            'transparent 2px, ' +
-            'rgba(190,195,210,0.04) 2px, ' +
-            'rgba(190,195,210,0.04) 2.5px, ' +
-            'transparent 2.5px, ' +
-            'transparent 4px, ' +
-            'rgba(220,225,240,0.08) 4px, ' +
-            'rgba(220,225,240,0.08) 4.5px, ' +
-            'transparent 4.5px, ' +
-            'transparent 6px' +
-        '), ' +
-        'radial-gradient(ellipse at 30% 20%, rgba(245,215,142,0.04) 0%, transparent 60%), ' +
+        'radial-gradient(ellipse at 20% 15%, rgba(245,225,180,0.07) 0%, transparent 50%), ' +
+'radial-gradient(ellipse at 80% 85%, rgba(200,180,150,0.05) 0%, transparent 45%), ' +
+'repeating-linear-gradient(15deg, ' +
+  'transparent 0px, ' +
+  'transparent 2px, ' +
+  'rgba(190,195,210,0.08) 2px, ' +
+  'rgba(190,195,210,0.08) 2.5px, ' +
+  'transparent 2.5px, ' +
+  'transparent 4px, ' +
+  'rgba(220,225,240,0.13) 4px, ' +
+  'rgba(220,225,240,0.13) 4.5px, ' +
+  'transparent 4.5px, ' +
+  'transparent 6px' +
+'), ' +
+'radial-gradient(ellipse at 30% 20%, rgba(245,215,142,0.05) 0%, transparent 60%), ' +
         'linear-gradient(180deg, #FDFBF7 0%, #F5F0EB 100%);';
 
     var bottomBg = 'background: #FAF6F2; box-shadow: inset 0 6px 8px -4px rgba(0,0,0,0.04);';
