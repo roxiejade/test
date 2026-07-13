@@ -354,21 +354,20 @@ window.getFestivals = function getFestivals() {
                     if (typeof window.throttledSaveData === 'function') window.throttledSaveData();
 
                     setTimeout(function () {
-                        // 收取方发送已领取样式的红包卡片
-                        if (typeof addMessage === 'function') {
-                            addMessage({
-                                id: 'rp_recv_card_' + Date.now(),
-                                sender: 'partner',
-                                text: rpRecord.message || '恭喜发财',
-                                timestamp: new Date(),
-                                status: 'received',
-                                type: 'red-packet',
-                                redPacket: rpRecord
-                            });
-                        }
-                        if (typeof renderMessages === 'function') renderMessages();
-                        if (typeof window.playSound === 'function') window.playSound('message');
-                    }, delayMin + Math.random() * (delayMax - delayMin));
+    // 发送「对方领取了你的红包」文字消息
+    if (typeof addMessage === 'function') {
+        addMessage({
+            id: 'rp_recv_text_' + Date.now(),
+            sender: 'system',
+            text: getPartnerName() + ' 领取了你的红包',
+            timestamp: new Date(),
+            status: 'sent',
+            type: 'system'
+        });
+    }
+    if (typeof renderMessages === 'function') renderMessages();
+    if (typeof window.playSound === 'function') window.playSound('message');
+}, delayMin + Math.random() * (delayMax - delayMin));
                 }
                 // 10%：保持 pending，后续聊天中随机收取（由 tryCollectPendingRedPacket 处理）
             }, sysDelay);
@@ -479,18 +478,17 @@ window.getFestivals = function getFestivals() {
 
                     if (typeof window.showNotification === 'function') window.showNotification('红包已退回', 'info');
 
-                    // 发送退回样式的红包卡片到聊天
-                    if (typeof addMessage === 'function') {
-                        addMessage({
-                            id: 'rp_returned_' + Date.now(),
-                            sender: 'user',
-                            text: record.message || '恭喜发财',
-                            timestamp: new Date(),
-                            status: 'sent',
-                            type: 'red-packet',
-                            redPacket: record
-                        });
-                    }
+                    // 发送「红包已被退回」文字消息
+if (typeof addMessage === 'function') {
+    addMessage({
+        id: 'rp_returned_' + Date.now(),
+        sender: 'system',
+        text: '红包已被退回',
+        timestamp: new Date(),
+        status: 'sent',
+        type: 'system'
+    });
+}
 
                     if (typeof renderMessages === 'function') renderMessages();
                 };
@@ -546,18 +544,17 @@ window.getFestivals = function getFestivals() {
                 // 通知
                 if (typeof window.showNotification === 'function') window.showNotification('红包已领取 &yen;' + fmt(record.amount), 'success');
 
-                // 收取方（我方）发送已领取样式的红包卡片
-                if (typeof addMessage === 'function') {
-                    addMessage({
-                        id: 'rp_recv_card_' + Date.now(),
-                        sender: 'user',
-                        text: record.message || '恭喜发财',
-                        timestamp: new Date(),
-                        status: 'sent',
-                        type: 'red-packet',
-                        redPacket: record
-                    });
-                }
+                // 发送「你领取了对方的红包」文字消息
+if (typeof addMessage === 'function') {
+    addMessage({
+        id: 'rp_recv_text_' + Date.now(),
+        sender: 'system',
+        text: '你领取了 ' + getPartnerName() + ' 的红包',
+        timestamp: new Date(),
+        status: 'sent',
+        type: 'system'
+    });
+}
 
                 // 刷新聊天消息列表（触发重新渲染以更新卡片状态）
                 if (typeof renderMessages === 'function') renderMessages();
