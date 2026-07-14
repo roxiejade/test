@@ -167,7 +167,7 @@
                         'text-shadow:0 2px 4px rgba(0,0,0,0.03);',
                     '">00:00:00</div>',
                 '</div>',
-                '<div style="display:flex;gap:10px;flex-shrink:0;padding:4px 0 8px;">',
+                                '<div style="display:flex;gap:10px;flex-shrink:0;padding:4px 0 8px;">',
                     '<button id="vc-btn-sync" onclick="VirtualClockUI.handleSync()" style="',
                         'flex:1;padding:12px 0;border:1.5px solid var(--border-color,#ddd);',
                         'border-radius:12px;background:var(--primary-bg,#f5f5f5);',
@@ -175,6 +175,13 @@
                         'cursor:pointer;font-family:var(--font-family);',
                         'transition:all 0.2s;',
                     '">时间同步</button>',
+                    '<button onclick="VirtualClockUI.openManualModal()" style="',
+                        'flex:1;padding:12px 0;border:1.5px solid var(--border-color,#ddd);',
+                        'border-radius:12px;background:var(--primary-bg,#f5f5f5);',
+                        'color:var(--text-primary);font-size:14px;font-weight:600;',
+                        'cursor:pointer;font-family:var(--font-family);',
+                        'transition:all 0.2s;',
+                    '">手动设定</button>',
                     '<button id="vc-btn-request" onclick="VirtualClockUI.handleRequestTime()" style="',
                         'flex:1;padding:12px 0;border:1.5px solid transparent;',
                         'border-radius:12px;background:var(--accent-color,#c5a47e);',
@@ -714,10 +721,244 @@
         handleRequestSpeed: handleRequestSpeed,
         handleSaveSpeed: handleSaveSpeed,
 
+                // 手动设定时间
+        openManualModal: openManualModal,
+        closeManualModal: closeManualModal,
+        adjManual: adjManual,
+        confirmManual: confirmManual,
+        
         // 内部状态（只读）
         isTimeWaiting: function() { return TIME_MODAL_STATE.waiting; },
         isSpeedWaiting: function() { return SPEED_MODAL_STATE.waiting; },
     };
 
+    // ============================================================
+// 手动设定时间
+// ============================================================
+
+var _manualModal = null;
+
+function getCurrentTimeForManual() {
+    // 从 DOM 读取当前显示的虚拟时间
+    var el = document.querySelector('.virtual-timestamp .vt-time');
+    if (el) {
+        var text = el.textContent.trim();
+        var parts = text.split(':').map(Number);
+        if (parts.length === 3) {
+            return { hours: parts[0] || 0, minutes: parts[1] || 0, seconds: parts[2] || 0 };
+        }
+        if (parts.length === 2) {
+            return { hours: parts[0] || 0, minutes: parts[1] || 0, seconds: 0 };
+        }
+    }
+    // 备选：从 settings.oppTime 读取
+    var settings = window.settings || {};
+    var parts = (settings.oppTime || '00:00:00').split(':').map(Number);
+    return {
+        hours: parts[0] || 0,
+        minutes: parts[1] || 0,
+        seconds: parts[2] || 0
+    };
+}
+
+function updateManualPreview() {
+    var h = parseInt(document.getElementById('manual-h')?.value) || 0;
+    var m = parseInt(document.getElementById('manual-m')?.value) || 0;
+    var s = parseInt(document.getElementById('manual-s')?.value) || 0;
+    var p = document.getElementById('manual-preview');
+    if (p) {
+        p.textContent =
+            String(h).padStart(2, '0') + ':' +
+            String(m).padStart(2, '0') + ':' +
+            String(s).padStart(2, '0');
+    }
+}
+
+function openManualModal() {
+    if (_manualModal) {
+        _manualModal.style.display = 'flex';
+        // 刷新显示当前时间
+        var now = getCurrentTimeForManual();
+        var hInput = document.getElementById('manual-h');
+        var mInput = document.getElementById('manual-m');
+        var sInput = document.getElementById('manual-s');
+        if (hInput) hInput.value = now.hours;
+        if (mInput) mInput.value = now.minutes;
+        if (sInput) sInput.value = now.seconds;
+        updateManualPreview();
+        return;
+    }
+
+    var now = getCurrentTimeForManual();
+
+    var modal = document.createElement('div');
+    modal.id = 'vc-manual-modal';
+    modal.style.cssText = 'position:fixed;inset:0;z-index:100001;background:rgba(0,0,0,0.5);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:0 20px;';
+
+    modal.innerHTML = [
+        '<style>',
+        '#vc-manual-modal input[type=number]::-webkit-inner-spin-button,',
+        '#vc-manual-modal input[type=number]::-webkit-outer-spin-button {',
+        '-webkit-appearance:none !important;margin:0 !important;display:none !important;}',
+        '#vc-manual-modal input[type=number] {',
+        '-moz-appearance:textfield !important;appearance:textfield !important;}',
+        '</style>',
+        '<div onclick="event.stopPropagation();" style="',
+            'background:var(--secondary-bg,#fff);',
+            'border-radius:20px;',
+            'width:100%;',
+            'max-width:340px;',
+            'padding:8px 20px 24px;',
+            'box-shadow:0 12px 40px rgba(0,0,0,0.2);',
+            'border:1px solid var(--border-color,rgba(0,0,0,0.06));',
+            'display:flex;',
+            'flex-direction:column;',
+            'gap:6px;',
+            'animation:vcSheetSlideUp 0.3s cubic-bezier(0.34,1.56,0.64,1);',
+        '">',
+            '<div style="width:40px;height:3px;border-radius:2px;background:var(--border-color,#ddd);margin:12px auto 6px;"></div>',
+            '<div style="display:flex;justify-content:space-between;align-items:center;padding:0 2px 4px;">',
+                '<span style="font-size:16px;font-weight:700;color:var(--text-primary);">✏️ 手动设定时间</span>',
+                '<button onclick="window.VirtualClockUI.closeManualModal()" style="',
+                    'background:none;border:none;font-size:20px;color:var(--text-secondary);',
+                    'cursor:pointer;width:32px;height:32px;border-radius:50%;',
+                    'display:flex;align-items:center;justify-content:center;',
+                '">×</button>',
+            '</div>',
+            '<div style="display:flex;gap:6px;justify-content:center;padding:4px 0 10px;">',
+                '<div style="text-align:center;flex:1;min-width:0;">',
+                    '<div style="font-size:11px;color:var(--text-secondary);letter-spacing:2px;margin-bottom:6px;">时</div>',
+                    '<div style="display:flex;flex-direction:column;align-items:center;gap:2px;">',
+                        '<button onclick="window.VirtualClockUI.adjManual(\'h\',1)" style="width:40px;height:26px;border:none;border-radius:6px;background:rgba(197,164,126,0.1);cursor:pointer;font-size:12px;">▲</button>',
+                        '<input id="manual-h" type="number" min="0" max="23" value="0" style="width:40px;height:38px;border:1.5px solid var(--border-color);border-radius:8px;text-align:right;font-size:20px;font-weight:700;font-family:var(--font-family);color:var(--text-primary);background:var(--primary-bg);outline:none;padding-right:8px;">',
+                        '<button onclick="window.VirtualClockUI.adjManual(\'h\',-1)" style="width:40px;height:26px;border:none;border-radius:6px;background:rgba(197,164,126,0.1);cursor:pointer;font-size:12px;">▼</button>',
+                    '</div>',
+                '</div>',
+                '<div style="font-size:28px;color:var(--text-secondary);display:flex;align-items:center;padding:0 2px;font-weight:300;">:</div>',
+                '<div style="text-align:center;flex:1;min-width:0;">',
+                    '<div style="font-size:11px;color:var(--text-secondary);letter-spacing:2px;margin-bottom:6px;">分</div>',
+                    '<div style="display:flex;flex-direction:column;align-items:center;gap:2px;">',
+                        '<button onclick="window.VirtualClockUI.adjManual(\'m\',1)" style="width:40px;height:26px;border:none;border-radius:6px;background:rgba(197,164,126,0.1);cursor:pointer;font-size:12px;">▲</button>',
+                        '<input id="manual-m" type="number" min="0" max="59" value="0" style="width:40px;height:38px;border:1.5px solid var(--border-color);border-radius:8px;text-align:right;font-size:20px;font-weight:700;font-family:var(--font-family);color:var(--text-primary);background:var(--primary-bg);outline:none;padding-right:8px;">',
+                        '<button onclick="window.VirtualClockUI.adjManual(\'m\',-1)" style="width:40px;height:26px;border:none;border-radius:6px;background:rgba(197,164,126,0.1);cursor:pointer;font-size:12px;">▼</button>',
+                    '</div>',
+                '</div>',
+                '<div style="font-size:28px;color:var(--text-secondary);display:flex;align-items:center;padding:0 2px;font-weight:300;">:</div>',
+                '<div style="text-align:center;flex:1;min-width:0;">',
+                    '<div style="font-size:11px;color:var(--text-secondary);letter-spacing:2px;margin-bottom:6px;">秒</div>',
+                    '<div style="display:flex;flex-direction:column;align-items:center;gap:2px;">',
+                        '<button onclick="window.VirtualClockUI.adjManual(\'s\',1)" style="width:40px;height:26px;border:none;border-radius:6px;background:rgba(197,164,126,0.1);cursor:pointer;font-size:12px;">▲</button>',
+                        '<input id="manual-s" type="number" min="0" max="59" value="0" style="width:40px;height:38px;border:1.5px solid var(--border-color);border-radius:8px;text-align:right;font-size:20px;font-weight:700;font-family:var(--font-family);color:var(--text-primary);background:var(--primary-bg);outline:none;padding-right:8px;">',
+                        '<button onclick="window.VirtualClockUI.adjManual(\'s\',-1)" style="width:40px;height:26px;border:none;border-radius:6px;background:rgba(197,164,126,0.1);cursor:pointer;font-size:12px;">▼</button>',
+                    '</div>',
+                '</div>',
+            '</div>',
+            '<div style="text-align:center;font-size:13px;color:var(--text-secondary);padding:4px 0 6px;">',
+                '当前设定：<span id="manual-preview" style="font-weight:600;color:var(--text-primary);font-family:monospace;">00:00:00</span>',
+            '</div>',
+            '<div style="display:flex;gap:10px;padding:4px 0 0;">',
+                '<button onclick="window.VirtualClockUI.closeManualModal()" style="',
+                    'flex:1;padding:11px 0;border:1.5px solid var(--border-color);',
+                    'border-radius:12px;background:var(--primary-bg);',
+                    'color:var(--text-primary);font-size:14px;font-weight:600;',
+                    'cursor:pointer;',
+                '">取消</button>',
+                '<button onclick="window.VirtualClockUI.confirmManual()" style="',
+                    'flex:2;padding:11px 0;border:1.5px solid transparent;',
+                    'border-radius:12px;background:var(--accent-color,#c5a47e);',
+                    'color:#fff;font-size:14px;font-weight:600;',
+                    'cursor:pointer;box-shadow:0 4px 14px rgba(var(--accent-color-rgb,197,164,126),0.25);',
+                '">确认</button>',
+            '</div>',
+        '</div>'
+    ].join('');
+
+    document.body.appendChild(modal);
+    _manualModal = modal;
+
+    // 填充当前时间
+    setTimeout(function() {
+        var current = getCurrentTimeForManual();
+        document.getElementById('manual-h').value = current.hours;
+        document.getElementById('manual-m').value = current.minutes;
+        document.getElementById('manual-s').value = current.seconds;
+        updateManualPreview();
+    }, 50);
+
+    // 点击外部关闭
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            window.VirtualClockUI.closeManualModal();
+        }
+    });
+
+    // 输入框事件
+    ['h', 'm', 's'].forEach(function(id) {
+        var el = document.getElementById('manual-' + id);
+        if (el) {
+            el.addEventListener('input', updateManualPreview);
+            el.addEventListener('focus', function() { this.select(); });
+        }
+    });
+
+    // ESC 关闭
+    var escHandler = function(e) {
+        if (e.key === 'Escape') {
+            window.VirtualClockUI.closeManualModal();
+            document.removeEventListener('keydown', escHandler);
+        }
+    };
+    document.addEventListener('keydown', escHandler);
+    modal._escHandler = escHandler;
+}
+
+function closeManualModal() {
+    if (_manualModal) {
+        _manualModal.style.display = 'none';
+    }
+}
+
+function adjManual(target, dir) {
+    var el = document.getElementById('manual-' + target);
+    if (!el) return;
+    var val = parseInt(el.value) || 0;
+    var max = target === 'h' ? 24 : 60;
+    var newVal = ((val + dir) % max + max) % max;
+    el.value = newVal;
+    updateManualPreview();
+}
+
+function confirmManual() {
+    var h = parseInt(document.getElementById('manual-h').value) || 0;
+    var m = parseInt(document.getElementById('manual-m').value) || 0;
+    var s = parseInt(document.getElementById('manual-s').value) || 0;
+    h = ((h % 24) + 24) % 24;
+    m = ((m % 60) + 60) % 60;
+    s = ((s % 60) + 60) % 60;
+    var timeStr = String(h).padStart(2, '0') + ':' +
+                  String(m).padStart(2, '0') + ':' +
+                  String(s).padStart(2, '0');
+
+    var settings = window.settings || {};
+    settings.oppTime = timeStr;
+    settings.oppTimeSetAt = Date.now();
+    // 流速保持不变
+    if (typeof window.saveData === 'function') window.saveData();
+    if (typeof window._updateVirtualTimeDisplay === 'function') {
+        window._updateVirtualTimeDisplay();
+    }
+    if (typeof window.VirtualClockUI !== 'undefined' && window.VirtualClockUI.updateTimeModal) {
+        window.VirtualClockUI.updateTimeModal();
+    }
+    if (typeof window.showNotification === 'function') {
+        window.showNotification('✅ 时间已设定为 ' + timeStr, 'success', 2000);
+    }
+    closeManualModal();
+}
+
+// ============================================================
+// 手动设定时间结束
+// ============================================================
+    
     console.log('[virtual-clock-ui] UI 模块已加载');
 })();
