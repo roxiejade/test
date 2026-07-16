@@ -825,8 +825,9 @@ function showPartnerRequest(type, suggestedValue, currentDisplay, currentTime) {
 
     if (agreeBtn) {
     agreeBtn.addEventListener('click', function() {
-        if (_partnerRequestData.completed) return;
-        // 保存数据副本，防止 closePartnerRequestModal 清空
+        // 先检查数据是否存在
+        if (!_partnerRequestData || _partnerRequestData.completed) return;
+        // 保存数据副本
         var type = _partnerRequestData.type;
         var value = _partnerRequestData.value;
         _partnerRequestData.agreed = true;
@@ -839,7 +840,6 @@ function showPartnerRequest(type, suggestedValue, currentDisplay, currentTime) {
             if (window.VirtualClockTrigger && typeof window.VirtualClockTrigger.onRequestComplete === 'function') {
                 window.VirtualClockTrigger.onRequestComplete(true, type, value);
             } else {
-                // 降级：直接应用修改
                 applyPartnerRequestDirect(true, type, value);
             }
         }, 50);
@@ -856,7 +856,7 @@ function showPartnerRequest(type, suggestedValue, currentDisplay, currentTime) {
 
     if (rejectBtn) {
     rejectBtn.addEventListener('click', function() {
-        if (_partnerRequestData.completed) return;
+        if (!_partnerRequestData || _partnerRequestData.completed) return;
         var type = _partnerRequestData.type;
         var value = _partnerRequestData.value;
         _partnerRequestData.agreed = false;
@@ -897,7 +897,7 @@ function showPartnerRequest(type, suggestedValue, currentDisplay, currentTime) {
                 timerEl.textContent = '✅ 已自动同意';
                 timerEl.style.color = '#4caf50';
             }
-            if (!_partnerRequestData.completed) {
+            if (_partnerRequestData && !_partnerRequestData.completed) {
     var type = _partnerRequestData.type;
     var value = _partnerRequestData.value;
     _partnerRequestData.agreed = true;
