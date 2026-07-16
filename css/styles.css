@@ -12350,6 +12350,9 @@ body #user-sticker-picker .empty-sticker-tip {
   margin-top: 20px;
   text-align: right;
   padding-right: 40px;
+  padding-left: 0;
+  display: block;
+  width: 100%;
 }
 
 /* 编辑操作按钮 */
