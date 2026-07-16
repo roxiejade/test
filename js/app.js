@@ -90,6 +90,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         }, 2000);
         // ===== 虚拟时钟定时器启动结束 =====
 
+        // ===== 🆕 启动虚拟时钟自动触发调度器（新增）=====
+setTimeout(function() {
+    if (window.VirtualClockTrigger && typeof window.VirtualClockTrigger.start === 'function') {
+        window.VirtualClockTrigger.start();
+        console.log('[app] 虚拟时钟触发调度器已启动');
+    } else {
+        console.warn('[app] VirtualClockTrigger 未加载，调度器启动失败');
+    }
+}, 3000);
+// ===== 🆕 虚拟时钟触发调度器启动结束 =====
+
         document.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'hidden') {
                 try {
