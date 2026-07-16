@@ -476,6 +476,9 @@
                     <i class="fas fa-pen"></i>
                 </button>
             </div>
+            <!-- ===== 隐藏的文件输入（图片替换用） ===== -->
+            <input type="file" id="bv2-detail-img-input" accept="image/*" style="display:none;">
+
             <div class="board-paper">
                 <div class="board-paper-top-line"></div>
                 <div class="board-paper-content">
@@ -491,6 +494,27 @@
     </div>
 </div>
 <!-- ===== 留言板详情弹窗结束 ===== -->
+
+        <!-- ===== 留言板图片操作弹窗（替换/删除） ===== -->
+<div class="modal" id="board-img-action-modal">
+    <div class="modal-content" style="max-width:280px;">
+        <div class="modal-title" style="font-size:14px; margin-bottom:10px;">
+            <i class="fas fa-image"></i>
+            <span>图片操作</span>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+            <button class="modal-btn modal-btn-primary" id="board-img-replace-action" style="width:100%;">
+                <i class="fas fa-exchange-alt"></i> 替换图片
+            </button>
+            <button class="modal-btn modal-btn-secondary" id="board-img-delete-action" style="width:100%; color:#ff6b6b;">
+                <i class="fas fa-trash-alt"></i> 删除图片
+            </button>
+            <button class="modal-btn modal-btn-secondary" id="board-img-action-cancel" style="width:100%;">
+                取消
+            </button>
+        </div>
+    </div>
+</div>
 
         <!-- ===== 在这里添加写留言弹窗 ===== -->
 
