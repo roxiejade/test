@@ -132,8 +132,8 @@
      * 生成随机流速（0.3 ~ 30.0，保留1位小数）
      */
     function generateRandomSpeed() {
-        return Math.round((0.3 + Math.random() * 29.7) * 10) / 10;
-    }
+    return Math.round((0.3 + Math.random() * 49.7) * 10) / 10;  // 0.3~50.0
+}
 
     /**
      * 设置虚拟时间（基准时间 + 起始时刻）
