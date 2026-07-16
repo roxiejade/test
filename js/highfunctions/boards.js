@@ -1141,8 +1141,8 @@ window._bv2_cancelGlobalEdit = function() {
 // 内部公用：恢复界面的默认状态
 function restoreDetailViewUI() {
   const editBar = document.getElementById('board-edit-actions-bar');
-  const penBtn = document.querySelector('.board-detail-actions .board-detail-action-btn:not(.delete)');
-  const deleteBtn = document.querySelector('.board-detail-actions .board-detail-action-btn.delete');
+  const penBtn = document.getElementById('board-global-edit-btn');
+const deleteBtn = document.getElementById('board-delete-thread-btn');
   const originalActions = document.querySelector('.board-paper-content > .board-add-btn, .board-paper-content > .board-waiting-reply');
   if (editBar) editBar.style.display = 'none';
   if (penBtn) penBtn.style.display = 'flex';
