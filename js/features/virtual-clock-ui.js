@@ -689,6 +689,246 @@
         closeSpeedModal();
     }
 
+    
+    // ============================================================
+// 🆕 对方主动请求弹窗（新增完整函数）
+// ============================================================
+
+var _partnerRequestModal = null;
+var _partnerRequestTimer = null;
+var _partnerRequestData = null;
+
+/**
+ * 显示对方主动请求弹窗
+ * @param {string} type - 'time' 或 'speed'
+ * @param {string|number} suggestedValue - 建议值
+ * @param {string} currentDisplay - 当前显示的时间
+ * @param {object} currentTime - 当前时间对象（可选）
+ */
+function showPartnerRequest(type, suggestedValue, currentDisplay, currentTime) {
+    // 如果已有弹窗，先关闭
+    closePartnerRequestModal();
+
+    var partnerName = getPartnerName();
+    var isTime = type === 'time';
+    var typeLabel = isTime ? '时间' : '流速';
+    var icon = isTime ? '🕰️' : '⌛';
+    var title = icon + ' ' + partnerName + ' 想调整' + typeLabel;
+    var valueDisplay = isTime ? suggestedValue : (Number(suggestedValue).toFixed(1) + 'x');
+
+    // 当前时间显示
+    var currentDisplayText = currentDisplay || '--:--';
+
+    // 如果是流速，显示当前流速
+    var currentSpeed = '1.0x';
+    if (!isTime && window.VirtualClock) {
+        currentSpeed = window.VirtualClock.getSpeed().toFixed(1) + 'x';
+    }
+
+    // 保存数据供回调使用
+    _partnerRequestData = {
+        type: type,
+        value: suggestedValue,
+        agreed: false,
+        completed: false
+    };
+
+    // 创建弹窗
+    var modal = document.createElement('div');
+    modal.id = 'vc-partner-request-modal';
+    modal.className = 'vc-modal vc-partner-request-modal';
+    modal.style.cssText = [
+        'display: flex;',
+        'position: fixed;',
+        'inset: 0;',
+        'z-index: 9998;',
+        'background: rgba(0,0,0,0.25);',
+        'backdrop-filter: blur(4px);',
+        '-webkit-backdrop-filter: blur(4px);',
+        'align-items: flex-end;',
+        'justify-content: center;',
+        'animation: vcModalFadeIn 0.3s ease;',
+        'padding: 0 16px;',
+    ].join(' ');
+
+    modal.innerHTML = [
+        '<div class="vc-modal-sheet vc-partner-request-sheet" onclick="event.stopPropagation();" style="',
+            'background: var(--secondary-bg, #fff);',
+            'border-radius: 24px 24px 0 0;',
+            'width: 100%;',
+            'max-width: 420px;',
+            'padding: 8px 20px 28px;',
+            'animation: vcSheetSlideUp 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);',
+            'box-shadow: 0 -8px 40px rgba(0,0,0,0.1);',
+            'border: 1px solid var(--border-color, rgba(0,0,0,0.06));',
+            'border-bottom: none;',
+            'position: relative;',
+            'display: flex;',
+            'flex-direction: column;',
+            'gap: 6px;',
+        '">',
+            '<div style="width:40px;height:3px;border-radius:2px;background:var(--border-color,#ddd);margin:12px auto 8px;flex-shrink:0;"></div>',
+            '<div style="text-align:center;padding:4px 0 2px;">',
+                '<div style="font-size:18px;font-weight:700;color:var(--text-primary);">' + title + '</div>',
+            '</div>',
+            '<div style="display:flex;justify-content:center;gap:20px;padding:8px 0 4px;background:rgba(var(--accent-color-rgb),0.04);border-radius:12px;margin:0 4px;">',
+                '<div style="text-align:center;">',
+                    '<div style="font-size:11px;color:var(--text-secondary);">当前' + typeLabel + '</div>',
+                    '<div style="font-size:20px;font-weight:700;color:var(--text-primary);font-family:monospace;">' + (isTime ? currentDisplayText : currentSpeed) + '</div>',
+                '</div>',
+                '<div style="display:flex;align-items:center;color:var(--text-secondary);font-size:18px;">→</div>',
+                '<div style="text-align:center;">',
+                    '<div style="font-size:11px;color:var(--text-secondary);">他想改为</div>',
+                    '<div style="font-size:20px;font-weight:700;color:var(--accent-color);font-family:monospace;">' + valueDisplay + '</div>',
+                '</div>',
+            '</div>',
+            '<div style="display:flex;gap:12px;padding:12px 0 8px;">',
+                '<button id="vc-partner-request-agree" style="',
+                    'flex:1;padding:12px 0;border:1px solid rgba(76,175,80,0.3);',
+                    'border-radius:12px;background:rgba(76,175,80,0.12);',
+                    'color:#4caf50;font-size:14px;font-weight:600;',
+                    'cursor:pointer;font-family:var(--font-family);',
+                    'transition:all 0.2s;',
+                '">✨ 同意</button>',
+                '<button id="vc-partner-request-reject" style="',
+                    'flex:1;padding:12px 0;border:1px solid rgba(239,83,80,0.3);',
+                    'border-radius:12px;background:rgba(239,83,80,0.08);',
+                    'color:#ef5350;font-size:14px;font-weight:600;',
+                    'cursor:pointer;font-family:var(--font-family);',
+                    'transition:all 0.2s;',
+                '">💫 拒绝</button>',
+            '</div>',
+            '<div id="vc-partner-request-timer" style="',
+                'text-align:center;font-size:12px;color:var(--text-secondary);',
+                'padding:4px 0;min-height:22px;',
+            '">⏳ 15 秒后自动同意</div>',
+        '</div>'
+    ].join('');
+
+    document.body.appendChild(modal);
+    _partnerRequestModal = modal;
+
+    // 点击外部不关闭，防止误触
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            modal.style.animation = 'none';
+            setTimeout(function() {
+                modal.style.animation = 'vcModalFadeIn 0.3s ease';
+            }, 10);
+        }
+    });
+
+    // 绑定按钮事件
+    var agreeBtn = document.getElementById('vc-partner-request-agree');
+    var rejectBtn = document.getElementById('vc-partner-request-reject');
+    var timerEl = document.getElementById('vc-partner-request-timer');
+
+    if (agreeBtn) {
+        agreeBtn.addEventListener('click', function() {
+            if (_partnerRequestData.completed) return;
+            _partnerRequestData.agreed = true;
+            _partnerRequestData.completed = true;
+            clearTimeout(_partnerRequestTimer);
+            closePartnerRequestModal();
+            if (window.VirtualClockTrigger && typeof window.VirtualClockTrigger.onRequestComplete === 'function') {
+                window.VirtualClockTrigger.onRequestComplete(
+                    true,
+                    _partnerRequestData.type,
+                    _partnerRequestData.value
+                );
+            }
+        });
+        agreeBtn.addEventListener('mouseenter', function() {
+            this.style.background = 'rgba(76,175,80,0.2)';
+            this.style.transform = 'scale(1.02)';
+        });
+        agreeBtn.addEventListener('mouseleave', function() {
+            this.style.background = 'rgba(76,175,80,0.12)';
+            this.style.transform = 'scale(1)';
+        });
+    }
+
+    if (rejectBtn) {
+        rejectBtn.addEventListener('click', function() {
+            if (_partnerRequestData.completed) return;
+            _partnerRequestData.agreed = false;
+            _partnerRequestData.completed = true;
+            clearTimeout(_partnerRequestTimer);
+            closePartnerRequestModal();
+            if (window.VirtualClockTrigger && typeof window.VirtualClockTrigger.onRequestComplete === 'function') {
+                window.VirtualClockTrigger.onRequestComplete(
+                    false,
+                    _partnerRequestData.type,
+                    _partnerRequestData.value
+                );
+            }
+        });
+        rejectBtn.addEventListener('mouseenter', function() {
+            this.style.background = 'rgba(239,83,80,0.16)';
+            this.style.transform = 'scale(1.02)';
+        });
+        rejectBtn.addEventListener('mouseleave', function() {
+            this.style.background = 'rgba(239,83,80,0.08)';
+            this.style.transform = 'scale(1)';
+        });
+    }
+
+    // 倒计时：15 秒后自动同意
+    var remaining = 15;
+    if (timerEl) {
+        timerEl.textContent = '⏳ ' + remaining + ' 秒后自动同意';
+    }
+
+    _partnerRequestTimer = setInterval(function() {
+        remaining--;
+        if (remaining <= 0) {
+            clearInterval(_partnerRequestTimer);
+            _partnerRequestTimer = null;
+            if (timerEl) {
+                timerEl.textContent = '✅ 已自动同意';
+                timerEl.style.color = '#4caf50';
+            }
+            if (!_partnerRequestData.completed) {
+                _partnerRequestData.agreed = true;
+                _partnerRequestData.completed = true;
+                closePartnerRequestModal();
+                if (window.VirtualClockTrigger && typeof window.VirtualClockTrigger.onRequestComplete === 'function') {
+                    window.VirtualClockTrigger.onRequestComplete(
+                        true,
+                        _partnerRequestData.type,
+                        _partnerRequestData.value
+                    );
+                }
+            }
+        } else {
+            if (timerEl) {
+                timerEl.textContent = '⏳ ' + remaining + ' 秒后自动同意';
+            }
+        }
+    }, 1000);
+}
+
+function closePartnerRequestModal() {
+    if (_partnerRequestTimer) {
+        clearInterval(_partnerRequestTimer);
+        _partnerRequestTimer = null;
+    }
+    if (_partnerRequestModal) {
+        _partnerRequestModal.style.display = 'none';
+        setTimeout(function() {
+            if (_partnerRequestModal && _partnerRequestModal.parentNode) {
+                _partnerRequestModal.parentNode.removeChild(_partnerRequestModal);
+            }
+            _partnerRequestModal = null;
+        }, 300);
+    }
+    _partnerRequestData = null;
+}
+
+// ============================================================
+// 🆕 对方主动请求弹窗结束
+// ============================================================
+    
     // ============================================================
     // 导出到全局
     // ============================================================
@@ -730,7 +970,14 @@
         // 内部状态（只读）
         isTimeWaiting: function() { return TIME_MODAL_STATE.waiting; },
         isSpeedWaiting: function() { return SPEED_MODAL_STATE.waiting; },
+
+            // ===== 🆕 对方主动请求弹窗（新增） =====
+showPartnerRequest: showPartnerRequest,
+closePartnerRequestModal: closePartnerRequestModal,
+// ===== 🆕 对方主动请求弹窗结束 =====
+
     };
+
 
     // ============================================================
 // 手动设定时间
