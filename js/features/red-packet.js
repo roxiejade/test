@@ -964,16 +964,38 @@ window.showRedPacketReceiveModal = function (recordId) {
     var senderName = record.from === 'me' ? getMyName() : getPartnerName();
 
     // 获取发送者头像
-    var senderAvatar = '';
-    try {
-        if (record.from === 'me') {
-            var myImg = document.querySelector('#avatar-my img') || document.querySelector('.avatar-me img');
-            if (myImg) senderAvatar = myImg.src;
-        } else {
-            var partnerImg = document.querySelector('#avatar-partner img') || document.querySelector('.avatar-partner img');
-            if (partnerImg) senderAvatar = partnerImg.src;
+    // ===== 修改后 =====
+var senderAvatar = '';
+try {
+    // 获取头像的辅助函数
+    function getAvatarSrc(containerSelector) {
+        var container = document.querySelector(containerSelector);
+        if (!container) return '';
+        
+        // 1. 先找 img 标签
+        var img = container.querySelector('img');
+        if (img && img.src) return img.src;
+        
+        // 2. 再找 background-image
+        var el = container.querySelector('.avatar') || container;
+        var bg = el.style.backgroundImage || getComputedStyle(el).backgroundImage;
+        if (bg && bg !== 'none' && bg.includes('url(')) {
+            var url = bg.replace(/url\(["']?|["']?\)/g, '');
+            if (url && url !== '') return url;
         }
-    } catch(e) {}
+        
+        return '';
+    }
+    
+    if (record.from === 'me') {
+        senderAvatar = getAvatarSrc('#my-avatar-container');
+    } else {
+        // 使用正确的选择器：partner-avatar-container
+        senderAvatar = getAvatarSrc('#partner-avatar-container');
+    }
+} catch(e) {
+    console.warn('获取头像失败:', e);
+}
 
     var avatarHtml = senderAvatar
         ? '<img src="' + senderAvatar + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">'
