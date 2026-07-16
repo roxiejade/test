@@ -824,20 +824,26 @@ function showPartnerRequest(type, suggestedValue, currentDisplay, currentTime) {
     var timerEl = document.getElementById('vc-partner-request-timer');
 
     if (agreeBtn) {
-        agreeBtn.addEventListener('click', function() {
-            if (_partnerRequestData.completed) return;
-            _partnerRequestData.agreed = true;
-            _partnerRequestData.completed = true;
-            clearTimeout(_partnerRequestTimer);
-            closePartnerRequestModal();
+    agreeBtn.addEventListener('click', function() {
+        if (_partnerRequestData.completed) return;
+        // 保存数据副本，防止 closePartnerRequestModal 清空
+        var type = _partnerRequestData.type;
+        var value = _partnerRequestData.value;
+        _partnerRequestData.agreed = true;
+        _partnerRequestData.completed = true;
+        clearInterval(_partnerRequestTimer);
+        _partnerRequestTimer = null;
+        closePartnerRequestModal();
+        // 延迟一帧调用，确保弹窗已清理
+        setTimeout(function() {
             if (window.VirtualClockTrigger && typeof window.VirtualClockTrigger.onRequestComplete === 'function') {
-                window.VirtualClockTrigger.onRequestComplete(
-                    true,
-                    _partnerRequestData.type,
-                    _partnerRequestData.value
-                );
+                window.VirtualClockTrigger.onRequestComplete(true, type, value);
+            } else {
+                // 降级：直接应用修改
+                applyPartnerRequestDirect(true, type, value);
             }
-        });
+        }, 50);
+    });
         agreeBtn.addEventListener('mouseenter', function() {
             this.style.background = 'rgba(76,175,80,0.2)';
             this.style.transform = 'scale(1.02)';
@@ -849,20 +855,23 @@ function showPartnerRequest(type, suggestedValue, currentDisplay, currentTime) {
     }
 
     if (rejectBtn) {
-        rejectBtn.addEventListener('click', function() {
-            if (_partnerRequestData.completed) return;
-            _partnerRequestData.agreed = false;
-            _partnerRequestData.completed = true;
-            clearTimeout(_partnerRequestTimer);
-            closePartnerRequestModal();
+    rejectBtn.addEventListener('click', function() {
+        if (_partnerRequestData.completed) return;
+        var type = _partnerRequestData.type;
+        var value = _partnerRequestData.value;
+        _partnerRequestData.agreed = false;
+        _partnerRequestData.completed = true;
+        clearInterval(_partnerRequestTimer);
+        _partnerRequestTimer = null;
+        closePartnerRequestModal();
+        setTimeout(function() {
             if (window.VirtualClockTrigger && typeof window.VirtualClockTrigger.onRequestComplete === 'function') {
-                window.VirtualClockTrigger.onRequestComplete(
-                    false,
-                    _partnerRequestData.type,
-                    _partnerRequestData.value
-                );
+                window.VirtualClockTrigger.onRequestComplete(false, type, value);
+            } else {
+                applyPartnerRequestDirect(false, type, value);
             }
-        });
+        }, 50);
+    });
         rejectBtn.addEventListener('mouseenter', function() {
             this.style.background = 'rgba(239,83,80,0.16)';
             this.style.transform = 'scale(1.02)';
@@ -889,17 +898,19 @@ function showPartnerRequest(type, suggestedValue, currentDisplay, currentTime) {
                 timerEl.style.color = '#4caf50';
             }
             if (!_partnerRequestData.completed) {
-                _partnerRequestData.agreed = true;
-                _partnerRequestData.completed = true;
-                closePartnerRequestModal();
-                if (window.VirtualClockTrigger && typeof window.VirtualClockTrigger.onRequestComplete === 'function') {
-                    window.VirtualClockTrigger.onRequestComplete(
-                        true,
-                        _partnerRequestData.type,
-                        _partnerRequestData.value
-                    );
-                }
-            }
+    var type = _partnerRequestData.type;
+    var value = _partnerRequestData.value;
+    _partnerRequestData.agreed = true;
+    _partnerRequestData.completed = true;
+    closePartnerRequestModal();
+    setTimeout(function() {
+        if (window.VirtualClockTrigger && typeof window.VirtualClockTrigger.onRequestComplete === 'function') {
+            window.VirtualClockTrigger.onRequestComplete(true, type, value);
+        } else {
+            applyPartnerRequestDirect(true, type, value);
+        }
+    }, 50);
+}
         } else {
             if (timerEl) {
                 timerEl.textContent = '⏳ ' + remaining + ' 秒后自动同意';
@@ -927,6 +938,58 @@ function closePartnerRequestModal() {
 
 // ============================================================
 // 🆕 对方主动请求弹窗结束
+// ============================================================
+
+    // ============================================================
+// 🆕 降级函数：直接应用修改（当 VirtualClockTrigger 不可用时）
+// ============================================================
+
+function applyPartnerRequestDirect(agreed, type, value) {
+    var vc = window.VirtualClock;
+    if (!vc) return;
+
+    var partnerName = getPartnerName();
+    var myName = getMyName();
+
+    if (agreed) {
+        if (type === 'time') {
+            vc.setVirtualTime(value);
+            insertSystemMessageForRequest(myName + ' 同意了 ' + partnerName + ' 的时间修改请求 ✨');
+        } else {
+            vc.setSpeed(value);
+            insertSystemMessageForRequest(myName + ' 同意了 ' + partnerName + ' 的流速修改请求 ✨');
+        }
+        if (typeof window.showNotification === 'function') {
+            window.showNotification('已应用修改 ✨', 'success', 1500);
+        }
+    } else {
+        if (type === 'time') {
+            insertSystemMessageForRequest(myName + ' 拒绝了 ' + partnerName + ' 的时间修改请求 💫');
+        } else {
+            insertSystemMessageForRequest(myName + ' 拒绝了 ' + partnerName + ' 的流速修改请求 💫');
+        }
+        if (typeof window.showNotification === 'function') {
+            window.showNotification('已拒绝 💫', 'info', 1500);
+        }
+    }
+}
+
+function insertSystemMessageForRequest(text) {
+    if (typeof window.addMessage === 'function') {
+        window.addMessage({
+            id: Date.now() + '_vc_' + Math.random().toString(36).slice(2, 6),
+            sender: null,
+            text: text,
+            timestamp: new Date(),
+            type: 'system'
+        });
+    } else {
+        console.warn('[vc-ui] addMessage 不可用');
+    }
+}
+
+// ============================================================
+// 🆕 降级函数结束
 // ============================================================
     
     // ============================================================
