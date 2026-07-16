@@ -1028,11 +1028,19 @@ window._bv2_toggleGlobalEdit = function() {
         imgEl.removeAttribute('onclick');
         imgEl.style.cursor = 'pointer';
         imgEl.onclick = function(e) {
-          e.stopPropagation();
-          window._bv2_pendingImgId = r.id;
-          //showModal(document.getElementById('board-img-action-modal'));
-          document.getElementById('board-img-action-modal').style.display = 'flex';
-        };
+  e.stopPropagation();
+  window._bv2_pendingImgId = r.id;
+  const modal = document.getElementById('board-img-action-modal');
+  if (modal) {
+    modal.style.display = 'flex';
+    // ✅ 恢复透明度
+    const content = modal.querySelector('.modal-content');
+    if (content) {
+      content.style.opacity = '1';
+      content.style.transform = 'translateY(0) scale(1)';
+    }
+  }
+};
       }
     }
   });
