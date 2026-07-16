@@ -496,7 +496,9 @@
 
         sendWaitingMessage('time');
 
-        var delay = 1300 + Math.random() * 900;
+        // 时间修改 - handleRequestTime（4~12秒）
+var delay = 4000 + Math.random() * 8000;
+        
         setTimeout(function() {
             var success = Math.random() < 0.62;
             TIME_MODAL_STATE.waiting = false;
@@ -608,7 +610,9 @@
 
         sendWaitingMessage('speed');
 
-        var delay = 1300 + Math.random() * 900;
+       // 流速修改 - handleRequestSpeed（4~10秒）
+var delay = 4000 + Math.random() * 6000;
+        
         setTimeout(function() {
             var success = Math.random() < 0.62;
             SPEED_MODAL_STATE.waiting = false;
