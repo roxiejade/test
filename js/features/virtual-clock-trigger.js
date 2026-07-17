@@ -11,12 +11,12 @@
     // 配置
     // ============================================================
     const CONFIG = {
-        CHECK_INTERVAL: 180000,        // 检查间隔 3 分钟
-        TRIGGER_PROBABILITY: 0.04,     // 触发概率 4%（3%~5% 取中间值）
-        COOLDOWN_TIME: 900000,         // 冷却时间 15 分钟
-        TIME_RATIO: 0.85,              // 时间修改占比 85%
-        AUTO_AGREE_DELAY: 15000,       // 自动同意倒计时 15 秒
-    };
+    CHECK_INTERVAL: 600000,        // 3分钟 → 10分钟（减少检查次数）
+    TRIGGER_PROBABILITY: 0.015,    // 4% → 1.5%
+    COOLDOWN_TIME: 7200000,        // 15分钟 → 2小时（触发后很久才能再触发）
+    TIME_RATIO: 0.85,              // 保持 85%
+    AUTO_AGREE_DELAY: 15000,       // 保持 15 秒
+};
 
     // 存储 key
     const STORAGE_KEY = {
