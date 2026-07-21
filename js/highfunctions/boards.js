@@ -1174,6 +1174,7 @@ window.setBoardDataV2 = function(newData) {
     saveData();
 };
 window._bv2_openCompose = openCompose;
+  window._bv2_openDetail = openDetail;
 window._bv2_submitPost = submitPost;
 window._bv2_handleImgSelect = handleImgSelect;
 window._bv2_deleteThread = deleteThread;
