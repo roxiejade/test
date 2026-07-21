@@ -156,7 +156,7 @@ function checkStatus() {
           thread.replies.push(...reply); delete thread.expectedReplyTime; thread.unread = true; // 标记这条留言有未读回复
           saveData();
           if (currentThreadId === thread.id) setTimeout(() => openDetail(thread.id, currentView), 1000);
-          //else needRefreshList = true;
+// 新增：当对方回复时，触发弹窗检测（但交给增强的 checkStatus 统一处理）
         }
       }
     });
@@ -651,6 +651,10 @@ document.getElementById('board-detail-date').textContent = d.toLocaleDateString(
     }, 100);
 }
 
+
+  // 添加这一行，暴露到全局
+window.openDetail = openDetail;
+  
 function openCompose(mode, threadId, type) {
   currentComposeMode = mode;
   currentThreadId = threadId;
@@ -1541,5 +1545,156 @@ function updateStickerPreview() {
         hint.textContent = `已选 ${selected.length}/2 个表情包`;
     }
 }
+
+  // ============================================================
+// 留言板回复弹窗（集成到 checkStatus）
+// ============================================================
+
+(function() {
+    'use strict';
+
+    // 存储已弹窗提醒的线程ID
+    if (!window._boardNotifiedThreads) {
+        window._boardNotifiedThreads = new Set();
+    }
+
+    // ---------- 样式与信封弹窗一致的回复弹窗 ----------
+    window._showBoardReplyPopup = function(threadId, replyContent, partnerName) {
+        const existing = document.getElementById('board-reply-popup');
+        if (existing) existing.remove();
+
+        partnerName = partnerName || (typeof settings !== 'undefined' && settings.partnerName) || '对方';
+        const preview = replyContent && replyContent.length > 30 
+            ? replyContent.substring(0, 30) + '…' 
+            : (replyContent || '给你留了一条新留言');
+
+        const popup = document.createElement('div');
+        popup.id = 'board-reply-popup';
+        popup.style.cssText = `
+            position:fixed; bottom:80px; left:50%; transform:translateX(-50%);
+            background:var(--secondary-bg); border:1px solid var(--border-color);
+            border-radius:20px; padding:18px 20px; z-index:8000;
+            max-width:320px; width:88%;
+            box-shadow:0 8px 32px rgba(0,0,0,0.18);
+            display:flex; flex-direction:column; gap:12px;
+            animation:slideUpNotif 0.4s cubic-bezier(0.22,1,0.36,1);
+        `;
+
+        popup.innerHTML = `
+            <style>
+                @keyframes slideUpNotif {
+                    from { opacity:0; transform:translateX(-50%) translateY(24px) scale(0.9); }
+                    60% { transform:translateX(-50%) translateY(-4px) scale(1.02); }
+                    to { opacity:1; transform:translateX(-50%) translateY(0) scale(1); }
+                }
+            </style>
+            <div style="display:flex;align-items:center;gap:10px;">
+                <span style="font-size:26px;">💌</span>
+                <div>
+                    <div style="font-size:14px;font-weight:700;color:var(--text-primary);">
+                        ${partnerName}回复了你的留言
+                    </div>
+                    <div style="font-size:11px;color:var(--text-secondary);margin-top:2px;opacity:0.8;">
+                        ${preview}
+                    </div>
+                </div>
+            </div>
+            <div style="display:flex;gap:8px;">
+                <button onclick="document.getElementById('board-reply-popup').remove();" 
+                        style="flex:1;padding:8px 0;border-radius:12px;border:1px solid var(--border-color);
+                               background:var(--primary-bg);color:var(--text-secondary);font-size:13px;cursor:pointer;">
+                    稍后查看
+                </button>
+                <button onclick="window._openBoardReply('${threadId}');" 
+                        style="flex:2;padding:8px 0;border-radius:12px;border:none;
+                               background:var(--accent-color);color:#fff;font-size:13px;font-weight:600;cursor:pointer;">
+                    立即阅读 ✉
+                </button>
+            </div>
+        `;
+
+        document.body.appendChild(popup);
+
+        setTimeout(() => {
+            if (popup.parentNode) popup.remove();
+        }, 8000);
+    };
+
+    // ---------- 点击"立即阅读"：打开留言板并定位到对应线程 ----------
+    window._openBoardReply = function(threadId) {
+        const popup = document.getElementById('board-reply-popup');
+        if (popup) popup.remove();
+
+        if (window.boardDataV2) {
+            const data = window.boardDataV2;
+            const allThreads = [...(data.myThreads || []), ...(data.partnerThreads || [])];
+            const target = allThreads.find(t => t.id === threadId);
+            if (target) {
+                target.unread = false;
+                if (typeof window.setBoardDataV2 === 'function') {
+                    window.setBoardDataV2(data);
+                }
+            }
+        }
+
+        if (typeof window.renderEnvelopeBoard === 'function') {
+            window.renderEnvelopeBoard();
+            setTimeout(() => {
+                const currentView = window._bv2_currentView || 'me';
+                if (typeof window._bv2_openDetail === 'function') {
+                    window._bv2_openDetail(threadId, currentView);
+                } else if (typeof window.openDetail === 'function') {
+                    window.openDetail(threadId, currentView);
+                }
+            }, 500);
+        } else if (typeof showNotification === 'function') {
+            showNotification('留言板加载中，请稍后', 'info');
+        }
+    };
+
+    // ---------- 检测留言板新回复并弹窗 ----------
+    window._checkBoardNewReplies = function() {
+        const data = window.boardDataV2;
+        if (!data) return;
+
+        const allThreads = [...(data.myThreads || []), ...(data.partnerThreads || [])];
+
+        for (const thread of allThreads) {
+            if (window._boardNotifiedThreads.has(thread.id)) continue;
+
+            if (thread.unread) {
+                const lastReply = thread.replies && thread.replies.length > 0 
+                    ? thread.replies[thread.replies.length - 1] 
+                    : null;
+                
+                if (lastReply && lastReply.sender === 'partner') {
+                    const partnerName = (typeof settings !== 'undefined' && settings.partnerName) || '对方';
+                    const replyText = lastReply.text || (lastReply.image ? '🖼 图片留言' : '');
+                    
+                    window._showBoardReplyPopup(thread.id, replyText, partnerName);
+                    window._boardNotifiedThreads.add(thread.id);
+                }
+            }
+        }
+    };
+
+    // ---------- 增强原有的 checkStatus ----------
+    const originalCheckStatus = window.checkStatus;
+
+    window.checkStatus = function() {
+        if (typeof originalCheckStatus === 'function') {
+            originalCheckStatus();
+        }
+
+        setTimeout(function() {
+            try {
+                window._checkBoardNewReplies();
+            } catch (e) {
+                console.warn('[BoardReply] 检测新回复时出错:', e);
+            }
+        }, 300);
+    };
+
+})();
   
 })();
