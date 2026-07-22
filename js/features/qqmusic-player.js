@@ -1,21 +1,22 @@
 /**
  * QQ音乐歌单面板 - 功能模块
  * 歌单ID: 9751402623
- * 放在 js/features/ 目录下
+ * 支持自定义歌单名称、自动关闭设置面板
  */
 
 (function() {
     'use strict';
 
     // ============================================================
-    // 配置
+    // 配置（在这里修改歌单名称）
     // ============================================================
     const CONFIG = {
         PLAYLIST_ID: '9751402623',
-        API_URL: 'https://api.uomg.com/api/qq.music',
+        PLAYLIST_NAME: '梦角歌单',          // ← 想改名就改这里
+        API_URL: 'https://api.vvhan.com/api/qqplaylist',
         STORAGE_KEY: 'qqmusic_panel_state',
         SONG_STORAGE_KEY: 'qqmusic_song_cache',
-        CACHE_DURATION: 10 * 60 * 1000, // 10分钟
+        CACHE_DURATION: 10 * 60 * 1000,   // 10分钟
     };
 
     // ============================================================
@@ -30,6 +31,7 @@
     const closeBtn = document.getElementById('qqmusic-close');
     const countEl = document.getElementById('qqmusic-count');
     const toggleBtn = document.getElementById('qqmusic-toggle');
+    const titleEl = document.getElementById('qqmusic-title');
 
     let allSongs = [];
     let filteredSongs = [];
@@ -70,8 +72,7 @@
         }
 
         try {
-            // 使用新的可用接口
-const url = `https://api.vvhan.com/api/qqplaylist?id=${CONFIG.PLAYLIST_ID}`;
+            const url = `${CONFIG.API_URL}?id=${CONFIG.PLAYLIST_ID}`;
             log('正在拉取歌单...');
             const response = await fetch(url);
             const result = await response.json();
@@ -159,7 +160,6 @@ const url = `https://api.vvhan.com/api/qqplaylist?id=${CONFIG.PLAYLIST_ID}`;
         listEl.innerHTML = html;
         countEl.textContent = `共 ${songs.length} 首歌`;
 
-        // 绑定点击事件
         listEl.querySelectorAll('.qqmusic-item').forEach(el => {
             el.addEventListener('click', function(e) {
                 const id = this.dataset.id;
@@ -204,15 +204,12 @@ const url = `https://api.vvhan.com/api/qqplaylist?id=${CONFIG.PLAYLIST_ID}`;
         currentSong = { id: songId, name: songName, artist: artist };
         log('播放歌曲: ' + songName + ' - ' + artist);
 
-        // 触发自定义事件，供梦角监听
         const event = new CustomEvent('qqmusic:play', {
             detail: { songId, songName, artist }
         });
         document.dispatchEvent(event);
 
-        // 跳转到QQ音乐
         const webUrl = `https://y.qq.com/n/ryqq/songDetail/${songId}`;
-        // 使用新窗口打开，手机端会自动唤起APP
         window.open(webUrl, '_blank');
     }
 
@@ -331,7 +328,11 @@ const url = `https://api.vvhan.com/api/qqplaylist?id=${CONFIG.PLAYLIST_ID}`;
 
         log('初始化...');
 
-        // 默认隐藏整个容器（由开关控制）
+        // 设置歌单名称
+        if (titleEl) {
+            titleEl.textContent = `🎵 ${CONFIG.PLAYLIST_NAME}`;
+        }
+
         container.style.display = 'none';
         mini.style.display = 'flex';
         panel.style.display = 'none';
@@ -343,7 +344,6 @@ const url = `https://api.vvhan.com/api/qqplaylist?id=${CONFIG.PLAYLIST_ID}`;
                 e.stopPropagation();
                 if (container.style.display === 'none') {
                     container.style.display = 'block';
-                    // 恢复之前的状态
                     const state = localStorage.getItem(CONFIG.STORAGE_KEY);
                     if (state === 'open') {
                         openPanel();
@@ -351,12 +351,22 @@ const url = `https://api.vvhan.com/api/qqplaylist?id=${CONFIG.PLAYLIST_ID}`;
                         mini.style.display = 'flex';
                         panel.style.display = 'none';
                     }
-                    // 如果歌单未加载，预加载
                     if (allSongs.length === 0 && isPanelOpen) {
                         loadSongs();
                     }
                     this.classList.add('active');
                     log('面板已开启');
+
+                    // 👇 关闭高级功能面板
+                    const advancedModal = document.getElementById('advanced-modal');
+                    if (advancedModal) {
+                        if (typeof hideModal === 'function') {
+                            hideModal(advancedModal);
+                        } else {
+                            advancedModal.style.display = 'none';
+                        }
+                    }
+
                 } else {
                     container.style.display = 'none';
                     this.classList.remove('active');
@@ -398,8 +408,6 @@ const url = `https://api.vvhan.com/api/qqplaylist?id=${CONFIG.PLAYLIST_ID}`;
         document.addEventListener('qqmusic:play', function(e) {
             const { songId, songName, artist } = e.detail;
             log('🎵 梦角感知到: ' + songName + ' - ' + artist);
-            // 这里可以添加梦角回复逻辑
-            // 例如：如果 window.dreamReply 存在，则调用
             if (typeof window.dreamReply === 'function') {
                 const replies = [
                     `这首歌好温柔呀，我也在听呢 ✦`,
@@ -412,10 +420,8 @@ const url = `https://api.vvhan.com/api/qqplaylist?id=${CONFIG.PLAYLIST_ID}`;
             }
         });
 
-        // --- 恢复状态 ---
         restoreState();
 
-        // --- 预加载歌单（如果之前是打开状态） ---
         if (isPanelOpen) {
             loadSongs();
         }
