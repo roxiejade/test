@@ -70,7 +70,8 @@
         }
 
         try {
-            const url = `${CONFIG.API_URL}?url=https://y.qq.com/n/ryqq/playlist/${CONFIG.PLAYLIST_ID}`;
+            // 使用新的可用接口
+const url = `https://api.vvhan.com/api/qqplaylist?id=${CONFIG.PLAYLIST_ID}`;
             log('正在拉取歌单...');
             const response = await fetch(url);
             const result = await response.json();
