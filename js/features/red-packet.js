@@ -1101,24 +1101,23 @@ try {
             ? '<button id="rp-return-btn" style="width:100%;max-width:200px;padding:10px 16px;border:none;border-radius:10px;background:linear-gradient(135deg,#ff6b35,#f7931e);color:#fff;font-size:14px;font-weight:600;cursor:pointer;margin-top:12px;transition:all 0.25s cubic-bezier(0.4,0,0.2,1);box-shadow:0 2px 8px rgba(255,107,53,0.35);">退回红包</button>'
             : '';
 
-        return '<div style="text-align:center;position:relative;overflow:hidden;border-radius:16px;width:260px;min-height:380px;box-shadow:0 20px 60px rgba(0,0,0,0.15);display:flex;flex-direction:column;">' +
-            '<div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,#ffd700 20%,#ffd700 80%,transparent);z-index:2;"></div>' +
-            '<div style="background:#c4453c;padding:30px 20px 16px;display:flex;flex-direction:column;align-items:center;flex:1;justify-content:center;position:relative;overflow:hidden;">' +
-                '<div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;">' +
-                    '<div style="width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,0.2);margin-bottom:10px;display:flex;align-items:center;justify-content:center;overflow:hidden;font-size:18px;color:#fff;">' +
-                        avatarHtml +
-                    '</div>' +
-                    '<div style="font-size:13px;color:rgba(255,255,255,0.9);margin-bottom:4px;">' + senderName + ' 发来的红包</div>' +
-                    '<div style="font-size:16px;color:#fff;font-weight:500;margin-bottom:6px;">' + record.message + '</div>' +
-                '</div>' +
-            '</div>' +
-            '<div style="background:#c4453c;padding:16px 20px 24px;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:0 0 16px 16px;position:relative;">' +
-                '<div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;">' +
-                    '<button id="rp-open-btn" style="width:60px;height:60px;border-radius:50%;background:#ffd700;color:#c4453c;font-size:22px;font-weight:700;border:none;cursor:pointer;box-shadow:0 2px 10px rgba(255,215,0,0.5);">開</button>' +
-                    returnBtnHtml +
-                '</div>' +
-            '</div>' +
-        '</div>';
+        return '<div style="text-align:center;position:relative;overflow:hidden;border-radius:16px;width:260px;height:380px;box-shadow:0 20px 60px rgba(0,0,0,0.25);display:flex;flex-direction:column;animation:scaleIn 0.3s cubic-bezier(0.34,1.56,0.64,1);">' +
+    '<style>@keyframes scaleIn{from{transform:scale(0.85);opacity:0;}to{transform:scale(1);opacity:1;}}</style>' +
+    // 上半部分 2/3
+    '<div style="flex:2;background:#b13b2e;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px 20px 16px;border-radius:16px 16px 0 0;position:relative;">' +
+        '<div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,rgba(255,215,0,0.50) 20%,rgba(255,215,0,0.50) 80%,transparent);z-index:2;"></div>' +
+        '<div style="width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,0.08);border:1.5px solid rgba(210,190,165,0.12);margin-bottom:12px;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;">' + avatarHtml + '</div>' +
+        '<div style="font-size:13px;color:rgba(255,255,255,0.6);margin-bottom:6px;letter-spacing:0.3px;flex-shrink:0;">' + senderName + ' 发来的红包</div>' +
+        '<div style="font-size:16px;color:rgba(255,255,255,0.9);font-weight:500;letter-spacing:0.3px;flex-shrink:0;">' + record.message + '</div>' +
+    '</div>' +
+    // 下半部分 1/3
+    '<div style="flex:1;background:#b13b2e;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 20px 20px;border-radius:0 0 16px 16px;">' +
+        '<button id="rp-open-btn" style="width:56px;height:56px;border-radius:50%;border:none;cursor:pointer;background:#e8c8a0;box-shadow:0 3px 12px rgba(0,0,0,0.12), inset 0 1px 2px rgba(255,255,255,0.2);transition:all 0.2s cubic-bezier(0.34,1.56,0.64,1);display:flex;align-items:center;justify-content:center;padding:0;margin:0;flex-shrink:0;">' +
+            '<span style="color:#614f4d;font-size:22px;font-weight:600;letter-spacing:2px;margin-top:-1px;margin-left:1.5px;user-select:none;">開</span>' +
+        '</button>' +
+        returnBtnHtml +
+    '</div>' +
+'</div>';
     }
 
     // 初始渲染
