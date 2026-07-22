@@ -1098,8 +1098,8 @@ try {
     function buildPendingPanel() {
         var isSystemSender = record.from === 'system';
         var returnBtnHtml = (isSystemSender)
-            ? '<button id="rp-return-btn" style="width:100%;max-width:200px;padding:10px 16px;border:none;border-radius:10px;background:linear-gradient(135deg,#ff6b35,#f7931e);color:#fff;font-size:14px;font-weight:600;cursor:pointer;margin-top:12px;transition:all 0.25s cubic-bezier(0.4,0,0.2,1);box-shadow:0 2px 8px rgba(255,107,53,0.35);">退回红包</button>'
-            : '';
+    ? '<button id="rp-return-btn" style="margin-top:12px;padding:4px 14px;border:1px solid rgba(255,248,240,0.15);border-radius:14px;background:transparent;color:rgba(255,248,240,0.35);font-size:10px;cursor:pointer;transition:all 0.3s;font-family:inherit;letter-spacing:0.5px;flex-shrink:0;">退回红包</button>'
+    : '';
 
         return '<div style="text-align:center;position:relative;overflow:hidden;border-radius:16px;width:260px;height:380px;box-shadow:0 20px 60px rgba(0,0,0,0.25);display:flex;flex-direction:column;animation:scaleIn 0.3s cubic-bezier(0.34,1.56,0.64,1);">' +
     '<style>@keyframes scaleIn{from{transform:scale(0.85);opacity:0;}to{transform:scale(1);opacity:1;}}</style>' +
