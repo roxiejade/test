@@ -1,22 +1,22 @@
 /**
  * QQ音乐歌单面板 - 功能模块
  * 歌单ID: 9751402623
- * 支持自定义歌单名称、自动关闭设置面板
+ * 支持自定义歌单名称、点击标题编辑、自动关闭设置面板
  */
 
 (function() {
     'use strict';
 
     // ============================================================
-    // 配置（在这里修改歌单名称）
+    // 配置
     // ============================================================
     const CONFIG = {
         PLAYLIST_ID: '9751402623',
-        PLAYLIST_NAME: '梦角歌单',          // ← 想改名就改这里
+        PLAYLIST_NAME: '传讯音乐台',          // ← 默认名称，点击标题可修改
         API_URL: 'https://api.vvhan.com/api/qqplaylist',
         STORAGE_KEY: 'qqmusic_panel_state',
         SONG_STORAGE_KEY: 'qqmusic_song_cache',
-        CACHE_DURATION: 10 * 60 * 1000,   // 10分钟
+        CACHE_DURATION: 10 * 60 * 1000,
     };
 
     // ============================================================
@@ -59,7 +59,6 @@
     // 获取歌单数据
     // ============================================================
     async function fetchPlaylist() {
-        // 检查缓存
         const cached = localStorage.getItem(CONFIG.SONG_STORAGE_KEY);
         if (cached) {
             try {
@@ -95,7 +94,6 @@
             }
         } catch (error) {
             warn('主接口请求失败，尝试备用接口...', error);
-            // 备用接口
             try {
                 const fallbackUrl = `https://api.qsqq.tk/api/qqmusic?type=playlist&id=${CONFIG.PLAYLIST_ID}`;
                 const response = await fetch(fallbackUrl);
@@ -116,7 +114,6 @@
                 }
             } catch (_) {}
 
-            // 所有接口失败，使用内置示例数据
             warn('所有接口失败，使用示例数据');
             return getFallbackSongs();
         }
@@ -320,7 +317,7 @@
     }
 
     // ============================================================
-    // 初始化
+    // 初始化（核心修改在这里）
     // ============================================================
     function init() {
         if (isInitialized) return;
@@ -328,9 +325,30 @@
 
         log('初始化...');
 
-        // 设置歌单名称
+        // ===== 【修改点1】设置歌单名称 + 点击编辑 =====
         if (titleEl) {
-            titleEl.textContent = `🎵 ${CONFIG.PLAYLIST_NAME}`;
+            // 从 localStorage 读取自定义名称
+            const savedName = localStorage.getItem('qqmusic_playlist_name');
+            if (savedName) {
+                titleEl.textContent = `🎵 ${savedName}`;
+            } else {
+                titleEl.textContent = `🎵 ${CONFIG.PLAYLIST_NAME}`;
+            }
+
+            // 点击标题直接编辑
+            titleEl.style.cursor = 'pointer';
+            titleEl.title = '点击修改歌单名称';
+            titleEl.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const currentName = this.textContent.replace('🎵 ', '').trim();
+                const newName = prompt('修改歌单名称：', currentName);
+                if (newName !== null && newName.trim() !== '') {
+                    const trimmed = newName.trim();
+                    this.textContent = `🎵 ${trimmed}`;
+                    localStorage.setItem('qqmusic_playlist_name', trimmed);
+                    CONFIG.PLAYLIST_NAME = trimmed;
+                }
+            });
         }
 
         container.style.display = 'none';
@@ -357,7 +375,7 @@
                     this.classList.add('active');
                     log('面板已开启');
 
-                    // 👇 关闭高级功能面板
+                    // ===== 【修改点2】关闭高级功能面板 =====
                     const advancedModal = document.getElementById('advanced-modal');
                     if (advancedModal) {
                         if (typeof hideModal === 'function') {
@@ -452,4 +470,5 @@
         init();
     }
 
+})();
 })();
