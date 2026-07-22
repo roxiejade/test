@@ -1173,9 +1173,12 @@ try {
 
 console.log('✅ 修复版已生效！已领取/已退回弹窗使用拉丝银葱背景');
 
-    // ===== 覆盖：待领取红包弹窗 - 最终版 =====
-// 在文件末尾，最后一个 })(); 之前添加
+// ===== 覆盖：待领取红包弹窗 - 最终版（直接粘贴到文件末尾） =====
 
+// 保存原函数引用
+var _originalShowRedPacket = window.showRedPacketReceiveModal;
+
+// 覆盖
 window.showRedPacketReceiveModal = function (recordId) {
     function fmt(n) {
         return (n / 100).toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -1225,7 +1228,6 @@ window.showRedPacketReceiveModal = function (recordId) {
                              document.querySelector('#avatar-partner img') || 
                              document.querySelector('.avatar-partner img');
             if (partnerImg) senderAvatar = partnerImg.src;
-            // 如果没找到img，尝试从background-image获取
             if (!senderAvatar) {
                 var container = document.querySelector('#partner-avatar-container');
                 if (container) {
@@ -1243,7 +1245,7 @@ window.showRedPacketReceiveModal = function (recordId) {
         ? '<img src="' + senderAvatar + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">'
         : '<i class="fas fa-user" style="color:rgba(255,255,255,0.4);font-size:22px;"></i>';
 
-    // ===== 待领取弹窗（上下2/3 + 1/3布局） =====
+    // ===== 待领取弹窗 =====
     if (isPending) {
         var isSystemSender = record.from === 'system';
         var returnBtnHtml = (isSystemSender)
@@ -1258,8 +1260,6 @@ window.showRedPacketReceiveModal = function (recordId) {
                         to { transform: scale(1); opacity: 1; }
                     }
                 </style>
-
-                <!-- 上半部分（2/3） -->
                 <div id="top-section" style="flex:2;background:#b13b2e;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px 20px 16px;border-radius:16px 16px 0 0;position:relative;border-bottom:0.5px solid rgba(255,248,240,0.20);">
                     <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,rgba(255,215,0,0.50) 20%,rgba(255,215,0,0.50) 80%,transparent);z-index:2;"></div>
                     <div style="width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,0.08);border:1.5px solid rgba(210,190,165,0.12);margin-bottom:12px;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;">
@@ -1268,8 +1268,6 @@ window.showRedPacketReceiveModal = function (recordId) {
                     <div style="font-size:13px;color:rgba(255,255,255,0.6);margin-bottom:6px;letter-spacing:0.3px;flex-shrink:0;">${senderName} 发来的红包</div>
                     <div style="font-size:16px;color:rgba(255,255,255,0.9);font-weight:500;letter-spacing:0.3px;flex-shrink:0;">${record.message}</div>
                 </div>
-
-                <!-- 下半部分（1/3） -->
                 <div id="bottom-section" style="flex:1;background:#b13b2e;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 20px 20px;border-radius:0 0 16px 16px;">
                     <button id="rp-open-test" style="width:56px;height:56px;border-radius:50%;border:none;cursor:pointer;background:#e8c8a0;box-shadow:0 3px 12px rgba(0,0,0,0.12), inset 0 1px 2px rgba(255,255,255,0.2);transition:all 0.2s cubic-bezier(0.34,1.56,0.64,1);display:flex;align-items:center;justify-content:center;padding:0;margin:0;flex-shrink:0;">
                         <span style="color:#614f4d;font-size:22px;font-weight:600;letter-spacing:2px;margin-top:-1px;margin-left:1.5px;user-select:none;">開</span>
@@ -1281,7 +1279,6 @@ window.showRedPacketReceiveModal = function (recordId) {
 
         document.body.appendChild(overlay);
 
-        // 开按钮事件
         var openBtn = overlay.querySelector('#rp-open-test');
         if (openBtn) {
             openBtn.onmouseenter = function() {
@@ -1312,7 +1309,6 @@ window.showRedPacketReceiveModal = function (recordId) {
             };
         }
 
-        // 退回按钮事件（仅系统发出的红包）
         if (isSystemSender) {
             var returnBtn = overlay.querySelector('#rp-return-btn');
             if (returnBtn) {
@@ -1339,11 +1335,23 @@ window.showRedPacketReceiveModal = function (recordId) {
         return;
     }
 
-    // ===== 已领取 / 已退回弹窗（保持原有逻辑） =====
-    // ... 这里保留原有的已领取/已退回弹窗代码 ...
-    // 由于篇幅，这里简化为调用原有逻辑
-    // 实际使用时需要保留原函数中已领取/已退回部分的完整代码
-
-    console.log('待领取弹窗已显示');
+    // ===== 已领取 / 已退回：调用原函数 =====
+    if (typeof _originalShowRedPacket === 'function') {
+        _originalShowRedPacket(recordId);
+    } else {
+        // 兜底：简单显示
+        var statusText = isReceived ? '已领取' : '已退回';
+        overlay.innerHTML = `
+            <div style="text-align:center;background:#fff;padding:30px;border-radius:16px;width:260px;">
+                <div style="font-size:18px;font-weight:600;margin-bottom:10px;">${statusText}</div>
+                <div style="font-size:14px;color:#888;">¥${fmt(record.amount)}</div>
+                <button onclick="this.closest('div[style*="position:fixed"]').remove()" style="margin-top:16px;padding:8px 24px;border:none;border-radius:8px;background:#c4453c;color:#fff;cursor:pointer;">关闭</button>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+    }
 };
+
+console.log('✅ 待领取红包弹窗已更新为最终版');
+    
 })();
