@@ -24,6 +24,8 @@
     <link rel="stylesheet" href="css/companion.css">
     <!-- 虚拟时钟样式 -->
 <link rel="stylesheet" href="css/virtual-clock.css">
+    <!-- QQ音乐悬浮播放器样式 -->
+<link rel="stylesheet" href="css/qqmusic-player.css">
 
     <style id="css-live-preview-style"></style>
 </head>
@@ -1835,6 +1837,10 @@
                     <div class="settings-item" id="music-player-toggle">
                         <i class="fas fa-music"></i><span>悬浮音乐播放器</span>
                     </div>
+                    <div class="settings-item" id="qqmusic-toggle">
+    <i class="fas fa-headphones"></i>
+    <span>QQ音乐悬浮播放器</span>
+</div>
                     <div class="settings-item settings-item-disabled" id="coming-soon-placeholder">
                         <i class="fas fa-hourglass-half"></i><span>敬请期待</span>
                     </div>
@@ -2663,6 +2669,35 @@
     <div class="playlist-popup" id="playlist"></div>
     <audio id="audio"></audio>
 
+<!-- ===== QQ音乐歌单面板 ===== -->
+<div id="qqmusic-player" class="qqmusic-player-container" style="display:none;">
+    <!-- 迷你黑胶模式 -->
+    <div id="qqmusic-mini" class="qqmusic-mini" style="display:flex;">
+        <div class="qqmusic-vinyl">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 13l-4-4h8l-4 4z"/></svg>
+        </div>
+    </div>
+    <!-- 展开模式 -->
+    <div id="qqmusic-panel" class="qqmusic-panel" style="display:none;">
+        <div class="qqmusic-header">
+            <span class="qqmusic-title">🎵 梦角歌单</span>
+            <div class="qqmusic-search-wrapper">
+                <input type="text" id="qqmusic-search" class="qqmusic-search-input" placeholder="搜索歌曲..." style="display:none;">
+                <button id="qqmusic-search-toggle" class="qqmusic-search-btn" title="搜索">🔍</button>
+            </div>
+            <button id="qqmusic-close" class="qqmusic-close-btn" title="关闭">✕</button>
+        </div>
+        <div id="qqmusic-list" class="qqmusic-list">
+            <!-- 歌单由JS动态渲染 -->
+        </div>
+        <div class="qqmusic-footer">
+            <span id="qqmusic-count" class="qqmusic-count">共 0 首歌</span>
+            <span class="qqmusic-hint">点击歌曲 → 跳转QQ音乐播放</span>
+        </div>
+    </div>
+</div>
+<!-- ===== QQ音乐歌单面板结束 ===== -->
+        
     <div class="modal" id="add-song-modal">
         <div class="modal-content">
             <div class="modal-title">
@@ -2892,6 +2927,7 @@
     <script src="js/features/mood.js"></script>
 <script src="js/features/envelope.js"></script>
         <script src="js/features/reply-library.js"></script>
+        <script src="js/features/qqmusic-player.js"></script>
 <script src="js/highfunctions/boards.js"></script>
         <script src="js/highfunctions/period.js"></script>
         <!-- 农历日期转换库 -->
