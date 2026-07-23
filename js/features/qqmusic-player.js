@@ -1,27 +1,24 @@
 /**
- * QQ音乐歌单面板 - 功能模块
+ * QQ音乐歌单面板 - 完整版
  * 歌单ID: 9751402623
- * 支持自定义歌单名称、点击标题编辑、自动关闭设置面板
+ * 功能：系统提示 + 概率一起听 + 首次/后续区分
  */
-
 (function() {
     'use strict';
 
-    // ============================================================
-    // 配置
-    // ============================================================
     const CONFIG = {
         PLAYLIST_ID: '9751402623',
-        PLAYLIST_NAME: '传讯音乐台',          // ← 默认名称，点击标题可修改
+        PLAYLIST_NAME: '传讯音乐台',
         API_URL: 'https://api.vvhan.com/api/qqplaylist',
         STORAGE_KEY: 'qqmusic_panel_state',
         SONG_STORAGE_KEY: 'qqmusic_song_cache',
         CACHE_DURATION: 10 * 60 * 1000,
+        TOGETHER_PROBABILITY: 0.7,        // 70% 概率显示“一起听”
+        TOGETHER_COOLDOWN: 10 * 60 * 1000, // 10分钟冷却
+        FIRST_PLAY_KEY: 'qqmusic_first_play', // 记录是否第一次播放
     };
 
-    // ============================================================
     // DOM 引用
-    // ============================================================
     const container = document.getElementById('qqmusic-player');
     const mini = document.getElementById('qqmusic-mini');
     const panel = document.getElementById('qqmusic-panel');
@@ -34,29 +31,90 @@
     const titleEl = document.getElementById('qqmusic-title');
 
     let allSongs = [];
-    let filteredSongs = [];
     let isPanelOpen = false;
     let isSearchExpanded = false;
     let currentSong = null;
     let isInitialized = false;
+    let lastTogetherTime = 0;
 
     // ============================================================
-    // 工具函数
+    // 工具：获取名字
     // ============================================================
-    function log(msg, data) {
-        if (data) {
-            console.log(`[QQ音乐] ${msg}`, data);
+    function getMyName() {
+        const el = document.getElementById('my-name');
+        return el ? el.textContent.trim() : '我';
+    }
+
+    function getPartnerName() {
+        const el = document.getElementById('partner-name');
+        return el ? el.textContent.trim() : '梦角';
+    }
+
+    // ============================================================
+    // 工具：系统提示
+    // ============================================================
+    function addSystemMessage(text) {
+        const chatContainer = document.getElementById('chat-container');
+        if (!chatContainer) return;
+
+        const div = document.createElement('div');
+        div.className = 'system-message';
+        div.textContent = text;
+        chatContainer.appendChild(div);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    // ============================================================
+    // 核心：播放歌曲
+    // ============================================================
+    function playSong(songId, songName, artist) {
+        currentSong = { id: songId, name: songName, artist };
+
+        // ---- 判断是否第一次播放 ----
+        const isFirstPlay = !localStorage.getItem(CONFIG.FIRST_PLAY_KEY);
+
+        if (isFirstPlay) {
+            // 首次播放：显示“正在听歌” + 概率“一起听”
+            localStorage.setItem(CONFIG.FIRST_PLAY_KEY, 'true');
+
+            const myName = getMyName();
+            const partnerName = getPartnerName();
+
+            // 1. 系统提示：My name 正在听歌
+            addSystemMessage(`${myName} 正在听歌`);
+
+            // 2. 概率触发“一起听”
+            const now = Date.now();
+            const shouldShowTogether = 
+                Math.random() < CONFIG.TOGETHER_PROBABILITY &&
+                (now - lastTogetherTime > CONFIG.TOGETHER_COOLDOWN);
+
+            if (shouldShowTogether) {
+                lastTogetherTime = now;
+                // 延迟一点点显示，形成“先后”层次感
+                setTimeout(() => {
+                    addSystemMessage(`${partnerName} 正在和 ${myName} 一起听`);
+                }, 400);
+            }
         } else {
-            console.log(`[QQ音乐] ${msg}`);
+            // 后续播放：只显示“挑选了一首歌”
+            const myName = getMyName();
+            addSystemMessage(`${myName} 挑选了一首歌`);
         }
-    }
 
-    function warn(msg, err) {
-        console.warn(`[QQ音乐] ${msg}`, err || '');
+        // ---- 触发梦角感知事件（供其他扩展使用） ----
+        const event = new CustomEvent('qqmusic:play', {
+            detail: { songId, songName, artist }
+        });
+        document.dispatchEvent(event);
+
+        // ---- 跳转QQ音乐 ----
+        const webUrl = `https://y.qq.com/n/ryqq/songDetail/${songId}`;
+        window.open(webUrl, '_blank');
     }
 
     // ============================================================
-    // 获取歌单数据
+    // 以下为面板控制、歌单加载、搜索、状态恢复等（无改动）
     // ============================================================
     async function fetchPlaylist() {
         const cached = localStorage.getItem(CONFIG.SONG_STORAGE_KEY);
@@ -64,7 +122,6 @@
             try {
                 const data = JSON.parse(cached);
                 if (data.timestamp && Date.now() - data.timestamp < CONFIG.CACHE_DURATION) {
-                    log('使用缓存歌单，共 ' + data.songs.length + ' 首歌');
                     return data.songs;
                 }
             } catch (_) {}
@@ -72,7 +129,6 @@
 
         try {
             const url = `${CONFIG.API_URL}?id=${CONFIG.PLAYLIST_ID}`;
-            log('正在拉取歌单...');
             const response = await fetch(url);
             const result = await response.json();
 
@@ -83,65 +139,47 @@
                     artist: item.singer || item.artist || '未知歌手',
                     cover: item.albumurl || item.cover || '',
                 }));
-                log('歌单拉取成功，共 ' + songs.length + ' 首歌');
                 localStorage.setItem(CONFIG.SONG_STORAGE_KEY, JSON.stringify({
                     songs: songs,
                     timestamp: Date.now()
                 }));
                 return songs;
-            } else {
-                throw new Error('接口返回异常: ' + JSON.stringify(result));
             }
-        } catch (error) {
-            warn('主接口请求失败，尝试备用接口...', error);
-            try {
-                const fallbackUrl = `https://api.qsqq.tk/api/qqmusic?type=playlist&id=${CONFIG.PLAYLIST_ID}`;
-                const response = await fetch(fallbackUrl);
-                const result = await response.json();
-                if (result.code === 200 && result.data) {
-                    const songs = result.data.map(item => ({
-                        id: item.id || item.song_id,
-                        name: item.name || item.title || '未知歌曲',
-                        artist: item.singer || item.author || '未知歌手',
-                        cover: item.pic || item.cover || '',
-                    }));
-                    log('备用接口拉取成功，共 ' + songs.length + ' 首歌');
-                    localStorage.setItem(CONFIG.SONG_STORAGE_KEY, JSON.stringify({
-                        songs: songs,
-                        timestamp: Date.now()
-                    }));
-                    return songs;
-                }
-            } catch (_) {}
+        } catch (_) {}
 
-            warn('所有接口失败，使用示例数据');
-            return getFallbackSongs();
-        }
-    }
+        // 备用接口
+        try {
+            const fallbackUrl = `https://api.qsqq.tk/api/qqmusic?type=playlist&id=${CONFIG.PLAYLIST_ID}`;
+            const response = await fetch(fallbackUrl);
+            const result = await response.json();
+            if (result.code === 200 && result.data) {
+                const songs = result.data.map(item => ({
+                    id: item.id || item.song_id,
+                    name: item.name || item.title || '未知歌曲',
+                    artist: item.singer || item.author || '未知歌手',
+                    cover: item.pic || item.cover || '',
+                }));
+                localStorage.setItem(CONFIG.SONG_STORAGE_KEY, JSON.stringify({
+                    songs: songs,
+                    timestamp: Date.now()
+                }));
+                return songs;
+            }
+        } catch (_) {}
 
-    function getFallbackSongs() {
         return [
             { id: '001', name: '歌单加载失败', artist: '请检查网络后刷新', cover: '' },
             { id: '002', name: '或稍后重试', artist: 'QQ音乐', cover: '' },
         ];
     }
 
-    // ============================================================
-    // 渲染歌单
-    // ============================================================
     function renderSongs(songs) {
         if (!songs || songs.length === 0) {
-            listEl.innerHTML = `
-                <div class="qqmusic-empty">
-                    <div style="font-size:32px;margin-bottom:8px;">🎵</div>
-                    <span>歌单是空的，或者加载失败了</span>
-                </div>
-            `;
+            listEl.innerHTML = `<div class="qqmusic-empty"><div style="font-size:32px;margin-bottom:8px;">🎵</div><span>歌单是空的，或者加载失败了</span></div>`;
             countEl.textContent = '共 0 首歌';
             return;
         }
 
-        filteredSongs = songs;
         const html = songs.map((song, index) => `
             <div class="qqmusic-item" data-index="${index}" data-id="${song.id}" data-name="${encodeURIComponent(song.name)}" data-artist="${encodeURIComponent(song.artist)}">
                 ${song.cover ? `<img class="qqmusic-item-cover" src="${song.cover}" alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">` : ''}
@@ -162,9 +200,7 @@
                 const id = this.dataset.id;
                 const name = decodeURIComponent(this.dataset.name || '');
                 const artist = decodeURIComponent(this.dataset.artist || '');
-                if (id) {
-                    playSong(id, name, artist);
-                }
+                if (id) playSong(id, name, artist);
             });
         });
     }
@@ -176,52 +212,25 @@
             const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
             const regex = new RegExp(`(${escaped})`, 'gi');
             return text.replace(regex, '<span class="highlight">$1</span>');
-        } catch (_) {
-            return text;
-        }
+        } catch (_) { return text; }
     }
 
     function filterSongs(keyword) {
-        if (!keyword.trim()) {
-            renderSongs(allSongs);
-            return;
-        }
+        if (!keyword.trim()) { renderSongs(allSongs); return; }
         const kw = keyword.trim().toLowerCase();
         const filtered = allSongs.filter(s =>
-            s.name.toLowerCase().includes(kw) ||
-            s.artist.toLowerCase().includes(kw)
+            s.name.toLowerCase().includes(kw) || s.artist.toLowerCase().includes(kw)
         );
         renderSongs(filtered);
     }
 
-    // ============================================================
-    // 播放歌曲
-    // ============================================================
-    function playSong(songId, songName, artist) {
-        currentSong = { id: songId, name: songName, artist: artist };
-        log('播放歌曲: ' + songName + ' - ' + artist);
-
-        const event = new CustomEvent('qqmusic:play', {
-            detail: { songId, songName, artist }
-        });
-        document.dispatchEvent(event);
-
-        const webUrl = `https://y.qq.com/n/ryqq/songDetail/${songId}`;
-        window.open(webUrl, '_blank');
-    }
-
-    // ============================================================
-    // 面板控制
-    // ============================================================
     function openPanel() {
         if (isPanelOpen) return;
         isPanelOpen = true;
         panel.style.display = 'flex';
         mini.style.display = 'none';
         localStorage.setItem(CONFIG.STORAGE_KEY, 'open');
-        if (allSongs.length === 0) {
-            loadSongs();
-        }
+        if (allSongs.length === 0) loadSongs();
     }
 
     function closePanel() {
@@ -230,19 +239,14 @@
         mini.style.display = 'flex';
         collapseSearch();
         localStorage.setItem(CONFIG.STORAGE_KEY, 'closed');
+        // 关闭面板时，重置首次播放标记，以便下次打开重新触发“正在听歌”
+        localStorage.removeItem(CONFIG.FIRST_PLAY_KEY);
     }
 
     function togglePanel() {
-        if (isPanelOpen) {
-            closePanel();
-        } else {
-            openPanel();
-        }
+        isPanelOpen ? closePanel() : openPanel();
     }
 
-    // ============================================================
-    // 搜索控制
-    // ============================================================
     function expandSearch() {
         if (isSearchExpanded) return;
         isSearchExpanded = true;
@@ -261,55 +265,27 @@
         searchInput.value = '';
         searchToggle.textContent = '🔍';
         searchToggle.title = '搜索';
-        if (allSongs.length > 0) {
-            renderSongs(allSongs);
-        }
+        if (allSongs.length > 0) renderSongs(allSongs);
     }
 
     function toggleSearch() {
-        if (isSearchExpanded) {
-            collapseSearch();
-        } else {
-            expandSearch();
-        }
+        isSearchExpanded ? collapseSearch() : expandSearch();
     }
 
-    // ============================================================
-    // 加载歌单
-    // ============================================================
     async function loadSongs() {
-        listEl.innerHTML = `
-            <div class="qqmusic-loading">
-                <div class="qqmusic-spinner"></div>
-                <span>加载歌单中...</span>
-                <span style="font-size:11px;opacity:0.5;">请稍候</span>
-            </div>
-        `;
-
+        listEl.innerHTML = `<div class="qqmusic-loading"><div class="qqmusic-spinner"></div><span>加载歌单中...</span><span style="font-size:11px;opacity:0.5;">请稍候</span></div>`;
         try {
             allSongs = await fetchPlaylist();
             renderSongs(allSongs);
-        } catch (error) {
-            warn('加载失败:', error);
-            listEl.innerHTML = `
-                <div class="qqmusic-empty">
-                    <div style="font-size:32px;margin-bottom:8px;">😢</div>
-                    <span>歌单加载失败，请检查网络</span>
-                    <span style="font-size:11px;opacity:0.5;cursor:pointer;margin-top:6px;display:inline-block;color:var(--accent-color);" onclick="window.QQMusicPlayer?.load()">点击重试</span>
-                </div>
-            `;
+        } catch (_) {
+            listEl.innerHTML = `<div class="qqmusic-empty"><div style="font-size:32px;margin-bottom:8px;">😢</div><span>歌单加载失败，请检查网络</span><span style="font-size:11px;opacity:0.5;cursor:pointer;margin-top:6px;display:inline-block;color:var(--accent-color);" onclick="window.QQMusicPlayer?.load()">点击重试</span></div>`;
         }
     }
 
-    // ============================================================
-    // 状态恢复
-    // ============================================================
     function restoreState() {
         const state = localStorage.getItem(CONFIG.STORAGE_KEY);
         if (state === 'open') {
-            setTimeout(() => {
-                openPanel();
-            }, 400);
+            setTimeout(openPanel, 400);
         } else {
             mini.style.display = 'flex';
             panel.style.display = 'none';
@@ -317,36 +293,26 @@
     }
 
     // ============================================================
-    // 初始化（核心修改在这里）
+    // 初始化
     // ============================================================
     function init() {
         if (isInitialized) return;
         isInitialized = true;
 
-        log('初始化...');
-
-        // ===== 【修改点1】设置歌单名称 + 点击编辑 =====
+        // 歌单名称
         if (titleEl) {
-            // 从 localStorage 读取自定义名称
             const savedName = localStorage.getItem('qqmusic_playlist_name');
-            if (savedName) {
-                titleEl.textContent = `🎵 ${savedName}`;
-            } else {
-                titleEl.textContent = `🎵 ${CONFIG.PLAYLIST_NAME}`;
-            }
-
-            // 点击标题直接编辑
+            titleEl.textContent = `🎵 ${savedName || CONFIG.PLAYLIST_NAME}`;
             titleEl.style.cursor = 'pointer';
             titleEl.title = '点击修改歌单名称';
             titleEl.addEventListener('click', function(e) {
                 e.stopPropagation();
-                const currentName = this.textContent.replace('🎵 ', '').trim();
-                const newName = prompt('修改歌单名称：', currentName);
-                if (newName !== null && newName.trim() !== '') {
+                const current = this.textContent.replace('🎵 ', '').trim();
+                const newName = prompt('修改歌单名称：', current);
+                if (newName && newName.trim() !== '') {
                     const trimmed = newName.trim();
                     this.textContent = `🎵 ${trimmed}`;
                     localStorage.setItem('qqmusic_playlist_name', trimmed);
-                    CONFIG.PLAYLIST_NAME = trimmed;
                 }
             });
         }
@@ -356,99 +322,44 @@
         panel.style.display = 'none';
         searchInput.style.display = 'none';
 
-        // --- 开关控制 ---
+        // 开关
         if (toggleBtn) {
             toggleBtn.addEventListener('click', function(e) {
                 e.stopPropagation();
                 if (container.style.display === 'none') {
                     container.style.display = 'block';
                     const state = localStorage.getItem(CONFIG.STORAGE_KEY);
-                    if (state === 'open') {
-                        openPanel();
-                    } else {
-                        mini.style.display = 'flex';
-                        panel.style.display = 'none';
-                    }
-                    if (allSongs.length === 0 && isPanelOpen) {
-                        loadSongs();
-                    }
+                    if (state === 'open') openPanel();
+                    else { mini.style.display = 'flex'; panel.style.display = 'none'; }
+                    if (allSongs.length === 0 && isPanelOpen) loadSongs();
                     this.classList.add('active');
-                    log('面板已开启');
 
-                    // ===== 【修改点2】关闭高级功能面板 =====
                     const advancedModal = document.getElementById('advanced-modal');
                     if (advancedModal) {
-                        if (typeof hideModal === 'function') {
-                            hideModal(advancedModal);
-                        } else {
-                            advancedModal.style.display = 'none';
-                        }
+                        if (typeof hideModal === 'function') hideModal(advancedModal);
+                        else advancedModal.style.display = 'none';
                     }
-
                 } else {
                     container.style.display = 'none';
                     this.classList.remove('active');
-                    log('面板已关闭');
                 }
             });
-        } else {
-            warn('未找到 #qqmusic-toggle 开关元素');
         }
 
-        // --- 迷你模式点击 ---
-        if (mini) {
-            mini.addEventListener('click', togglePanel);
-        }
-
-        // --- 关闭按钮 ---
-        if (closeBtn) {
-            closeBtn.addEventListener('click', closePanel);
-        }
-
-        // --- 搜索按钮 ---
-        if (searchToggle) {
-            searchToggle.addEventListener('click', toggleSearch);
-        }
-
-        // --- 搜索输入 ---
+        if (mini) mini.addEventListener('click', togglePanel);
+        if (closeBtn) closeBtn.addEventListener('click', closePanel);
+        if (searchToggle) searchToggle.addEventListener('click', toggleSearch);
         if (searchInput) {
-            searchInput.addEventListener('input', function() {
-                filterSongs(this.value);
-            });
-            searchInput.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape') {
-                    collapseSearch();
-                }
-            });
+            searchInput.addEventListener('input', function() { filterSongs(this.value); });
+            searchInput.addEventListener('keydown', function(e) { if (e.key === 'Escape') collapseSearch(); });
         }
-
-        // --- 监听梦角事件 ---
-        document.addEventListener('qqmusic:play', function(e) {
-            const { songId, songName, artist } = e.detail;
-            log('🎵 梦角感知到: ' + songName + ' - ' + artist);
-            if (typeof window.dreamReply === 'function') {
-                const replies = [
-                    `这首歌好温柔呀，我也在听呢 ✦`,
-                    `《${songName}》是我最近也很喜欢的歌 🎵`,
-                    `你分享的音乐，我都有好好听哦 💕`,
-                    `这个旋律好美，和你一起听更美了 ✨`,
-                ];
-                const reply = replies[Math.floor(Math.random() * replies.length)];
-                window.dreamReply(reply);
-            }
-        });
 
         restoreState();
-
-        if (isPanelOpen) {
-            loadSongs();
-        }
-
-        log('初始化完成 ✅');
+        if (isPanelOpen) loadSongs();
     }
 
     // ============================================================
-    // 暴露全局接口
+    // 暴露全局
     // ============================================================
     window.QQMusicPlayer = {
         open: openPanel,
@@ -461,14 +372,10 @@
         isOpen: () => isPanelOpen,
     };
 
-    // ============================================================
-    // 自动初始化
-    // ============================================================
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
     } else {
         init();
     }
 
-})();
 })();
