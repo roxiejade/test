@@ -1,6 +1,6 @@
 /**
- * QQ音乐歌单面板 - 本地JSON版本
- * 读取 data/songs.json，不依赖任何外部接口
+ * QQ音乐歌单面板 - 本地JSON + 搜索跳转版
+ * 读取 data/songs.json，无真实ID时自动跳转搜索
  */
 (function() {
     'use strict';
@@ -33,9 +33,6 @@
     let isInitialized = false;
     let lastTogetherTime = 0;
 
-    // ============================================================
-    // 工具
-    // ============================================================
     function log(msg) { console.log('[QQ音乐]', msg); }
     function warn(msg) { console.warn('[QQ音乐]', msg); }
 
@@ -60,10 +57,20 @@
     }
 
     // ============================================================
-    // 核心：播放歌曲
+    // 核心：播放歌曲（自动判断ID是否有效）
     // ============================================================
     function playSong(songId, songName, artist) {
-        currentSong = { id: songId, name: songName, artist };
+        // 判断ID是否为真实QQ音乐ID（数字长度大于5）
+        var isValidId = songId && /^\d{6,}$/.test(songId);
+
+        if (!isValidId) {
+            // 没有真实ID → 跳转搜索
+            var searchUrl = 'https://y.qq.com/search?t=song&w=' + encodeURIComponent(songName + ' ' + artist);
+            window.open(searchUrl, '_blank');
+            return;
+        }
+
+        currentSong = { id: songId, name: songName, artist: artist };
 
         var isFirstPlay = !localStorage.getItem(CONFIG.FIRST_PLAY_KEY);
 
@@ -100,10 +107,9 @@
     }
 
     // ============================================================
-    // 读取本地 JSON 文件（核心）
+    // 读取本地 JSON 文件
     // ============================================================
     async function fetchPlaylist(forceRefresh) {
-        // 如果非强制刷新，先检查缓存
         if (!forceRefresh) {
             var cached = localStorage.getItem(CONFIG.SONG_STORAGE_KEY);
             if (cached) {
@@ -132,7 +138,6 @@
             }
         } catch (error) {
             warn('⚠️ 读取 data/songs.json 失败:', error);
-            // 如果缓存里有数据，即使读取失败也返回缓存
             var cached = localStorage.getItem(CONFIG.SONG_STORAGE_KEY);
             if (cached) {
                 try {
@@ -143,7 +148,6 @@
                     }
                 } catch (_) {}
             }
-            // 最后备用
             return getFallbackSongs();
         }
     }
@@ -182,7 +186,6 @@
         listEl.innerHTML = html;
         countEl.textContent = '共 ' + songs.length + ' 首歌';
 
-        // 刷新按钮
         var footer = document.querySelector('.qqmusic-footer');
         if (footer) {
             var existingBtn = document.getElementById('qqmusic-refresh-btn');
@@ -201,7 +204,6 @@
             }
         }
 
-        // 绑定点击事件
         var items = listEl.querySelectorAll('.qqmusic-item');
         for (var i = 0; i < items.length; i++) {
             items[i].addEventListener('click', function() {
@@ -232,9 +234,6 @@
         renderSongs(filtered);
     }
 
-    // ============================================================
-    // 面板控制
-    // ============================================================
     function openPanel() {
         if (isPanelOpen) return;
         isPanelOpen = true;
@@ -302,9 +301,6 @@
         }
     }
 
-    // ============================================================
-    // 初始化
-    // ============================================================
     function init() {
         if (isInitialized) return;
         isInitialized = true;
@@ -366,9 +362,6 @@
         if (isPanelOpen) loadSongs(false);
     }
 
-    // ============================================================
-    // 暴露全局
-    // ============================================================
     window.QQMusicPlayer = {
         open: openPanel,
         close: closePanel,
