@@ -1215,9 +1215,21 @@ window.renderEnvelopeBoard = async function() {
 };
   
 // --- 启动 ---
-loadData().then(() => { setInterval(checkStatus, 60000); checkStatus(); });
+loadData().then(() => { 
+    setInterval(checkStatus, 60000); 
+    checkStatus();
+    
+    // ===== 新增：页面加载后检查未读回复（与信封功能一致） =====
+    setTimeout(function() {
+        if (typeof window._checkBoardNewReplies === 'function') {
+            console.log('[BoardReply] 页面加载，检查未读回复...');
+            window._checkBoardNewReplies();
+        }
+    }, 1500);
+    // ===== 新增结束 =====
+});
 
-  console.log('✅ boards.js 执行完成，renderEnvelopeBoard:', typeof window.renderEnvelopeBoard);
+console.log('✅ boards.js 执行完成，renderEnvelopeBoard:', typeof window.renderEnvelopeBoard);
 
   // ============================================================
 // 表情包选择器（写留言专用）- 完整版
@@ -1696,6 +1708,17 @@ function updateStickerPreview() {
         }, 300);
     };
 
-})();
+  // ===== 页面可见性变化时检查（手机切回前台） =====
+document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'visible') {
+        setTimeout(function() {
+            if (typeof window._checkBoardNewReplies === 'function') {
+                console.log('[BoardReply] 页面回到前台，检查未读回复...');
+                window._checkBoardNewReplies();
+            }
+        }, 500);
+    }
+});
+// ===== 可见性变化结束 =====
   
 })();
