@@ -108,72 +108,70 @@
     // 获取歌单（支持强制刷新）
     // ============================================================
     async function fetchPlaylist(forceRefresh = false) {
-        // 如果不是强制刷新，先检查缓存
-        if (!forceRefresh) {
-            const cached = localStorage.getItem(CONFIG.SONG_STORAGE_KEY);
-            if (cached) {
-                try {
-                    const data = JSON.parse(cached);
-                    if (data.songs && data.songs.length > 0) {
-                        log('✅ 从缓存加载歌单，共 ' + data.songs.length + ' 首歌');
-                        return data.songs;
-                    }
-                } catch (_) {}
-            }
-        }
-
-        // 强制刷新或缓存为空时，从接口拉取
-        const proxyUrls = [
-            `https://api.qqsuu.cn/api/qqmusic/playlist?id=${CONFIG.PLAYLIST_ID}`,
-            `https://api.uomg.com/api/qq.music?url=https://y.qq.com/n/ryqq/playlist/${CONFIG.PLAYLIST_ID}`,
-            `https://api.66mz8.com/api/qqplaylist.php?id=${CONFIG.PLAYLIST_ID}`
-        ];
-
-        for (const url of proxyUrls) {
+    if (!forceRefresh) {
+        const cached = localStorage.getItem(CONFIG.SONG_STORAGE_KEY);
+        if (cached) {
             try {
-                log('📡 尝试拉取歌单: ' + url);
-                const response = await fetch(url, {
-                    signal: AbortSignal.timeout(8000)
-                });
-                const result = await response.json();
-
-                if (result.code === 200 && result.data && result.data.list && result.data.list.length > 0) {
-                    const songs = result.data.list.map(item => ({
-                        id: item.songid || item.id || String(Math.random()),
-                        name: item.songname || item.name || '未知歌曲',
-                        artist: item.singer || item.artist || '未知歌手',
-                        cover: item.albumurl || item.cover || '',
-                    }));
-                    log('✅ 接口拉取成功，共 ' + songs.length + ' 首歌');
-                    
-                    localStorage.setItem(CONFIG.SONG_STORAGE_KEY, JSON.stringify({
-                        songs: songs,
-                        timestamp: Date.now()
-                    }));
-                    return songs;
+                const data = JSON.parse(cached);
+                if (data.songs && data.songs.length > 0) {
+                    log('✅ 从缓存加载歌单，共 ' + data.songs.length + ' 首歌');
+                    return data.songs;
                 }
-            } catch (error) {
-                warn('⚠️ 接口请求失败: ' + url, error);
-            }
+            } catch (_) {}
         }
-
-        warn('⚠️ 所有接口均不可用，使用内置备用歌单');
-        const fallbackSongs = [
-            { id: '1', name: '晴天', artist: '周杰伦', cover: '' },
-            { id: '2', name: '七里香', artist: '周杰伦', cover: '' },
-            { id: '3', name: '夜曲', artist: '周杰伦', cover: '' },
-            { id: '4', name: '稻香', artist: '周杰伦', cover: '' },
-            { id: '5', name: '告白气球', artist: '周杰伦', cover: '' },
-            { id: '6', name: '等你下课', artist: '周杰伦', cover: '' },
-            { id: '7', name: 'Mojito', artist: '周杰伦', cover: '' },
-            { id: '8', name: '说好不哭', artist: '周杰伦', cover: '' },
-        ];
-        localStorage.setItem(CONFIG.SONG_STORAGE_KEY, JSON.stringify({
-            songs: fallbackSongs,
-            timestamp: Date.now()
-        }));
-        return fallbackSongs;
     }
+
+    // 使用当前可用的接口（2025年5月更新）
+    const proxyUrls = [
+        `https://api.qqsuu.cn/api/qqmusic/playlist?id=${CONFIG.PLAYLIST_ID}`,
+        `https://api.uomg.com/api/qq.music?url=https://y.qq.com/n/ryqq/playlist/${CONFIG.PLAYLIST_ID}`,
+        `https://api.66mz8.com/api/qqplaylist.php?id=${CONFIG.PLAYLIST_ID}`
+    ];
+
+    for (const url of proxyUrls) {
+        try {
+            log('📡 尝试拉取歌单: ' + url);
+            const response = await fetch(url, {
+                signal: AbortSignal.timeout(10000)
+            });
+            const result = await response.json();
+
+            if (result.code === 200 && result.data && result.data.list && result.data.list.length > 0) {
+                const songs = result.data.list.map(item => ({
+                    id: item.songid || item.id || String(Math.random()),
+                    name: item.songname || item.name || '未知歌曲',
+                    artist: item.singer || item.artist || '未知歌手',
+                    cover: item.albumurl || item.cover || '',
+                }));
+                log('✅ 接口拉取成功，共 ' + songs.length + ' 首歌');
+                localStorage.setItem(CONFIG.SONG_STORAGE_KEY, JSON.stringify({
+                    songs: songs,
+                    timestamp: Date.now()
+                }));
+                return songs;
+            }
+        } catch (error) {
+            warn('⚠️ 接口请求失败: ' + url, error);
+        }
+    }
+
+    warn('⚠️ 所有接口均不可用，使用内置备用歌单');
+    const fallbackSongs = [
+        { id: '1', name: '晴天', artist: '周杰伦', cover: '' },
+        { id: '2', name: '七里香', artist: '周杰伦', cover: '' },
+        { id: '3', name: '夜曲', artist: '周杰伦', cover: '' },
+        { id: '4', name: '稻香', artist: '周杰伦', cover: '' },
+        { id: '5', name: '告白气球', artist: '周杰伦', cover: '' },
+        { id: '6', name: '等你下课', artist: '周杰伦', cover: '' },
+        { id: '7', name: 'Mojito', artist: '周杰伦', cover: '' },
+        { id: '8', name: '说好不哭', artist: '周杰伦', cover: '' },
+    ];
+    localStorage.setItem(CONFIG.SONG_STORAGE_KEY, JSON.stringify({
+        songs: fallbackSongs,
+        timestamp: Date.now()
+    }));
+    return fallbackSongs;
+}
 
     // ============================================================
     // 渲染歌单（带刷新按钮）
