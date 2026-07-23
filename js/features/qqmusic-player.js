@@ -117,19 +117,30 @@
     // 以下为面板控制、歌单加载、搜索、状态恢复等（无改动）
     // ============================================================
     async function fetchPlaylist() {
-        const cached = localStorage.getItem(CONFIG.SONG_STORAGE_KEY);
-        if (cached) {
-            try {
-                const data = JSON.parse(cached);
-                if (data.timestamp && Date.now() - data.timestamp < CONFIG.CACHE_DURATION) {
-                    return data.songs;
-                }
-            } catch (_) {}
-        }
-
+    // 1. 先检查缓存
+    const cached = localStorage.getItem(CONFIG.SONG_STORAGE_KEY);
+    if (cached) {
         try {
-            const url = `${CONFIG.API_URL}?id=${CONFIG.PLAYLIST_ID}`;
-            const response = await fetch(url);
+            const data = JSON.parse(cached);
+            if (data.timestamp && Date.now() - data.timestamp < CONFIG.CACHE_DURATION) {
+                log('使用缓存歌单，共 ' + data.songs.length + ' 首歌');
+                return data.songs;
+            }
+        } catch (_) {}
+    }
+
+    // 2. 使用更稳定的代理接口
+    const proxyUrls = [
+        `https://api.uomg.com/api/qq.music?url=https://y.qq.com/n/ryqq/playlist/${CONFIG.PLAYLIST_ID}`,
+        `https://api.66mz8.com/api/qqplaylist.php?id=${CONFIG.PLAYLIST_ID}`
+    ];
+
+    for (const url of proxyUrls) {
+        try {
+            log('尝试拉取歌单: ' + url);
+            const response = await fetch(url, {
+                signal: AbortSignal.timeout(5000) // 5秒超时
+            });
             const result = await response.json();
 
             if (result.code === 200 && result.data && result.data.list) {
@@ -139,39 +150,22 @@
                     artist: item.singer || item.artist || '未知歌手',
                     cover: item.albumurl || item.cover || '',
                 }));
+                log('歌单拉取成功，共 ' + songs.length + ' 首歌');
                 localStorage.setItem(CONFIG.SONG_STORAGE_KEY, JSON.stringify({
                     songs: songs,
                     timestamp: Date.now()
                 }));
                 return songs;
             }
-        } catch (_) {}
-
-        // 备用接口
-        try {
-            const fallbackUrl = `https://api.qsqq.tk/api/qqmusic?type=playlist&id=${CONFIG.PLAYLIST_ID}`;
-            const response = await fetch(fallbackUrl);
-            const result = await response.json();
-            if (result.code === 200 && result.data) {
-                const songs = result.data.map(item => ({
-                    id: item.id || item.song_id,
-                    name: item.name || item.title || '未知歌曲',
-                    artist: item.singer || item.author || '未知歌手',
-                    cover: item.pic || item.cover || '',
-                }));
-                localStorage.setItem(CONFIG.SONG_STORAGE_KEY, JSON.stringify({
-                    songs: songs,
-                    timestamp: Date.now()
-                }));
-                return songs;
-            }
-        } catch (_) {}
-
-        return [
-            { id: '001', name: '歌单加载失败', artist: '请检查网络后刷新', cover: '' },
-            { id: '002', name: '或稍后重试', artist: 'QQ音乐', cover: '' },
-        ];
+        } catch (error) {
+            warn('接口请求失败: ' + url, error);
+        }
     }
+
+    // 3. 所有接口失败，返回示例数据
+    warn('所有接口失败，使用示例数据');
+    return getFallbackSongs();
+}
 
     function renderSongs(songs) {
         if (!songs || songs.length === 0) {
