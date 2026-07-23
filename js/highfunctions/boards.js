@@ -582,7 +582,25 @@ function openDetail(threadId, type) {
       const senderName = isSenderMe ? myName : partnerName;
       
       // 渲染当前这条消息
-      bodyHtml += `<div class="${sectionClass}" id="bv2-section-${r.id}"><div class="${labelClass}">${senderName}${labelText}</div>${cHtml}</div>`;
+      // 格式化时间
+function _fmtTime(ts) {
+    const d = new Date(ts);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const h = String(d.getHours()).padStart(2, '0');
+    const min = String(d.getMinutes()).padStart(2, '0');
+    return y + '-' + m + '-' + day + ' ' + h + ':' + min;
+}
+const timeStr = r.timestamp ? _fmtTime(r.timestamp) : '';
+
+bodyHtml += `<div class="${sectionClass}" id="bv2-section-${r.id}">
+    <div class="${labelClass}" style="display:flex;justify-content:space-between;align-items:center;width:100%;">
+        <span>${senderName}${labelText}</span>
+        <span style="flex-shrink:0;font-size:11px;color:var(--text-secondary);font-weight:400;margin-left:80px;">${timeStr}</span>
+    </div>
+    ${cHtml}
+</div>`;
 
       // 🌟 终极简化：所有淡字提示统一在这判断
       const isLast = idx === thread.replies.length - 1;
