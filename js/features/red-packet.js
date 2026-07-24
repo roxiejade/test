@@ -95,7 +95,7 @@ window.getFestivals = function getFestivals() {
     
     // ---- 公历节日 ----
     var solarFestivals = [
-        / 🔥 新增：你的生日 6月8日（放在最前面，优先级最高）
+        // 🔥 新增：你的生日 6月8日（放在最前面，优先级最高）
     { month: 6, day: 8, name: '生日', messages: ['生日快乐🎂', '又陪你长大一岁', '许个愿吧', '身体健康，平安顺遂', '永远爱你❤️'] },
         { month: 1, day: 1, name: '元旦', messages: ['新年快乐!', '元旦快乐', '新的一年依然爱你', '万事如意'] },
         { month: 2, day: 14, name: '情人节', messages: ['情人节快乐', '永远爱你', '你是我最珍贵的', '附赠亲吻'] },
