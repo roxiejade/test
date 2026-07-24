@@ -95,6 +95,8 @@ window.getFestivals = function getFestivals() {
     
     // ---- 公历节日 ----
     var solarFestivals = [
+        / 🔥 新增：你的生日 6月8日（放在最前面，优先级最高）
+    { month: 6, day: 8, name: '生日', messages: ['生日快乐🎂', '又陪你长大一岁', '许个愿吧', '身体健康，平安顺遂', '永远爱你❤️'] },
         { month: 1, day: 1, name: '元旦', messages: ['新年快乐!', '元旦快乐', '新的一年依然爱你', '万事如意'] },
         { month: 2, day: 14, name: '情人节', messages: ['情人节快乐', '永远爱你', '你是我最珍贵的', '附赠亲吻'] },
         { month: 3, day: 8, name: '妇女节', messages: ['妇女节快乐', '世界上第一厉害的小玉节日快乐', '你特别棒'] },
@@ -608,102 +610,288 @@ if (typeof addMessage === 'function') {
     var _rpSendCountToday = 0;
 
     window.trySystemRedPacket = function () {
-        window.initTransferData();
+    window.initTransferData();
 
-        // 单日上限检查（5次）
-        var today = new Date().toISOString().slice(0, 10);
-        if (today !== _lastRPSendDate) {
-            _lastRPSendDate = today;
-            _rpSendCountToday = 0;
+    // ===== 1. 单日上限检查（5次） =====
+    var today = new Date().toISOString().slice(0, 10);
+    if (today !== _lastRPSendDate) {
+        _lastRPSendDate = today;
+        _rpSendCountToday = 0;
+    }
+    if (_rpSendCountToday >= 5) return false;
+
+    // ===== 2. 获取节日信息 =====
+    var festivals = getFestivals();
+    var isFestival = festivals.length > 0;
+    var festival = isFestival ? festivals[0] : null;
+
+    // ===== 3. 🔥 检测是否为大额特殊日期 =====
+    var now = new Date();
+    var todayMonth = now.getMonth() + 1;
+    var todayDay = now.getDate();
+
+    var isNewYear = (todayMonth === 1 && todayDay === 1);
+    var isSpringFestival = false;
+    var isChineseNewYearEve = false;
+    if (festivals && festival) {
+        if (festival.name === '春节' || festival.name === '除夕') {
+            isSpringFestival = true;
+            isChineseNewYearEve = (festival.name === '除夕');
         }
-        if (_rpSendCountToday >= 5) return false;
+    }
+    // 生日：6月8日
+    var isBirthday = (todayMonth === 6 && todayDay === 8);
+    var isBigDay = isBirthday || isNewYear || isSpringFestival || isChineseNewYearEve;
 
-        var festivals = getFestivals();
-        var isFestival = festivals.length > 0;
-        var festival = isFestival ? festivals[0] : null;
+    // ===== 4. 冷却期 + 概率计算 =====
+    var lastRp = window.transferData.records
+        .filter(function(r) { return r.from === 'system' && r.status === 'pending'; })
+        .sort(function(a, b) { return b.createdAt - a.createdAt; })[0];
+    var hoursSinceLastRp = lastRp ? (Date.now() - lastRp.createdAt) / (1000 * 60 * 60) : 999;
+    if (hoursSinceLastRp < 2) return false;
 
-        // 触发概率：平日 5%，节日 80%
-        var chance = isFestival ? 0.8 : 0.05;
-        if (Math.random() > chance) return false;
+    // 🔥 大额特殊日期触发概率 25%，节日 20%，平日根据冷却时间
+    var baseChance;
+    if (isBigDay) {
+        baseChance = 0.25;
+    } else if (isFestival) {
+        baseChance = 0.20;
+    } else if (hoursSinceLastRp < 24) {
+        baseChance = 0.03;
+    } else if (hoursSinceLastRp < 48) {
+        baseChance = 0.08;
+    } else {
+        baseChance = 0.15;
+    }
+    if (Math.random() > baseChance) return false;
 
-        // 决定金额：节日90% / 平日40% 使用特殊金额
-        var useSpecial = Math.random() < (isFestival ? 0.9 : 0.4);
-        var amount;
-        if (useSpecial) {
-            var specialYuan = SPECIAL_AMOUNTS[Math.floor(Math.random() * SPECIAL_AMOUNTS.length)];
-            amount = Math.round(specialYuan * 100); // 转为分
-        } else {
-            // 80%在0-200元内随机，20%在0-余额内随机
-            var maxBalance = Math.floor(window.transferData.systemBalance / 100); // 余额（元）
-            if (maxBalance <= 0) return false;
-            if (Math.random() < 0.8) {
-                var max200 = Math.min(200, maxBalance);
-                amount = Math.floor(Math.random() * (max200 * 100)) + 1; // 0.01~200元
+    // ===== 5. 生成金额 =====
+    var amount;
+    var maxBalance = window.transferData.systemBalance; // 余额（分）
+    if (maxBalance < 1) return false; // 没钱就不发
+
+    // 特殊金额池（单位：分）
+    var specialAmounts = [520, 1314, 5200, 9999, 6666, 8888, 999, 521, 5211314];
+
+    // 🔥 大额特殊日期：50% 特殊金额 + 30% 大额乱打 + 20% 正常
+    // 普通节日：40% 特殊金额 + 60% 正常（保留原有逻辑）
+    // 平日：按原逻辑
+
+    var isSpecialDay = isFestival || isBigDay;
+
+    if (isBigDay) {
+        // 生日 / 元旦 / 除夕 / 春节
+        var bigRand = Math.random();
+        if (bigRand < 0.50) {
+            // 50%：特殊金额
+            var chosen = specialAmounts[Math.floor(Math.random() * specialAmounts.length)];
+            // 如果特殊金额超过余额，取余额
+            amount = Math.min(chosen, maxBalance);
+        } else if (bigRand < 0.80) {
+            // 30%：大额随手乱打（上限跟余额走）
+            // 至少 200 元，上限是余额
+            var minBig = 20000; // 200 元（分）
+            if (maxBalance < minBig) {
+                // 余额不足 200 元时，发 50-100% 余额
+                amount = Math.floor(Math.random() * (maxBalance - 1000)) + 1000;
             } else {
-                amount = Math.floor(Math.random() * window.transferData.systemBalance) + 1;
+                amount = Math.floor(Math.random() * (maxBalance - minBig)) + minBig;
+            }
+        } else {
+            // 20%：正常金额（走下面的正常逻辑）
+            // 用标记走正常分支
+            amount = null;
+        }
+    }
+
+    // 如果上面没有生成金额（普通节日或平日的正常分支）
+    if (!amount) {
+        var normalRand = Math.random();
+        // 决定是否使用特殊金额
+        var useSpecial = false;
+        if (isFestival && !isBigDay) {
+            // 普通节日：40% 特殊金额
+            useSpecial = Math.random() < 0.4;
+        } else if (isBigDay) {
+            // 大额特殊日期的 20% 正常分支已经走到这里，不再走特殊金额
+            useSpecial = false;
+        } else {
+            // 平日：保留原逻辑 40% 特殊金额
+            useSpecial = Math.random() < 0.4;
+        }
+
+        if (useSpecial) {
+            var chosen = specialAmounts[Math.floor(Math.random() * specialAmounts.length)];
+            amount = Math.min(chosen, maxBalance);
+        } else {
+            // 正常金额：90% 概率 200 元及以下，10% 概率大额乱打
+            if (Math.random() < 0.90) {
+                // 200 元及以下（分）
+                var max200 = Math.min(20000, maxBalance);
+                if (max200 < 1) max200 = maxBalance;
+                // 金额分布：0.01-200 元
+                var r = Math.random();
+                if (r < 0.10) {
+                    // 0.01 - 5.00 元（含 0.01）
+                    amount = Math.floor(Math.random() * 499) + 1;
+                } else if (r < 0.35) {
+                    // 5.01 - 20.00 元
+                    amount = Math.floor(Math.random() * 1499) + 501;
+                } else if (r < 0.60) {
+                    // 20.01 - 66.66 元
+                    amount = Math.floor(Math.random() * 4665) + 2001;
+                } else if (r < 0.80) {
+                    // 66.67 - 99.99 元
+                    amount = Math.floor(Math.random() * 3332) + 6667;
+                } else if (r < 0.95) {
+                    // 100.00 - 199.99 元
+                    amount = Math.floor(Math.random() * 9999) + 10000;
+                } else {
+                    // 200.00 元（满额红包）
+                    amount = 20000;
+                }
+                // 确保不超过余额
+                if (amount > maxBalance) amount = maxBalance;
+                // 确保至少 0.01 元
+                if (amount < 1) amount = 1;
+            } else {
+                // 10%：200 元以上大额乱打（上限跟余额走）
+                var minBig = 20001;
+                if (maxBalance < minBig) {
+                    amount = Math.floor(Math.random() * (maxBalance - 1000)) + 1000;
+                } else {
+                    amount = Math.floor(Math.random() * (maxBalance - minBig)) + minBig;
+                }
             }
         }
+    }
 
-        // 检查系统余额
-        if (window.transferData.systemBalance < amount) return false;
+    // 最终保底：确保金额不超过余额且大于 0
+    if (!amount || amount < 1) {
+        amount = Math.min(100, maxBalance); // 保底 1 元
+    }
+    if (amount > maxBalance) amount = maxBalance;
 
-        // 扣除系统余额
-        window.transferData.systemBalance -= amount;
+    // ===== 6. 扣除余额 =====
+    window.transferData.systemBalance -= amount;
 
-        // 留言
-        var message;
-        if (isFestival && festival) {
-            var msgs = festival.messages;
-            message = msgs[Math.floor(Math.random() * msgs.length)];
-        } else {
-            var normalMsgs = ['给你一个小红包~', '惊喜红包', '好运红包', '开心一下~', '一点心意'];
+    // ===== 7. 生成留言 =====
+    var normalMsgs = [
+        '给你点零花钱~',
+        '买杯咖啡吧☕',
+        '今天辛苦啦',
+        '突然想发个红包',
+        '路上看到一朵花，想到了你🌺',
+        '没什么，就是想给你钱',
+        '存着买好吃的',
+        '今天的开心份额💰',
+        '随便花花',
+        '想你了，转点钱给你',
+        '当零花钱，不用省',
+        '今天心情好，分你一点',
+        '买你喜欢的东西',
+        '不许拒绝，收着',
+        '一点心意，不多',
+        '哥哥今天心情好',
+        '天冷，买杯热饮',
+        '看到这个数字觉得好看',
+        '发着玩的，收着',
+        '就这么多，拿去买糖',
+        '刚看到余额，分你一半',
+        '记得吃早餐',
+        '晚安全世界🌙'
+    ];
+
+    var message;
+    if (isFestival && festival) {
+        var festivalMsgs = festival.messages;
+        message = festivalMsgs[Math.floor(Math.random() * festivalMsgs.length)];
+    } else if (isBigDay && isBirthday) {
+        var birthdayMsgs = ['生日快乐🎂', '今天你最大', '许个愿吧', '永远开心', '爱你❤️', '给你买礼物🎁'];
+        message = birthdayMsgs[Math.floor(Math.random() * birthdayMsgs.length)];
+    } else {
+        // 🔥 70% 概率有留言，30% 无留言（增加真实感）
+        if (Math.random() < 0.70) {
             message = normalMsgs[Math.floor(Math.random() * normalMsgs.length)];
+        } else {
+            message = ''; // 无留言
         }
+    }
 
-        // 创建记录
-        var record = {
-            id: genId(),
-            from: 'system',
-            to: 'me',
-            amount: amount,
-            message: message,
-            status: 'pending',
-            createdAt: Date.now()
-        };
-        window.transferData.records.push(record);
-
-        // 计数
-        _rpSendCountToday++;
-
-        // 保存
-        if (typeof window.throttledSaveData === 'function') window.throttledSaveData();
-
-        // 添加红包消息到聊天
-        if (typeof addMessage === 'function') {
-            addMessage({
-                id: record.id,
-                sender: 'partner',
-                text: message,
-                timestamp: new Date(),
-                status: 'sent',
-                type: 'red-packet',
-                redPacket: record
-            });
-        }
-
-        // 播放声音
-        if (typeof window.playSound === 'function') window.playSound('message');
-
-        // 通知
-        if (typeof window.showNotification === 'function') {
-            var notifyMsg = isFestival
-                ? festival.name + '红包来啦! &yen;' + fmt(amount)
-                : '收到一个红包 &yen;' + fmt(amount);
-            window.showNotification(notifyMsg, 'success');
-        }
-
-        return true;
+    // ===== 8. 创建记录 =====
+    var record = {
+        id: genId(),
+        from: 'system',
+        to: 'me',
+        amount: amount,
+        message: message || '恭喜发财',
+        status: 'pending',
+        createdAt: Date.now()
     };
+    window.transferData.records.push(record);
+    _rpSendCountToday++;
+
+    if (typeof window.throttledSaveData === 'function') window.throttledSaveData();
+
+    if (typeof addMessage === 'function') {
+        addMessage({
+            id: record.id,
+            sender: 'partner',
+            text: message || '恭喜发财',
+            timestamp: new Date(),
+            status: 'sent',
+            type: 'red-packet',
+            redPacket: record
+        });
+    }
+
+    if (typeof window.playSound === 'function') window.playSound('message');
+
+    if (typeof window.showNotification === 'function') {
+        var notifyMsg = isBigDay ? '🎉 特别日子红包来啦！' : (isFestival ? '🎉 ' + festival.name + '红包来啦！' : '🧧 收到一个红包');
+        window.showNotification(notifyMsg, 'success');
+    }
+
+    // ===== 9. 红包雨：5% 概率连发 2-3 个 =====
+    if (Math.random() < 0.05 && _rpSendCountToday < 3) {
+        var bonusCount = Math.floor(Math.random() * 2) + 2;
+        for (var i = 0; i < bonusCount; i++) {
+            (function(index) {
+                setTimeout(function() {
+                    var bonusMax = window.transferData.systemBalance;
+                    if (bonusMax < 100) return;
+                    var bonusAmount = Math.floor(Math.random() * Math.min(bonusMax, 5000)) + 100; // 1-50 元
+                    if (window.transferData.systemBalance < bonusAmount) return;
+                    window.transferData.systemBalance -= bonusAmount;
+                    var bonusRecord = {
+                        id: 'rp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
+                        from: 'system',
+                        to: 'me',
+                        amount: bonusAmount,
+                        message: '🎁 附赠一个~',
+                        status: 'pending',
+                        createdAt: Date.now()
+                    };
+                    window.transferData.records.push(bonusRecord);
+                    if (typeof addMessage === 'function') {
+                        addMessage({
+                            id: bonusRecord.id,
+                            sender: 'partner',
+                            text: '🎁 附赠一个~',
+                            timestamp: new Date(),
+                            status: 'sent',
+                            type: 'red-packet',
+                            redPacket: bonusRecord
+                        });
+                    }
+                    if (typeof window.throttledSaveData === 'function') window.throttledSaveData();
+                }, (index + 1) * 800 + Math.random() * 500);
+            })(i);
+        }
+    }
+
+    return true;
+};
 
     // ========== 后续随机领取待领取红包 ==========
 
