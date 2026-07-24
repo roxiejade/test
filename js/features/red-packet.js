@@ -1294,7 +1294,7 @@ try {
     if (isPending) {
         var openBtn = overlay.querySelector('#rp-open-btn');
         if (openBtn) {
-            openBtn.onclick = function () {
+                        openBtn.onclick = function () {
                 if (record.from === 'system') {
                     window.transferData.myBalance += record.amount;
                     window.transferData.systemBalance -= record.amount;
@@ -1304,6 +1304,18 @@ try {
                 if (typeof window.throttledSaveData === 'function') window.throttledSaveData();
 
                 overlay.innerHTML = buildReceivedPanel();
+
+                // ===== 🔥 系统提示：你领取对方红包（带 emoji） =====
+                if (typeof addMessage === 'function') {
+                    addMessage({
+                        id: 'rp_system_' + Date.now(),
+                        sender: 'system',
+                        text: '🧧 你领取了 ' + getPartnerName() + ' 的红包',
+                        timestamp: new Date(),
+                        status: 'sent',
+                        type: 'system'
+                    });
+                }
 
                 if (typeof renderMessages === 'function') renderMessages();
                 if (typeof window.showNotification === 'function') window.showNotification('红包已领取 &yen;' + fmt(record.amount), 'success');
@@ -1315,13 +1327,25 @@ try {
     if (isPending && record.from === 'system') {
         var returnBtn = overlay.querySelector('#rp-return-btn');
         if (returnBtn) {
-            returnBtn.onclick = function () {
+                        returnBtn.onclick = function () {
                 window.transferData.systemBalance += record.amount;
                 record.status = 'returned';
                 record.returnedAt = Date.now();
                 if (typeof window.throttledSaveData === 'function') window.throttledSaveData();
 
                 overlay.innerHTML = buildReturnedPanel();
+
+                // ===== 🔥 系统提示：你退回对方红包（无 emoji） =====
+                if (typeof addMessage === 'function') {
+                    addMessage({
+                        id: 'rp_system_' + Date.now(),
+                        sender: 'system',
+                        text: '你已退回 ' + getPartnerName() + ' 的红包',
+                        timestamp: new Date(),
+                        status: 'sent',
+                        type: 'system'
+                    });
+                }
 
                 if (typeof renderMessages === 'function') renderMessages();
                 if (typeof window.showNotification === 'function') window.showNotification('红包已退回', 'info');
