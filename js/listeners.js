@@ -2580,17 +2580,18 @@ const savedCover = safeGetItem(APP_PREFIX + 'playerCover');
         renderPlaylist();
     }
 
-    function openEditModal(index) {
-        const song = songs[index];
-        if (!song) return;
-        editModeIndex = index;
-        newSongTitle.value = song.title;
-        newSongSub.value = song.sub;
-        newSongUrl.value = song.url;
-        modalTitleElem.innerText = "编辑歌曲信息";
-        confirmAddSongBtn.innerText = "保存修改";
-        showModal(addSongModal);
-    }
+    // ===== 修改后 =====
+function openEditModal(index) {
+    const song = songs[index];
+    if (!song) return;
+    editModeIndex = index;
+    newSongTitle.value = song.title || '';
+    newSongSub.value = song.sub || '';
+    newSongUrl.value = song.url || '';
+    modalTitleElem.innerText = "编辑歌曲信息";
+    confirmAddSongBtn.innerText = "保存修改";
+    showModal(addSongModal);
+}
 
     function openAddModal() {
         editModeIndex = -1;
@@ -2770,16 +2771,18 @@ const savedCover = safeGetItem(APP_PREFIX + 'playerCover');
             const displayTitle = highlightText(song.title, searchTerm);
             const displaySub = highlightText(song.sub, searchTerm);
 
-            div.innerHTML = `
-                <div class="song-info">
-                    <div class="song-title-row">${displayTitle}</div>
-                    <div class="song-sub-row">${displaySub}</div>
-                </div>
-                <div class="item-actions">
-                    ${song.isCustom ? '<span class="custom-tag" title="自定义歌曲"></span>' : ''}
-                    <span class="action-icon-btn delete" title="移除">&times;</span>
-                </div>
-            `;
+            // ===== 修改后 =====
+div.innerHTML = `
+    <div class="song-info">
+        <div class="song-title-row">${displayTitle}</div>
+        <div class="song-sub-row">${displaySub}</div>
+    </div>
+    <div class="item-actions">
+        ${song.isCustom ? '<span class="custom-tag" title="自定义歌曲"></span>' : ''}
+        <span class="action-icon-btn edit" title="编辑歌曲"><i class="fas fa-pen"></i></span>
+        <span class="action-icon-btn delete" title="移除">&times;</span>
+    </div>
+`;
 
             if (song.isCustom) {
                 div.querySelector('.custom-tag').addEventListener('click', (e) => {
@@ -2810,6 +2813,15 @@ const savedCover = safeGetItem(APP_PREFIX + 'playerCover');
                 }
             });
 
+            // ===== 新增：编辑按钮点击事件 =====
+const editBtn = div.querySelector('.edit');
+if (editBtn) {
+    editBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openEditModal(realIndex);
+    });
+}
+
             div.addEventListener('click', (e) => {
                 e.stopPropagation();
                 currentIndex = realIndex;
@@ -2827,39 +2839,54 @@ const savedCover = safeGetItem(APP_PREFIX + 'playerCover');
         if (contentDiv) renderListContent(contentDiv);
     }
 
-    confirmAddSongBtn.addEventListener('click', () => {
-        const title = newSongTitle.value.trim();
-        const sub = newSongSub.value.trim();
-        const url = newSongUrl.value.trim();
+    // ===== 修改后 =====
+confirmAddSongBtn.addEventListener('click', () => {
+    const title = newSongTitle.value.trim();
+    const sub = newSongSub.value.trim();
+    const url = newSongUrl.value.trim();
 
-        if (!title || !url) {
-            showNotification('歌名和链接不能为空', 'error');
-            return;
+    if (!title || !url) {
+        showNotification('歌名和链接不能为空', 'error');
+        return;
+    }
+
+    const songData = {
+        title,
+        sub: sub || '未知艺术家',
+        url,
+        isCustom: true
+    };
+
+    let wasPlayingCurrent = false;
+    if (editModeIndex >= 0) {
+        // 编辑模式：更新歌曲
+        songs[editModeIndex] = songData;
+        showNotification('✅ 歌曲已更新', 'success', 2000);
+        // 如果编辑的是当前正在播放的歌曲，更新播放器显示
+        if (editModeIndex === currentIndex) {
+            wasPlayingCurrent = true;
         }
+    } else {
+        // 添加模式
+        songs.unshift(songData);
+        showNotification('✅ 歌曲已添加', 'success', 2000);
+        if (songs.length === 1) loadSong(0);
+    }
 
-        const songData = {
-            title,
-            sub: sub || '未知艺术家',
-            url,
-            isCustom: true
-        };
+    searchTerm = '';
+    savePlaylist();
 
-        if (editModeIndex >= 0) {
-            songs[editModeIndex] = songData;
-            showNotification('歌曲信息已修改', 'success');
-        } else {
-            songs.unshift(songData);
-            showNotification('歌曲已添加', 'success');
-            if (songs.length === 1) loadSong(0);
-        }
+    // 如果编辑的是当前播放的歌曲，刷新显示
+    if (wasPlayingCurrent || editModeIndex === currentIndex) {
+        loadSong(currentIndex);
+    }
 
-        searchTerm = '';
-        savePlaylist();
-        newSongTitle.value = '';
-        newSongSub.value = '';
-        newSongUrl.value = '';
-        hideModal(addSongModal);
-    });
+    newSongTitle.value = '';
+    newSongSub.value = '';
+    newSongUrl.value = '';
+    editModeIndex = -1;
+    hideModal(addSongModal);
+});
 
     cancelAddSongBtn.addEventListener('click', () => {
         hideModal(addSongModal);
