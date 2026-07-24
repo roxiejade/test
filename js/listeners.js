@@ -2607,9 +2607,9 @@ function openEditModal(index) {
         playlist.innerHTML = '';
 
         const header = document.createElement('div');
-        header.className = 'playlist-header';
-        header.innerHTML = `
-    <div class="pl-header-title">˙°ʚᕱ⑅ᕱɞ°˙</div>
+header.className = 'playlist-header';
+header.innerHTML = `
+    <div class="pl-header-title" id="playlist-title">˙°ʚᕱ⑅ᕱɞ°˙</div>
     <div class="pl-header-actions">
         <button class="pl-icon-btn" id="pl-manage-btn" title="歌单管理"><i class="fas fa-folder-open"></i></button>
         <button class="pl-icon-btn ${isSearchVisible ? 'active' : ''}" id="pl-search-toggle" title="搜索"><i class="fas fa-search"></i></button>
