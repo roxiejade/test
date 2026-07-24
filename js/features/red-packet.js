@@ -330,16 +330,32 @@ window.getFestivals = function getFestivals() {
                     if (typeof window.throttledSaveData === 'function') window.throttledSaveData();
 
                     setTimeout(function () {
+                        // ===== 🔥 双向卡片：对方退回你的红包 → 你这边出现已退回卡片 =====
+                        var returnedRecord = {
+                            id: 'rp_returned_card_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+                            from: 'me',
+                            to: 'system',
+                            amount: rpRecord.amount,
+                            message: rpRecord.message || '恭喜发财',
+                            status: 'returned',
+                            returnedAt: Date.now(),
+                            createdAt: rpRecord.createdAt || Date.now()
+                        };
+                        window.transferData.records.push(returnedRecord);
                         if (typeof addMessage === 'function') {
                             addMessage({
-                                id: 'rp_sys_ret_' + Date.now(),
-                                sender: 'system',
-                                text: '红包已被退回',
+                                id: returnedRecord.id,
+                                sender: 'user',
+                                text: returnedRecord.message || '恭喜发财',
                                 timestamp: new Date(),
-                                status: 'sent',
-                                type: 'system'
+                                status: 'returned',
+                                type: 'red-packet',
+                                redPacket: returnedRecord
                             });
                         }
+                        if (typeof window.throttledSaveData === 'function') window.throttledSaveData();
+                        // ===== 双向卡片结束 =====
+
                         if (typeof renderMessages === 'function') renderMessages();
                         if (typeof window.playSound === 'function') window.playSound('message');
                     }, delayMin + Math.random() * (delayMax - delayMin));
@@ -356,20 +372,35 @@ window.getFestivals = function getFestivals() {
                     if (typeof window.throttledSaveData === 'function') window.throttledSaveData();
 
                     setTimeout(function () {
-    // 发送「对方领取了你的红包」文字消息
-    if (typeof addMessage === 'function') {
-        addMessage({
-            id: 'rp_recv_text_' + Date.now(),
-            sender: 'system',
-            text: getPartnerName() + ' 领取了你的红包',
-            timestamp: new Date(),
-            status: 'sent',
-            type: 'system'
-        });
-    }
-    if (typeof renderMessages === 'function') renderMessages();
-    if (typeof window.playSound === 'function') window.playSound('message');
-}, delayMin + Math.random() * (delayMax - delayMin));
+                        // ===== 🔥 双向卡片：对方领取你的红包 → 你这边出现已领取卡片 =====
+                        var receivedRecord = {
+                            id: 'rp_recv_card_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+                            from: 'me',
+                            to: 'system',
+                            amount: rpRecord.amount,
+                            message: rpRecord.message || '恭喜发财',
+                            status: 'received',
+                            receivedAt: Date.now(),
+                            createdAt: rpRecord.createdAt || Date.now()
+                        };
+                        window.transferData.records.push(receivedRecord);
+                        if (typeof addMessage === 'function') {
+                            addMessage({
+                                id: receivedRecord.id,
+                                sender: 'user',
+                                text: receivedRecord.message || '恭喜发财',
+                                timestamp: new Date(),
+                                status: 'received',
+                                type: 'red-packet',
+                                redPacket: receivedRecord
+                            });
+                        }
+                        if (typeof window.throttledSaveData === 'function') window.throttledSaveData();
+                        // ===== 双向卡片结束 =====
+
+                        if (typeof renderMessages === 'function') renderMessages();
+                        if (typeof window.playSound === 'function') window.playSound('message');
+                    }, delayMin + Math.random() * (delayMax - delayMin));
                 }
                 // 10%：保持 pending，后续聊天中随机收取（由 tryCollectPendingRedPacket 处理）
             }, sysDelay);
@@ -517,17 +548,31 @@ panel.innerHTML =
 
                     if (typeof window.showNotification === 'function') window.showNotification('红包已退回', 'info');
 
-                    // 发送「红包已被退回」文字消息
-if (typeof addMessage === 'function') {
-    addMessage({
-        id: 'rp_returned_' + Date.now(),
-        sender: 'system',
-        text: '红包已被退回',
-        timestamp: new Date(),
-        status: 'sent',
-        type: 'system'
-    });
-}
+                    // ===== 🔥 双向卡片：你退回对方红包 → 你这边出现已退回卡片 =====
+                    var returnedRecord = {
+                        id: 'rp_returned_card_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+                        from: 'system',
+                        to: 'me',
+                        amount: record.amount,
+                        message: record.message || '恭喜发财',
+                        status: 'returned',
+                        returnedAt: Date.now(),
+                        createdAt: record.createdAt || Date.now()
+                    };
+                    window.transferData.records.push(returnedRecord);
+                    if (typeof addMessage === 'function') {
+                        addMessage({
+                            id: returnedRecord.id,
+                            sender: 'partner',
+                            text: returnedRecord.message || '恭喜发财',
+                            timestamp: new Date(),
+                            status: 'returned',
+                            type: 'red-packet',
+                            redPacket: returnedRecord
+                        });
+                    }
+                    if (typeof window.throttledSaveData === 'function') window.throttledSaveData();
+                    // ===== 双向卡片结束 =====
 
                     if (typeof renderMessages === 'function') renderMessages();
                 };
@@ -582,17 +627,31 @@ if (typeof addMessage === 'function') {
                 // 通知
                 if (typeof window.showNotification === 'function') window.showNotification('红包已领取 &yen;' + fmt(record.amount), 'success');
 
-                // 发送「你领取了对方的红包」文字消息
-if (typeof addMessage === 'function') {
-    addMessage({
-        id: 'rp_recv_text_' + Date.now(),
-        sender: 'system',
-        text: '你领取了 ' + getPartnerName() + ' 的红包',
-        timestamp: new Date(),
-        status: 'sent',
-        type: 'system'
-    });
-}
+                // ===== 🔥 双向卡片：你领取对方红包 → 你这边出现已领取卡片 =====
+                var receivedRecord = {
+                    id: 'rp_recv_card_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+                    from: 'system',
+                    to: 'me',
+                    amount: record.amount,
+                    message: record.message || '恭喜发财',
+                    status: 'received',
+                    receivedAt: Date.now(),
+                    createdAt: record.createdAt || Date.now()
+                };
+                window.transferData.records.push(receivedRecord);
+                if (typeof addMessage === 'function') {
+                    addMessage({
+                        id: receivedRecord.id,
+                        sender: 'partner',
+                        text: receivedRecord.message || '恭喜发财',
+                        timestamp: new Date(),
+                        status: 'received',
+                        type: 'red-packet',
+                        redPacket: receivedRecord
+                    });
+                }
+                if (typeof window.throttledSaveData === 'function') window.throttledSaveData();
+                // ===== 双向卡片结束 =====
 
                 // 刷新聊天消息列表（触发重新渲染以更新卡片状态）
                 if (typeof renderMessages === 'function') renderMessages();
@@ -723,16 +782,45 @@ if (typeof addMessage === 'function') {
         if (useSpecial) {
             var chosen = specialAmounts[Math.floor(Math.random() * specialAmounts.length)];
             amount = Math.min(chosen, maxBalance);
-                } else {
-            // ===== 🔥 普通金额：原版逻辑（80% 0-200元随机，20% 0-余额随机）=====
-            if (Math.random() < 0.8) {
-                // 0.01 ~ 200 元（分）
+        } else {
+            // 正常金额：90% 概率 200 元及以下，10% 概率大额乱打
+            if (Math.random() < 0.90) {
+                // 200 元及以下（分）
                 var max200 = Math.min(20000, maxBalance);
                 if (max200 < 1) max200 = maxBalance;
-                amount = Math.floor(Math.random() * max200) + 1;
+                // 金额分布：0.01-200 元
+                var r = Math.random();
+                if (r < 0.10) {
+                    // 0.01 - 5.00 元（含 0.01）
+                    amount = Math.floor(Math.random() * 499) + 1;
+                } else if (r < 0.35) {
+                    // 5.01 - 20.00 元
+                    amount = Math.floor(Math.random() * 1499) + 501;
+                } else if (r < 0.60) {
+                    // 20.01 - 66.66 元
+                    amount = Math.floor(Math.random() * 4665) + 2001;
+                } else if (r < 0.80) {
+                    // 66.67 - 99.99 元
+                    amount = Math.floor(Math.random() * 3332) + 6667;
+                } else if (r < 0.95) {
+                    // 100.00 - 199.99 元
+                    amount = Math.floor(Math.random() * 9999) + 10000;
+                } else {
+                    // 200.00 元（满额红包）
+                    amount = 20000;
+                }
+                // 确保不超过余额
+                if (amount > maxBalance) amount = maxBalance;
+                // 确保至少 0.01 元
+                if (amount < 1) amount = 1;
             } else {
-                // 0.01 ~ 余额（分）
-                amount = Math.floor(Math.random() * maxBalance) + 1;
+                // 10%：200 元以上大额乱打（上限跟余额走）
+                var minBig = 20001;
+                if (maxBalance < minBig) {
+                    amount = Math.floor(Math.random() * (maxBalance - 1000)) + 1000;
+                } else {
+                    amount = Math.floor(Math.random() * (maxBalance - minBig)) + minBig;
+                }
             }
         }
     }
