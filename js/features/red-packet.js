@@ -321,7 +321,7 @@ window.getFestivals = function getFestivals() {
                 var rpRecord = window.transferData.records.find(function (r) { return r.id === record.id; });
                 if (!rpRecord || rpRecord.status !== 'pending') return;
 
-                // 独立判定退回：20%概率退回
+                                // 独立判定退回：20%概率退回
                 if (Math.random() < 0.2) {
                     rpRecord.status = 'returned';
                     rpRecord.returnedAt = Date.now();
@@ -330,11 +330,12 @@ window.getFestivals = function getFestivals() {
                     if (typeof window.throttledSaveData === 'function') window.throttledSaveData();
 
                     setTimeout(function () {
+                        // ===== 🔥 系统提示：对方退回你红包（无 emoji） =====
                         if (typeof addMessage === 'function') {
                             addMessage({
-                                id: 'rp_sys_ret_' + Date.now(),
+                                id: 'rp_system_' + Date.now(),
                                 sender: 'system',
-                                text: '红包已被退回',
+                                text: getPartnerName() + ' 已退回你的红包',
                                 timestamp: new Date(),
                                 status: 'sent',
                                 type: 'system'
@@ -346,7 +347,7 @@ window.getFestivals = function getFestivals() {
                     return;
                 }
 
-                // 剩余80%：70%立即收取，10%后续随机收取
+                                // 剩余80%：70%立即收取，10%后续随机收取
                 if (Math.random() < 0.7 / 0.8) {
                     // 70%：立即收取
                     rpRecord.status = 'received';
@@ -356,20 +357,20 @@ window.getFestivals = function getFestivals() {
                     if (typeof window.throttledSaveData === 'function') window.throttledSaveData();
 
                     setTimeout(function () {
-    // 发送「对方领取了你的红包」文字消息
-    if (typeof addMessage === 'function') {
-        addMessage({
-            id: 'rp_recv_text_' + Date.now(),
-            sender: 'system',
-            text: getPartnerName() + ' 领取了你的红包',
-            timestamp: new Date(),
-            status: 'sent',
-            type: 'system'
-        });
-    }
-    if (typeof renderMessages === 'function') renderMessages();
-    if (typeof window.playSound === 'function') window.playSound('message');
-}, delayMin + Math.random() * (delayMax - delayMin));
+                        // ===== 🔥 系统提示：对方领取你红包（带 emoji） =====
+                        if (typeof addMessage === 'function') {
+                            addMessage({
+                                id: 'rp_system_' + Date.now(),
+                                sender: 'system',
+                                text: '🧧 ' + getPartnerName() + ' 领取了你的红包',
+                                timestamp: new Date(),
+                                status: 'sent',
+                                type: 'system'
+                            });
+                        }
+                        if (typeof renderMessages === 'function') renderMessages();
+                        if (typeof window.playSound === 'function') window.playSound('message');
+                    }, delayMin + Math.random() * (delayMax - delayMin));
                 }
                 // 10%：保持 pending，后续聊天中随机收取（由 tryCollectPendingRedPacket 处理）
             }, sysDelay);
@@ -517,17 +518,17 @@ panel.innerHTML =
 
                     if (typeof window.showNotification === 'function') window.showNotification('红包已退回', 'info');
 
-                    // 发送「红包已被退回」文字消息
-if (typeof addMessage === 'function') {
-    addMessage({
-        id: 'rp_returned_' + Date.now(),
-        sender: 'system',
-        text: '红包已被退回',
-        timestamp: new Date(),
-        status: 'sent',
-        type: 'system'
-    });
-}
+                                        // ===== 🔥 系统提示：你退回对方红包（无 emoji） =====
+                    if (typeof addMessage === 'function') {
+                        addMessage({
+                            id: 'rp_system_' + Date.now(),
+                            sender: 'system',
+                            text: '你已退回 ' + getPartnerName() + ' 的红包',
+                            timestamp: new Date(),
+                            status: 'sent',
+                            type: 'system'
+                        });
+                    }
 
                     if (typeof renderMessages === 'function') renderMessages();
                 };
@@ -582,17 +583,17 @@ if (typeof addMessage === 'function') {
                 // 通知
                 if (typeof window.showNotification === 'function') window.showNotification('红包已领取 &yen;' + fmt(record.amount), 'success');
 
-                // 发送「你领取了对方的红包」文字消息
-if (typeof addMessage === 'function') {
-    addMessage({
-        id: 'rp_recv_text_' + Date.now(),
-        sender: 'system',
-        text: '你领取了 ' + getPartnerName() + ' 的红包',
-        timestamp: new Date(),
-        status: 'sent',
-        type: 'system'
-    });
-}
+                               // ===== 🔥 系统提示：你领取对方红包（带 emoji） =====
+                if (typeof addMessage === 'function') {
+                    addMessage({
+                        id: 'rp_system_' + Date.now(),
+                        sender: 'system',
+                        text: '🧧 你领取了 ' + getPartnerName() + ' 的红包',
+                        timestamp: new Date(),
+                        status: 'sent',
+                        type: 'system'
+                    });
+                }
 
                 // 刷新聊天消息列表（触发重新渲染以更新卡片状态）
                 if (typeof renderMessages === 'function') renderMessages();
