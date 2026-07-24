@@ -323,54 +323,92 @@ window.getFestivals = function getFestivals() {
 
                 // 独立判定退回：20%概率退回
                 if (Math.random() < 0.2) {
-                    rpRecord.status = 'returned';
-                    rpRecord.returnedAt = Date.now();
-                    window.transferData.myBalance += rpRecord.amount;
+    rpRecord.status = 'returned';
+    rpRecord.returnedAt = Date.now();
+    window.transferData.myBalance += rpRecord.amount;
 
-                    if (typeof window.throttledSaveData === 'function') window.throttledSaveData();
+    if (typeof window.throttledSaveData === 'function') window.throttledSaveData();
 
-                    setTimeout(function () {
-                        if (typeof addMessage === 'function') {
-                            addMessage({
-                                id: 'rp_sys_ret_' + Date.now(),
-                                sender: 'system',
-                                text: '红包已被退回',
-                                timestamp: new Date(),
-                                status: 'sent',
-                                type: 'system'
-                            });
-                        }
-                        if (typeof renderMessages === 'function') renderMessages();
-                        if (typeof window.playSound === 'function') window.playSound('message');
-                    }, delayMin + Math.random() * (delayMax - delayMin));
-                    return;
-                }
+    setTimeout(function () {
+        // ===== 🆕 发已退回红包卡片（微信模式） =====
+        var returnedRecord = {
+            id: 'rp_returned_card_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+            from: 'me',
+            to: 'system',
+            amount: rpRecord.amount,
+            message: rpRecord.message || '恭喜发财',
+            status: 'returned',
+            returnedAt: Date.now(),
+            createdAt: rpRecord.createdAt || Date.now()
+        };
+        
+        window.transferData.records.push(returnedRecord);
+        
+        if (typeof addMessage === 'function') {
+            addMessage({
+                id: returnedRecord.id,
+                sender: 'user',
+                text: returnedRecord.message || '恭喜发财',
+                timestamp: new Date(),
+                status: 'returned',
+                type: 'red-packet',
+                redPacket: returnedRecord
+            });
+        }
+        
+        if (typeof window.throttledSaveData === 'function') window.throttledSaveData();
+        // ===== 🆕 结束 =====
+        
+        if (typeof renderMessages === 'function') renderMessages();
+        if (typeof window.playSound === 'function') window.playSound('message');
+    }, delayMin + Math.random() * (delayMax - delayMin));
+    return;
+}
 
                 // 剩余80%：70%立即收取，10%后续随机收取
                 if (Math.random() < 0.7 / 0.8) {
-                    // 70%：立即收取
-                    rpRecord.status = 'received';
-                    rpRecord.receivedAt = Date.now();
-                    window.transferData.systemBalance += rpRecord.amount;
+    // 70%：立即收取
+    rpRecord.status = 'received';
+    rpRecord.receivedAt = Date.now();
+    window.transferData.systemBalance += rpRecord.amount;
 
-                    if (typeof window.throttledSaveData === 'function') window.throttledSaveData();
+    if (typeof window.throttledSaveData === 'function') window.throttledSaveData();
 
-                    setTimeout(function () {
-    // 发送「对方领取了你的红包」文字消息
-    if (typeof addMessage === 'function') {
-        addMessage({
-            id: 'rp_recv_text_' + Date.now(),
-            sender: 'system',
-            text: getPartnerName() + ' 领取了你的红包',
-            timestamp: new Date(),
-            status: 'sent',
-            type: 'system'
-        });
-    }
-    if (typeof renderMessages === 'function') renderMessages();
-    if (typeof window.playSound === 'function') window.playSound('message');
-}, delayMin + Math.random() * (delayMax - delayMin));
-                }
+    setTimeout(function () {
+        // ===== 🆕 发已领取红包卡片（微信模式） =====
+        // 复制原红包记录，状态改为 received
+        var receivedRecord = {
+            id: 'rp_recv_card_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+            from: 'me',
+            to: 'system',
+            amount: rpRecord.amount,
+            message: rpRecord.message || '恭喜发财',
+            status: 'received',
+            receivedAt: Date.now(),
+            createdAt: rpRecord.createdAt || Date.now()
+        };
+        
+        window.transferData.records.push(receivedRecord);
+        
+        if (typeof addMessage === 'function') {
+            addMessage({
+                id: receivedRecord.id,
+                sender: 'user',
+                text: receivedRecord.message || '恭喜发财',
+                timestamp: new Date(),
+                status: 'received',
+                type: 'red-packet',
+                redPacket: receivedRecord
+            });
+        }
+        
+        if (typeof window.throttledSaveData === 'function') window.throttledSaveData();
+        // ===== 🆕 结束 =====
+        
+        if (typeof renderMessages === 'function') renderMessages();
+        if (typeof window.playSound === 'function') window.playSound('message');
+    }, delayMin + Math.random() * (delayMax - delayMin));
+}
                 // 10%：保持 pending，后续聊天中随机收取（由 tryCollectPendingRedPacket 处理）
             }, sysDelay);
         };
@@ -518,16 +556,29 @@ panel.innerHTML =
                     if (typeof window.showNotification === 'function') window.showNotification('红包已退回', 'info');
 
                     // 发送「红包已被退回」文字消息
-if (typeof addMessage === 'function') {
-    addMessage({
-        id: 'rp_returned_' + Date.now(),
-        sender: 'system',
-        text: '红包已被退回',
-        timestamp: new Date(),
-        status: 'sent',
-        type: 'system'
-    });
-}
+var returnedRecord = {
+        id: 'rp_returned_card_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+        from: 'system',
+        to: 'me',
+        amount: record.amount,
+        message: record.message || '恭喜发财',
+        status: 'returned',
+        returnedAt: Date.now(),
+        createdAt: record.createdAt || Date.now()
+    };
+    window.transferData.records.push(returnedRecord);
+    if (typeof addMessage === 'function') {
+        addMessage({
+            id: returnedRecord.id,
+            sender: 'partner',
+            text: returnedRecord.message || '恭喜发财',
+            timestamp: new Date(),
+            status: 'returned',
+            type: 'red-packet',
+            redPacket: returnedRecord
+        });
+    }
+    if (typeof window.throttledSaveData === 'function') window.throttledSaveData();
 
                     if (typeof renderMessages === 'function') renderMessages();
                 };
@@ -723,45 +774,16 @@ if (typeof addMessage === 'function') {
         if (useSpecial) {
             var chosen = specialAmounts[Math.floor(Math.random() * specialAmounts.length)];
             amount = Math.min(chosen, maxBalance);
-        } else {
-            // 正常金额：90% 概率 200 元及以下，10% 概率大额乱打
-            if (Math.random() < 0.90) {
-                // 200 元及以下（分）
+                } else {
+            // ===== 🔥 普通金额：原版逻辑（80% 0-200元随机，20% 0-余额随机）=====
+            if (Math.random() < 0.8) {
+                // 0.01 ~ 200 元（分）
                 var max200 = Math.min(20000, maxBalance);
                 if (max200 < 1) max200 = maxBalance;
-                // 金额分布：0.01-200 元
-                var r = Math.random();
-                if (r < 0.10) {
-                    // 0.01 - 5.00 元（含 0.01）
-                    amount = Math.floor(Math.random() * 499) + 1;
-                } else if (r < 0.35) {
-                    // 5.01 - 20.00 元
-                    amount = Math.floor(Math.random() * 1499) + 501;
-                } else if (r < 0.60) {
-                    // 20.01 - 66.66 元
-                    amount = Math.floor(Math.random() * 4665) + 2001;
-                } else if (r < 0.80) {
-                    // 66.67 - 99.99 元
-                    amount = Math.floor(Math.random() * 3332) + 6667;
-                } else if (r < 0.95) {
-                    // 100.00 - 199.99 元
-                    amount = Math.floor(Math.random() * 9999) + 10000;
-                } else {
-                    // 200.00 元（满额红包）
-                    amount = 20000;
-                }
-                // 确保不超过余额
-                if (amount > maxBalance) amount = maxBalance;
-                // 确保至少 0.01 元
-                if (amount < 1) amount = 1;
+                amount = Math.floor(Math.random() * max200) + 1;
             } else {
-                // 10%：200 元以上大额乱打（上限跟余额走）
-                var minBig = 20001;
-                if (maxBalance < minBig) {
-                    amount = Math.floor(Math.random() * (maxBalance - 1000)) + 1000;
-                } else {
-                    amount = Math.floor(Math.random() * (maxBalance - minBig)) + minBig;
-                }
+                // 0.01 ~ 余额（分）
+                amount = Math.floor(Math.random() * maxBalance) + 1;
             }
         }
     }
@@ -1321,19 +1343,57 @@ try {
         var openBtn = overlay.querySelector('#rp-open-btn');
         if (openBtn) {
             openBtn.onclick = function () {
-                if (record.from === 'system') {
-                    window.transferData.myBalance += record.amount;
-                    window.transferData.systemBalance -= record.amount;
-                }
-                record.status = 'received';
-                record.receivedAt = Date.now();
-                if (typeof window.throttledSaveData === 'function') window.throttledSaveData();
+    // 1. 更新余额
+    if (record.from === 'system') {
+        window.transferData.myBalance += record.amount;
+        window.transferData.systemBalance -= record.amount;
+    }
+    
+    // 2. 更新原红包状态
+    record.status = 'received';
+    record.receivedAt = Date.now();
+    
+    if (typeof window.throttledSaveData === 'function') window.throttledSaveData();
 
-                overlay.innerHTML = buildReceivedPanel();
+    // 3. 更新弹窗为已领取状态
+    overlay.innerHTML = buildReceivedPanel();
 
-                if (typeof renderMessages === 'function') renderMessages();
-                if (typeof window.showNotification === 'function') window.showNotification('红包已领取 &yen;' + fmt(record.amount), 'success');
-            };
+    // ===== 🆕 4. 发已领取红包卡片（微信模式） =====
+    // 复制原红包记录，状态改为 received
+    var receivedRecord = {
+        id: 'rp_recv_card_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+        from: 'system',
+        to: 'me',
+        amount: record.amount,
+        message: record.message || '恭喜发财',
+        status: 'received',
+        receivedAt: Date.now(),
+        createdAt: record.createdAt || Date.now()
+    };
+    
+    // 存入 records（让卡片能显示金额）
+    window.transferData.records.push(receivedRecord);
+    
+    // 发送红包卡片消息（已领取状态）
+    if (typeof addMessage === 'function') {
+        addMessage({
+            id: receivedRecord.id,
+            sender: 'partner',
+            text: receivedRecord.message || '恭喜发财',
+            timestamp: new Date(),
+            status: 'received',
+            type: 'red-packet',
+            redPacket: receivedRecord
+        });
+    }
+    
+    if (typeof window.throttledSaveData === 'function') window.throttledSaveData();
+    // ===== 🆕 结束 =====
+
+    // 5. 刷新界面 + 通知
+    if (typeof renderMessages === 'function') renderMessages();
+    if (typeof window.showNotification === 'function') window.showNotification('红包已领取 &yen;' + fmt(record.amount), 'success');
+};
         }
     }
 
