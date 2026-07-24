@@ -12964,3 +12964,8 @@ html[data-theme="dark"] .period-stat-value { color: var(--accent-color-dark); }
 #modal .modal-content .opp-time-modal {
     overflow: visible;
 }
+
+/* 歌单编辑按钮图标尺寸 */
+.action-icon-btn.edit i {
+    font-size: 13px;
+}
