@@ -1762,7 +1762,7 @@ if (!window._boardNotifiedThreads) {
 }
 
 // ---------- 弹窗函数（与 envelope 样式一致） ----------
-window._showBoardReplyPopup = function(threadId, replyContent, partnerName) {
+window._showBoardReplyPopup = function(threadId, replyContent, partnerName, type) {
     var existing = document.getElementById('board-reply-popup');
     if (existing) existing.remove();
 
@@ -1770,6 +1770,11 @@ window._showBoardReplyPopup = function(threadId, replyContent, partnerName) {
     var preview = replyContent && replyContent.length > 30 
         ? replyContent.substring(0, 30) + '…' 
         : (replyContent || '给你留了一条新留言');
+
+  // 区分场景
+    var title = (type === 'initiative') 
+        ? partnerName + '给你写了一条新留言' 
+        : partnerName + '回复了你的留言';
 
     var popup = document.createElement('div');
     popup.id = 'board-reply-popup';
