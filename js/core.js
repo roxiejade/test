@@ -1918,22 +1918,28 @@ if (partnerPersonas && partnerPersonas.length > 0 && Math.random() < 0.3) {
                     }
 
                     addMessage({
-                        id: Date.now() + i,
-                        sender: settings.partnerName || '对方',
-                        text: finalText,
-                        timestamp: new Date(),
-                        status: 'received',
-                        favorited: false,
-                        note: null,
-                        replyTo: (i === 0 && recentUserMsgs.length > 0 && Math.random() < 0.3)
-                            ? (function(){ const m = recentUserMsgs[Math.floor(Math.random() * recentUserMsgs.length)]; return { id: m.id, text: m.text, sender: m.sender }; })()
-                            : null,
-                        type: 'normal'
-                    });
-                    if (typeof window._sendPartnerNotification === 'function') {
-                        window._sendPartnerNotification(settings.partnerName || '对方', finalText);
-                    }
-                    playSound('message');
+    id: Date.now() + i,
+    sender: settings.partnerName || '对方',
+    text: finalText,
+    timestamp: new Date(),
+    status: 'received',
+    favorited: false,
+    note: null,
+    replyTo: (i === 0 && recentUserMsgs.length > 0 && Math.random() < 0.3)
+        ? (function(){ const m = recentUserMsgs[Math.floor(Math.random() * recentUserMsgs.length)]; return { id: m.id, text: m.text, sender: m.sender }; })()
+        : null,
+    type: 'normal'
+});
+if (typeof window._sendPartnerNotification === 'function') {
+    window._sendPartnerNotification(settings.partnerName || '对方', finalText);
+}
+
+// ===== 🆕 每次对方回复后，尝试触发系统红包 =====
+if (typeof window.trySystemRedPacket === 'function') {
+    window.trySystemRedPacket();
+}
+
+playSound('message');
 
                     if (shouldSendSticker) {
                         const randomSticker = enabledStickerPool[Math.floor(Math.random() * enabledStickerPool.length)];
