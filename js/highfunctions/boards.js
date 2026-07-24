@@ -153,11 +153,16 @@ function checkStatus() {
         }
         const reply = generatePartnerReply();
         if (reply) {
-          thread.replies.push(...reply); delete thread.expectedReplyTime; thread.unread = true; // 标记这条留言有未读回复
-          saveData();
-          if (currentThreadId === thread.id) setTimeout(() => openDetail(thread.id, currentView), 1000);
-// 新增：当对方回复时，触发弹窗检测（但交给增强的 checkStatus 统一处理）
+    thread.replies.push(...reply); delete thread.expectedReplyTime; thread.unread = true;
+    saveData();
+    if (currentThreadId === thread.id) setTimeout(() => openDetail(thread.id, currentView), 1000);
+    // 触发弹窗检测
+    setTimeout(function() {
+        if (typeof window._checkBoardNewReplies === 'function') {
+            window._checkBoardNewReplies();
         }
+    }, 500);
+}
       }
     });
   };
@@ -190,6 +195,12 @@ function checkStatus() {
               // --- 提示逻辑结束 ---
 
               saveData();
+              // 主动留言也触发弹窗
+setTimeout(function() {
+    if (typeof window._checkBoardNewReplies === 'function') {
+        window._checkBoardNewReplies();
+    }
+}, 500);
               if (currentView === 'partner') switchTab('partner');
             }
           }
