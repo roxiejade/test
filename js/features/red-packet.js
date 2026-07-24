@@ -194,7 +194,7 @@ window.getFestivals = function getFestivals() {
 
         var quickMsgs = isFestival
             ? festival.messages
-            : ['恭喜发财', '奖励', '大吉大利', '财神哥哥驾到', '哥哥的卡随便刷', '买杯奶茶'];
+            : ['恭喜发财', '请支付一个亲亲兑换', '大吉大利', '哥哥辛苦啦', '给哥哥', '好好吃饭'];
 
         var defaultMsg = isFestival ? festival.messages[0] : '';
 
