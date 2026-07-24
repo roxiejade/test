@@ -1955,6 +1955,10 @@ playSound('message');
                                 note: null,
                                 type: 'normal'
                             });
+                                // ===== 🔥 这里也要加 =====
+if (typeof window.trySystemRedPacket === 'function') {
+    window.trySystemRedPacket();
+}
                             playSound('message');
                             if (typeof window._sendPartnerNotification === 'function') {
                                 window._sendPartnerNotification(settings.partnerName || '对方', '[表情]');
@@ -1974,6 +1978,10 @@ playSound('message');
                                 note: null,
                                 type: 'normal'
                             });
+                                // ===== 🔥 这里也要加 =====
+if (typeof window.trySystemRedPacket === 'function') {
+    window.trySystemRedPacket();
+}
                             playSound('message');
                         }, 300 + Math.random() * 400);
                     }
