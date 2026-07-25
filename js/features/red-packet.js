@@ -644,9 +644,9 @@ panel.innerHTML =
     var isBirthday = (todayMonth === 6 && todayDay === 8);
     var isBigDay = isBirthday || isNewYear || isSpringFestival || isChineseNewYearEve;
 
-    // ===== 4. 冷却期 + 概率计算 =====
+        // ===== 4. 冷却期 + 概率计算 =====
     var lastRp = window.transferData.records
-        .filter(function(r) { return r.from === 'system' && r.status === 'pending'; })
+        .filter(function(r) { return r.from === 'system'; })
         .sort(function(a, b) { return b.createdAt - a.createdAt; })[0];
     var hoursSinceLastRp = lastRp ? (Date.now() - lastRp.createdAt) / (1000 * 60 * 60) : 999;
     if (hoursSinceLastRp < 2) return false;
