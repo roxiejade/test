@@ -664,7 +664,7 @@ panel.innerHTML =
     } else if (isFestival) {
         baseChance = 0.20;
     } else if (hoursSinceLastRp < 24) {
-        baseChance = 0.03;
+        baseChance = 0.02;
     } else if (hoursSinceLastRp < 48) {
         baseChance = 0.08;
     } else {
