@@ -1405,4 +1405,209 @@
         setTimeout(init, 500);
     }
 
+// ============================================================
+// 一起听功能 - 核心入口（稳定版）
+// ============================================================
+
+(function() {
+    'use strict';
+
+    // ─── 初始化命名空间 ──────────────────────────────────────
+    if (!window._TL) {
+        window._TL = {};
+    }
+
+    // ─── 弹窗函数 ──────────────────────────────────────────────
+    window._TL.showModal = function(onSuccess) {
+        console.log('[TL] 显示弹窗');
+
+        var old = document.getElementById('tl-final-modal');
+        if (old) old.remove();
+
+        var overlay = document.createElement('div');
+        overlay.id = 'tl-final-modal';
+        overlay.style.cssText = 'position:fixed;inset:0;z-index:999999;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);';
+
+        // 检测主题
+        var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        var bgColor = isDark ? '#1e1e1e' : '#ffffff';
+        var textColor = isDark ? '#e5e5e5' : '#1a1a1a';
+        var subColor = isDark ? '#8c8c8c' : '#7a7a7a';
+        var borderColor = isDark ? '#2f2f2f' : '#ebebeb';
+        var inputBg = isDark ? '#121212' : '#f9f9f9';
+        var cancelBg = isDark ? '#2a2a2a' : '#f0f0f0';
+        var cancelText = isDark ? '#e5e5e5' : '#333';
+        var accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim() || '#c5a47e';
+
+        overlay.innerHTML = `
+            <div style="background:${bgColor};border-radius:16px;padding:24px;width:400px;max-width:92vw;box-shadow:0 24px 80px rgba(0,0,0,0.4);border:1px solid ${borderColor};">
+                <div style="font-size:17px;font-weight:600;margin-bottom:16px;display:flex;align-items:center;gap:10px;color:${textColor};">
+                    <span style="font-size:20px;">🔗</span>
+                    <span>粘贴一起听链接</span>
+                </div>
+                <textarea id="tl-final-input" style="width:100%;padding:12px;border:1.5px solid ${borderColor};border-radius:10px;font-size:14px;font-family:var(--font-family, sans-serif);resize:vertical;min-height:80px;outline:none;box-sizing:border-box;background:${inputBg};color:${textColor};transition:border-color 0.2s;" placeholder="粘贴QQ音乐分享内容，例如：&#10;#QQ音乐# 快来跟我一起听《爱，宇宙，诗王座》 https://c6.y.qq.com/... @QQ音乐"></textarea>
+                <div id="tl-final-hint" style="display:none;font-size:13px;color:${accentColor};margin:8px 0 4px;">✅ 已识别歌曲：<span id="tl-final-song">—</span></div>
+                <div id="tl-final-manual" style="display:none;margin-top:12px;padding-top:12px;border-top:1px dashed ${borderColor};">
+                    <label style="font-size:13px;color:${subColor};display:block;margin-bottom:4px;">🎵 歌曲名</label>
+                    <input id="tl-final-song-input" style="width:100%;padding:10px 12px;border:1.5px solid ${borderColor};border-radius:8px;font-size:14px;font-family:var(--font-family, sans-serif);margin-bottom:10px;outline:none;box-sizing:border-box;background:${inputBg};color:${textColor};" placeholder="请输入歌曲名">
+                    <label style="font-size:13px;color:${subColor};display:block;margin-bottom:4px;">🎤 歌手名</label>
+                    <input id="tl-final-artist-input" style="width:100%;padding:10px 12px;border:1.5px solid ${borderColor};border-radius:8px;font-size:14px;font-family:var(--font-family, sans-serif);margin-bottom:10px;outline:none;box-sizing:border-box;background:${inputBg};color:${textColor};" placeholder="请输入歌手名">
+                    <div style="font-size:12px;color:${subColor};opacity:0.7;">未识别到歌名，请手动填写</div>
+                </div>
+                <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:16px;">
+                    <button id="tl-final-cancel" style="padding:10px 24px;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;background:${cancelBg};color:${cancelText};transition:background 0.2s;">取消</button>
+                    <button id="tl-final-confirm" style="padding:10px 24px;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;background:${accentColor};color:#fff;transition:opacity 0.2s;">确认</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(overlay);
+        console.log('[TL] 弹窗已添加到页面');
+
+        setTimeout(function() {
+            var inp = document.getElementById('tl-final-input');
+            if (inp) inp.focus();
+        }, 100);
+
+        var input = document.getElementById('tl-final-input');
+        var hint = document.getElementById('tl-final-hint');
+        var songSpan = document.getElementById('tl-final-song');
+        var manual = document.getElementById('tl-final-manual');
+        var songInput = document.getElementById('tl-final-song-input');
+        var artistInput = document.getElementById('tl-final-artist-input');
+        var cancelBtn = document.getElementById('tl-final-cancel');
+        var confirmBtn = document.getElementById('tl-final-confirm');
+
+        var currentSong = null;
+
+        function parseInput() {
+            var text = input ? input.value : '';
+            var match = text.match(/《([^》]+)》/);
+            var song = match ? match[1].trim() : null;
+            currentSong = song;
+
+            if (song) {
+                hint.style.display = 'block';
+                if (songSpan) songSpan.textContent = song;
+                manual.style.display = 'none';
+            } else {
+                hint.style.display = 'none';
+                manual.style.display = text.trim() ? 'block' : 'none';
+            }
+        }
+
+        if (input) {
+            input.addEventListener('input', parseInput);
+            setTimeout(parseInput, 50);
+        }
+
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', function() {
+                console.log('[TL] 取消');
+                if (overlay.parentNode) overlay.remove();
+            });
+        }
+
+        if (confirmBtn) {
+            confirmBtn.addEventListener('click', function() {
+                console.log('[TL] 确认');
+                var text = input ? input.value : '';
+                var song = currentSong;
+                var artist = '未知歌手';
+
+                if (!song) {
+                    var ms = songInput ? songInput.value.trim() : '';
+                    var ma = artistInput ? artistInput.value.trim() : '';
+                    if (ms) {
+                        song = ms;
+                        artist = ma || '未知歌手';
+                    } else {
+                        if (typeof showNotification === 'function') {
+                            showNotification('请粘贴QQ音乐分享内容，或手动输入歌曲名', 'warning');
+                        } else {
+                            alert('请粘贴QQ音乐分享内容，或手动输入歌曲名');
+                        }
+                        return;
+                    }
+                }
+
+                if (overlay.parentNode) overlay.remove();
+                if (typeof onSuccess === 'function') {
+                    onSuccess(song, artist);
+                }
+            });
+        }
+
+        overlay.addEventListener('click', function(e) {
+            if (e.target === overlay) {
+                console.log('[TL] 点击遮罩关闭');
+                overlay.remove();
+            }
+        });
+    };
+
+    // ─── 流程函数 ──────────────────────────────────────────────
+    window._TL.startFlow = function(song, artist) {
+        console.log('[TL] 流程开始:', song, artist);
+        var partnerName = window.settings && window.settings.partnerName ? window.settings.partnerName : '梦角';
+        var msg = {
+            id: Date.now() + Math.random(),
+            sender: 'system',
+            text: '',
+            timestamp: new Date(),
+            type: 'system',
+            html: '<div style="padding:12px;background:var(--primary-bg,#f5f5f5);border-radius:12px;text-align:center;color:var(--text-primary,#1a1a1a);">🎵 ' + partnerName + ' 邀请你一起听《' + song + '》</div>'
+        };
+        if (typeof window.addMessage === 'function') {
+            window.addMessage(msg);
+        } else if (window.messages) {
+            window.messages.push(msg);
+            if (typeof window.renderMessages === 'function') window.renderMessages();
+        }
+        if (typeof showNotification === 'function') {
+            showNotification('✅ 已发送邀请！', 'success', 2000);
+        }
+    };
+
+    // ─── 全局拦截（核心稳定机制） ─────────────────────────────
+    if (!window._tlInterceptorInstalled) {
+        document.addEventListener('click', function(e) {
+            var target = e.target.closest('#together-listen-btn');
+            if (target) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('[TL] 拦截到按钮点击');
+                if (window._TL && typeof window._TL.showModal === 'function') {
+                    window._TL.showModal(window._TL.startFlow);
+                }
+            }
+        }, true);
+        window._tlInterceptorInstalled = true;
+        console.log('[TL] ✅ 全局拦截已启用');
+    }
+
+    // ─── 确保按钮图标正确 ──────────────────────────────────────
+    function ensureButtonIcon() {
+        var btn = document.getElementById('together-listen-btn');
+        if (btn) {
+            // 如果按钮内容不包含耳机图标，修复它
+            if (!btn.innerHTML.includes('fa-headphones')) {
+                btn.innerHTML = '<i class="fas fa-headphones"></i>';
+                btn.setAttribute('title', '一起听');
+                console.log('[TL] 修复了按钮图标');
+            }
+        }
+    }
+
+    // 立即执行一次
+    ensureButtonIcon();
+
+    // 每2秒检查一次（防止图标被重置）
+    setInterval(ensureButtonIcon, 2000);
+
+    console.log('[TL] 🎯 一起听功能已就绪');
+    console.log('[TL] 点击顶部"一起听"按钮测试');
+
+})();
+    
 })();
