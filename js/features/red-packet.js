@@ -613,6 +613,12 @@ panel.innerHTML =
     window.trySystemRedPacket = function () {
     window.initTransferData();
 
+        // 🔥 从 transferData 恢复计数
+    if (window.transferData._rpSendCountToday !== undefined) {
+        _rpSendCountToday = window.transferData._rpSendCountToday;
+        _lastRPSendDate = window.transferData._lastRPSendDate || '';
+    }
+
     // ===== 1. 单日上限检查（5次） =====
     var today = new Date().toISOString().slice(0, 10);
     if (today !== _lastRPSendDate) {
@@ -862,6 +868,10 @@ panel.innerHTML =
         }
     }
 
+// 🔥 保存计数到 transferData
+    window.transferData._rpSendCountToday = _rpSendCountToday;
+    window.transferData._lastRPSendDate = _lastRPSendDate;
+        
     return true;
 };
 
