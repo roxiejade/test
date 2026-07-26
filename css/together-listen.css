@@ -306,7 +306,7 @@
     padding: 16px 18px 14px;
     border: 1px solid rgba(255, 255, 255, 0.08);
     box-shadow: 0 12px 48px rgba(0, 0, 0, 0.4), 0 0 0 0.5px rgba(255, 255, 255, 0.04);
-    width: 150px;
+    width: 160px;
     /* min-width和max-width已删除，让宽度由width控制 */
     animation: tlBubbleIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
     user-select: none;
