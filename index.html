@@ -2916,8 +2916,9 @@
     <script src="js/listeners-voice.js"></script>
     <script src="js/listeners-sticker.js"></script>
     <script src="js/features/companion.js"></script>
-        <!-- 在 features/companion.js 后面添加 -->
-<script src="js/features/together-listen.js"></script>
+        <!-- 在它后面添加（顺序固定：先 core 后 bubble） -->
+<script src="js/features/together-listen-core.js"></script>
+<script src="js/features/together-listen-bubble.js"></script>
     <script src="js/features/companion-diary.js"></script>
         <!-- 虚拟时钟功能 -->
 <script src="js/features/virtual-clock.js"></script>
