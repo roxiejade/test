@@ -288,9 +288,10 @@
                 rejectCount++;
                 triggerFeedback(song, artist);
             },
-            // onExit: 退出
+                        // onExit: 退出
             function() {
                 rejectCount = 0;
+                // ===== 恢复系统通知 =====
                 if (typeof showNotification === 'function') {
                     showNotification('已退出一起听', 'info', 2000);
                 }
