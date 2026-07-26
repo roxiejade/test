@@ -178,3 +178,6 @@
                 closeBtn: document.getElementById('close-data')
             }
         };
+
+// 暴露 messages 到全局，供一起听等模块使用
+window.messages = messages;
