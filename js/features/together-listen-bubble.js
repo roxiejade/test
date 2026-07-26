@@ -152,11 +152,15 @@
         var partnerAvatar = getPartnerAvatarSrc() || '';
         var myAvatar = getMyAvatarSrc() || '';
 
-        bubbleEl.innerHTML = `
-            <div class="tl-bubble-toolbar">
-                <button class="tl-tool-btn" id="tl-upload-btn" title="上传背景图片"><i class="fas fa-image"></i></button>
-                <button class="tl-tool-btn" id="tl-minimize-btn" title="最小化"><i class="fas fa-minus"></i></button>
-                <button class="tl-tool-btn tl-close-btn" id="tl-close-btn" title="关闭"><i class="fas fa-power-off"></i></button>
+                bubbleEl.innerHTML = `
+            <div class="tl-bubble-toolbar" style="display:flex;justify-content:space-between;align-items:center;width:100%;padding:0 2px;margin-bottom:4px;">
+                <span style="display:flex;align-items:center;">
+                    <button class="tl-tool-btn" id="tl-upload-btn" title="上传背景图片" style="color:rgba(255,255,255,0.5);font-size:12px;padding:2px 4px;background:none;border:none;cursor:pointer;"><i class="fas fa-image"></i></button>
+                </span>
+                <span style="display:flex;align-items:center;gap:6px;">
+                    <button class="tl-tool-btn" id="tl-minimize-btn" title="最小化" style="color:rgba(255,255,255,0.5);font-size:12px;padding:2px 4px;background:none;border:none;cursor:pointer;"><i class="fas fa-minus"></i></button>
+                    <button class="tl-tool-btn tl-close-btn" id="tl-close-btn" title="关闭" style="color:rgba(255,255,255,0.5);font-size:12px;padding:2px 4px;background:none;border:none;cursor:pointer;"><i class="fas fa-power-off"></i></button>
+                </span>
             </div>
             <div class="tl-avatars">
                 <div class="tl-avatar-item tl-avatar-left">
