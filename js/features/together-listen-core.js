@@ -119,6 +119,7 @@
             window.throttledSaveData();
         }
         console.log('[TLCore] 卡片已发送:', cardType, sender);
+         return msg;  
     }
 
     // ============================================================
@@ -126,6 +127,7 @@
     // ============================================================
 
     var rejectCount = 0;
+    var feedbackCardId = null;
 
     window._TL = window._TL || {};
 
@@ -265,18 +267,65 @@
     };
 
     // ============================================================
+    // 更新已有的反馈卡片
+    // ============================================================
+
+    function updateExistingCard(cardId, statusText) {
+        console.log('[TLCore] 更新反馈卡片:', cardId, statusText);
+
+        var container = document.getElementById('chat-container');
+        if (!container) return;
+
+        var wrapper = container.querySelector('[data-msg-id="' + cardId + '"]');
+        if (!wrapper) return;
+
+        var card = wrapper.querySelector('.tl-music-card');
+        if (!card) return;
+
+        var statusEl = card.querySelector('.tl-card-status');
+        if (statusEl) {
+            statusEl.textContent = statusText;
+            statusEl.className = 'tl-card-status tl-status-text';
+        }
+
+        if (window.messages && Array.isArray(window.messages)) {
+            var msgIndex = window.messages.findIndex(function(m) {
+                return String(m.id) === String(cardId);
+            });
+            if (msgIndex !== -1) {
+                window.messages[msgIndex].accepted = false;
+                window.messages[msgIndex].text = statusText;
+            }
+        }
+
+        if (typeof window.throttledSaveData === 'function') {
+            window.throttledSaveData();
+        }
+    }
+    
+    // ============================================================
     // 触发反馈
     // ============================================================
 
-    function triggerFeedback(song, artist) {
+        function triggerFeedback(song, artist) {
         var partnerName = getPartnerName();
         var isAccepted = Math.random() < 0.7;
 
         console.log('[TLCore] 反馈:', isAccepted ? '✅ 同意' : '❌ 拒绝');
 
-        // 发送反馈卡片
         var statusText = isAccepted ? partnerName + ' 同意邀请' : partnerName + ' 拒绝邀请';
-        sendCard(song, artist, statusText, partnerName, 'feedback');
+
+        // ===== 判断是发送新卡片还是更新已有卡片 =====
+        if (feedbackCardId) {
+            // 已有反馈卡片 → 更新状态
+            updateExistingCard(feedbackCardId, statusText);
+        } else {
+            // 没有反馈卡片 → 发送新卡片
+            var cardData = sendCard(song, artist, statusText, partnerName, 'feedback');
+            if (cardData && cardData.id) {
+                feedbackCardId = cardData.id;
+            }
+        }
 
         // 显示黑屏动画
         window._TL.showBlackScreen(
@@ -288,10 +337,10 @@
                 rejectCount++;
                 triggerFeedback(song, artist);
             },
-                                    // onExit: 退出
+            // onExit: 退出
             function() {
                 rejectCount = 0;
-                // ===== 发送系统消息到聊天对话框 =====
+                feedbackCardId = null;
                 if (typeof window.addMessage === 'function') {
                     window.addMessage({
                         id: Date.now() + Math.random(),
@@ -304,6 +353,7 @@
             },
             // onAccept: 同意后启动标准弹窗
             function() {
+                feedbackCardId = null;
                 startBubble(song, artist);
             }
         );
