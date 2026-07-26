@@ -457,22 +457,15 @@ const loadData = async () => {
         
         displayedMessageCount = HISTORY_BATCH_SIZE;
         
-                setTimeout(() => {
+                        setTimeout(() => {
             applyAllAvatarFrames();
-            // manageAutoSendTimer();  // ← 注释掉这一行
+            manageAutoSendTimer(); 
             checkEnvelopeStatus(); 
             updateUI();
             if (settings.customBubbleCss) {
                 try { applyCustomBubbleCss(settings.customBubbleCss); } catch(e) {}
             }
         }, 100);
-
-        // ===== 🆕 在 loadData 末尾单独调用 manageAutoSendTimer =====
-        // 确保 settings 已完全加载后再启动定时器
-        setTimeout(() => {
-            manageAutoSendTimer();
-            console.log('[core] manageAutoSendTimer 已调用（延迟启动）');
-        }, 500);
 
     } catch (e) {
         console.error("LoadData 内部致命错误:", e);
