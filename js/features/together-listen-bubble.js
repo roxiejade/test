@@ -797,9 +797,15 @@
 
         clearState();
 
-        // 系统通知（带时长）
-        if (typeof showNotification === 'function') {
-            showNotification('🎵 一起听已结束 · 陪伴了 ' + durationText, 'info', 3000);
+                // 系统消息到聊天对话框（带时长）
+        if (typeof window.addMessage === 'function') {
+            window.addMessage({
+                id: Date.now() + Math.random(),
+                sender: 'system',
+                text: '🎵 一起听已结束 · 陪伴了 ' + durationText,
+                timestamp: new Date(),
+                type: 'system'
+            });
         }
         console.log('[TLBubble] 已退出一起听，时长:', durationText);
     }
