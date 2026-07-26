@@ -1,6 +1,9 @@
 /**
- * together-listen.js — 一起听功能完整实现
- * 目录：js/features/together-listen.js
+ * together-listen-core.js — 一起听核心流程
+ * 目录：js/features/together-listen-core.js
+ * 包含：粘贴弹窗、卡片发送、黑屏动画、流程控制、全局拦截
+ * 依赖：无（独立运行）
+ * 接口：window._TL 命名空间
  */
 
 (function() {
@@ -12,10 +15,10 @@
 
     var ACCEPT_MESSAGES = [
         '好，我也想跟你一起听 🎧',
-        '嗯！这首歌我也好喜欢，一起听吧 💕',
+        '这首歌我也喜欢，一起听吧 💕',
         '你分享的音乐，我都有认真在听哦 ✦',
-        '好的呀，我也正好想听这首歌呢',
-        '我听到了，是温柔的声音呢 🌙',
+        '打开我们的专属歌单💕',
+        '是你会喜欢的歌',
     ];
 
     var REJECT_MESSAGES = [
@@ -53,7 +56,7 @@
     }
 
     // ============================================================
-    // 发送卡片（直接操作 DOM + messages 数组）
+    // 发送卡片（直接操作 messages 数组 + 渲染）
     // ============================================================
 
     function sendCard(song, artist, statusText, sender, cardType) {
@@ -93,7 +96,6 @@
             note: null,
         };
 
-        // 直接操作 messages 数组
         if (window.messages && Array.isArray(window.messages)) {
             window.messages.push(msg);
             if (typeof window.renderMessages === 'function') {
@@ -102,10 +104,10 @@
             if (typeof window.throttledSaveData === 'function') {
                 window.throttledSaveData();
             }
-            console.log('[TL] 卡片已发送:', cardType, sender);
+            console.log('[TLCore] 卡片已发送:', cardType, sender);
             return true;
         } else {
-            console.error('[TL] messages 不可用');
+            console.error('[TLCore] messages 不可用');
             return false;
         }
     }
@@ -201,7 +203,7 @@
                 transition.style.opacity = '0';
                 setTimeout(function() {
                     if (transition.parentNode) transition.remove();
-                    console.log('[TL] 黑屏结束（同意）');
+                    console.log('[TLCore] 黑屏结束（同意）');
                     if (typeof onAccept === 'function') onAccept();
                 }, 800);
             }, 3500);
@@ -212,7 +214,7 @@
 
             if (retryBtn) {
                 retryBtn.addEventListener('click', function() {
-                    console.log('[TL] 点击再试一次');
+                    console.log('[TLCore] 点击再试一次');
                     if (transition.parentNode) transition.remove();
                     if (typeof onRetry === 'function') onRetry();
                 });
@@ -220,7 +222,7 @@
 
             if (exitBtn) {
                 exitBtn.addEventListener('click', function() {
-                    console.log('[TL] 点击退出');
+                    console.log('[TLCore] 点击退出');
                     if (transition.parentNode) transition.remove();
                     if (typeof onExit === 'function') onExit();
                 });
@@ -238,7 +240,7 @@
         var songName = song || '未知歌曲';
         var artistName = artist || '未知歌手';
 
-        console.log('[TL] 开始流程:', songName, artistName);
+        console.log('[TLCore] 开始流程:', songName, artistName);
 
         // 重置拒绝计数
         rejectCount = 0;
@@ -261,7 +263,7 @@
         var partnerName = getPartnerName();
         var isAccepted = Math.random() < 0.7;
 
-        console.log('[TL] 反馈:', isAccepted ? '✅ 同意' : '❌ 拒绝');
+        console.log('[TLCore] 反馈:', isAccepted ? '✅ 同意' : '❌ 拒绝');
 
         // 发送反馈卡片
         var statusText = isAccepted ? partnerName + ' 同意邀请' : partnerName + ' 拒绝邀请';
@@ -286,23 +288,22 @@
             },
             // onAccept: 同意后启动标准弹窗
             function() {
-                startTogetherListen(song, artist);
+                startBubble(song, artist);
             }
         );
     }
 
     // ============================================================
-    // 启动标准弹窗（调用原有 togetherListen 模块）
+    // 启动标准弹窗（调用 bubble 模块）
     // ============================================================
 
-    function startTogetherListen(song, artist) {
-        console.log('[TL] 启动标准弹窗');
+    function startBubble(song, artist) {
+        console.log('[TLCore] 启动标准弹窗');
 
-        // 如果 togetherListen 模块已加载
-        if (window.togetherListen && typeof window.togetherListen.startTogetherListenFlow === 'function') {
-            window.togetherListen.startTogetherListenFlow(song, artist);
+        if (window._TLBubble && typeof window._TLBubble.start === 'function') {
+            window._TLBubble.start(song, artist);
         } else {
-            console.warn('[TL] togetherListen 模块未加载，仅发送通知');
+            console.warn('[TLCore] bubble 模块未加载');
             if (typeof showNotification === 'function') {
                 showNotification('🎵 一起听已开始！', 'success', 2000);
             }
@@ -314,7 +315,7 @@
     // ============================================================
 
     window._TL.showPasteModal = function(onSuccess) {
-        console.log('[TL] 显示粘贴弹窗');
+        console.log('[TLCore] 显示粘贴弹窗');
 
         var old = document.getElementById('tl-paste-modal');
         if (old) old.remove();
@@ -390,7 +391,7 @@
                     if (songInput) {
                         songInput.value = song;
                         songInput.style.color = textColor;
-                        console.log('[TL] 提取到歌名:', song);
+                        console.log('[TLCore] 提取到歌名:', song);
                     }
                     if (artistInput) {
                         artistInput.value = '未知歌手';
@@ -476,12 +477,12 @@
     // ============================================================
 
     window._TL.entry = function() {
-        console.log('[TL] 入口被调用');
+        console.log('[TLCore] 入口被调用');
 
         if (window._TL && typeof window._TL.showPasteModal === 'function') {
             window._TL.showPasteModal(window._TL.startFlow);
         } else {
-            console.error('[TL] showPasteModal 未定义');
+            console.error('[TLCore] showPasteModal 未定义');
         }
     };
 
@@ -495,7 +496,7 @@
             if (target) {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log('[TL] 拦截到按钮点击');
+                console.log('[TLCore] 拦截到按钮点击');
                 if (window._TL && typeof window._TL.entry === 'function') {
                     window._TL.entry();
                 } else {
@@ -504,7 +505,7 @@
             }
         }, true);
         window._tlInterceptorInstalled = true;
-        console.log('[TL] ✅ 全局拦截已启用');
+        console.log('[TLCore] ✅ 全局拦截已启用');
     }
 
     // ============================================================
@@ -516,14 +517,14 @@
         if (btn && !btn.innerHTML.includes('fa-headphones')) {
             btn.innerHTML = '<i class="fas fa-headphones"></i>';
             btn.setAttribute('title', '一起听');
-            console.log('[TL] 修复了按钮图标');
+            console.log('[TLCore] 修复了按钮图标');
         }
     }
 
     ensureButtonIcon();
     setInterval(ensureButtonIcon, 2000);
 
-    console.log('[TL] 🎯 一起听功能已加载');
-    console.log('[TL] 点击顶部"一起听"按钮测试');
+    console.log('[TLCore] 🎯 一起听核心模块已加载');
+    console.log('[TLCore] 等待 bubble 模块加载...');
 
 })();
