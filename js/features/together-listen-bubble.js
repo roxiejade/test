@@ -162,18 +162,14 @@
                     <button class="tl-tool-btn tl-close-btn" id="tl-close-btn" title="关闭" style="color:rgba(255,255,255,0.5);font-size:12px;padding:2px 4px;background:none;border:none;cursor:pointer;"><i class="fas fa-power-off"></i></button>
                 </span>
             </div>
-            <div class="tl-avatars">
-                <div class="tl-avatar-item tl-avatar-left">
-                    ${partnerAvatar ? '<img src="' + partnerAvatar + '">' : '<i class="fas fa-user"></i>'}
-                    <div class="tl-earphone tl-earphone-left"></div>
-                </div>
-                <div class="tl-avatar-item tl-avatar-right">
-                    ${myAvatar ? '<img src="' + myAvatar + '">' : '<i class="fas fa-user"></i>'}
-                    <div class="tl-earphone tl-earphone-right"></div>
-                </div>
-                <div class="tl-cord tl-cord-left"></div>
-                <div class="tl-cord tl-cord-right"></div>
-            </div>
+            <div class="tl-avatars" id="tl-avatars-container">
+    <div class="tl-avatar-item tl-avatar-left">
+        ${partnerAvatar ? '<img src="' + partnerAvatar + '">' : '<i class="fas fa-user"></i>'}
+    </div>
+    <div class="tl-avatar-item tl-avatar-right">
+        ${myAvatar ? '<img src="' + myAvatar + '">' : '<i class="fas fa-user"></i>'}
+    </div>
+</div>
             <div class="tl-wave-container">
                 <canvas id="tl-ecg-canvas"></canvas>
             </div>
@@ -184,6 +180,110 @@
                 <button class="tl-settings-btn tl-restore-btn" id="tl-restore-bg-btn"><i class="fas fa-undo"></i> 恢复原本样式</button>
             </div>
         `;
+
+        // ============================================================
+// 🆕 动态创建耳机和耳机线（独立于头像）
+// ============================================================
+
+// ---- 获取头像容器 ----
+var avatarsContainer = document.getElementById('tl-avatars-container');
+if (avatarsContainer) {
+    avatarsContainer.style.position = 'relative';
+    avatarsContainer.style.overflow = 'visible';
+}
+
+// ---- 获取左右头像 ----
+var leftAvatar = document.querySelector('.tl-avatar-left');
+var rightAvatar = document.querySelector('.tl-avatar-right');
+
+if (leftAvatar && rightAvatar && avatarsContainer) {
+
+    // ---- 头像重叠 5px ----
+    leftAvatar.style.transform = 'translateX(5px)';
+    rightAvatar.style.transform = 'translateX(-5px)';
+    leftAvatar.style.position = 'relative';
+    rightAvatar.style.position = 'relative';
+    leftAvatar.style.zIndex = '2';
+    rightAvatar.style.zIndex = '1';
+
+    // ---- 左耳机（位置 left: 25px，大小 7x9） ----
+    var leftEarphone = document.createElement('div');
+    leftEarphone.className = 'tl-earphone';
+    leftEarphone.style.cssText = `
+        position: absolute;
+        left: 25px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 7px;
+        height: 9px;
+        border-radius: 50% / 55%;
+        border: 2px solid rgba(200, 200, 205, 0.85);
+        background: rgba(220, 220, 225, 0.3);
+        box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+        box-sizing: border-box;
+        pointer-events: none;
+        z-index: 0;
+    `;
+    avatarsContainer.appendChild(leftEarphone);
+
+    // ---- 右耳机（位置 right: 25px，大小 7x9） ----
+    var rightEarphone = document.createElement('div');
+    rightEarphone.className = 'tl-earphone';
+    rightEarphone.style.cssText = `
+        position: absolute;
+        right: 25px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 7px;
+        height: 9px;
+        border-radius: 50% / 55%;
+        border: 2px solid rgba(200, 200, 205, 0.85);
+        background: rgba(220, 220, 225, 0.3);
+        box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+        box-sizing: border-box;
+        pointer-events: none;
+        z-index: 0;
+    `;
+    avatarsContainer.appendChild(rightEarphone);
+
+    // ---- 左耳机线（left: 27px，高度 40px，旋转 2deg） ----
+    var leftCord = document.createElement('div');
+    leftCord.className = 'tl-cord';
+    leftCord.style.cssText = `
+        position: absolute;
+        left: 27px;
+        top: calc(50% + 3px);
+        width: 2px;
+        height: 40px;
+        background: linear-gradient(to bottom, rgba(180, 180, 190, 0.6) 0%, rgba(180, 180, 190, 0.1) 70%, transparent 100%);
+        border-radius: 2px;
+        transform: rotate(2deg);
+        transform-origin: top center;
+        box-sizing: border-box;
+        pointer-events: none;
+        z-index: 0;
+    `;
+    avatarsContainer.appendChild(leftCord);
+
+    // ---- 右耳机线（right: 27px，高度 40px，旋转 -2deg） ----
+    var rightCord = document.createElement('div');
+    rightCord.className = 'tl-cord';
+    rightCord.style.cssText = `
+        position: absolute;
+        right: 27px;
+        top: calc(50% + 3px);
+        width: 2px;
+        height: 40px;
+        background: linear-gradient(to bottom, rgba(180, 180, 190, 0.6) 0%, rgba(180, 180, 190, 0.1) 70%, transparent 100%);
+        border-radius: 2px;
+        transform: rotate(-2deg);
+        transform-origin: top center;
+        box-sizing: border-box;
+        pointer-events: none;
+        z-index: 0;
+    `;
+    avatarsContainer.appendChild(rightCord);
+}
 
         document.body.appendChild(bubbleEl);
 
