@@ -760,8 +760,8 @@
         });
     }
 
-    // ============================================================
-    // 退出气泡
+        // ============================================================
+    // 退出气泡（带时长通知）
     // ============================================================
 
     function exitBubble() {
@@ -786,6 +786,10 @@
             ballEl = null;
         }
 
+        // 计算时长
+        var durationSeconds = tlState.elapsedSeconds || 0;
+        var durationText = formatTime(durationSeconds);
+
         tlState.isActive = false;
         tlState.startTime = null;
         tlState.elapsedSeconds = 0;
@@ -793,17 +797,11 @@
 
         clearState();
 
-        // ===== 恢复系统通知（带时长） =====
+        // 系统通知（带时长）
         if (typeof showNotification === 'function') {
             showNotification('🎵 一起听已结束 · 陪伴了 ' + durationText, 'info', 3000);
         }
         console.log('[TLBubble] 已退出一起听，时长:', durationText);
-    }
-
-        if (typeof showNotification === 'function') {
-            showNotification('已退出一起听', 'info', 2000);
-        }
-        console.log('[TLBubble] 已退出一起听');
     }
 
     // ============================================================
