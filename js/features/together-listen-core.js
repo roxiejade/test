@@ -288,12 +288,18 @@
                 rejectCount++;
                 triggerFeedback(song, artist);
             },
-                        // onExit: 退出
+                                    // onExit: 退出
             function() {
                 rejectCount = 0;
-                // ===== 恢复系统通知 =====
-                if (typeof showNotification === 'function') {
-                    showNotification('已退出一起听', 'info', 2000);
+                // ===== 发送系统消息到聊天对话框 =====
+                if (typeof window.addMessage === 'function') {
+                    window.addMessage({
+                        id: Date.now() + Math.random(),
+                        sender: 'system',
+                        text: '已退出一起听',
+                        timestamp: new Date(),
+                        type: 'system'
+                    });
                 }
             },
             // onAccept: 同意后启动标准弹窗
