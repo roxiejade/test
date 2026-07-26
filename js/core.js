@@ -1158,7 +1158,7 @@ function createMessageFragment(msg, prevMsg, nextMsg, lastSenderRef) {
         messageHTML += content;
     }
 
-           const messageDiv = document.createElement('div');
+               const messageDiv = document.createElement('div');
     // 根据是否有 html 字段和是否纯图片决定样式
     if (msg.html) {
         // 有 html 字段时（如一起听卡片），不加 message 类，让卡片直接显示
