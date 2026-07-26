@@ -1158,18 +1158,19 @@ function createMessageFragment(msg, prevMsg, nextMsg, lastSenderRef) {
         messageHTML += content;
     }
 
-    const messageDiv = document.createElement('div');
-    // 根据是否有 html 字段和是否纯图片决定样式
-if (msg.html) {
-    messageDiv.className = `message message-${msg.sender === 'user' ? 'sent' : 'received'} ${settings.bubbleStyle}`;
-} else {
-    const isImageOnly = !msg.text && !!msg.image;
-    if (isImageOnly) {
-        messageDiv.className = `message message-${msg.sender === 'user' ? 'sent' : 'received'} message-image-bubble-none`;
+        const messageDiv = document.createElement('div');
+    // ===== 判断是否有 html 字段 =====
+    if (msg.html) {
+        // 有 html 字段时（如一起听卡片），不加 message 类，让卡片直接显示
+        messageDiv.className = `message-html-wrapper message-${msg.sender === 'user' ? 'sent' : 'received'}`;
     } else {
-        messageDiv.className = `message message-${msg.sender === 'user' ? 'sent' : 'received'} ${settings.bubbleStyle}`;
+        const isImageOnly = !msg.text && !!msg.image;
+        if (isImageOnly) {
+            messageDiv.className = `message message-${msg.sender === 'user' ? 'sent' : 'received'} message-image-bubble-none`;
+        } else {
+            messageDiv.className = `message message-${msg.sender === 'user' ? 'sent' : 'received'} ${settings.bubbleStyle}`;
+        }
     }
-}
     messageDiv.innerHTML = messageHTML;
 
     let actionsHTML = '';
