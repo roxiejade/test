@@ -388,10 +388,11 @@ const loadData = async () => {
         if (savedIntros) customIntros = savedIntros;
         else customIntros = CONSTANTS.WELCOME_ANIMATIONS.map(a => `${a.line1}|${a.line2}`);
 
-        if (savedMessages && Array.isArray(savedMessages)) {
+                if (savedMessages && Array.isArray(savedMessages)) {
             messages = savedMessages.map(m => ({
                 ...m, timestamp: new Date(m.timestamp)
             }));
+            window.messages = messages; // 暴露到全局
         } else {
             const backup = _tryRecoverFromBackup();
             if (backup && Array.isArray(backup.messages) && backup.messages.length > 0) {
@@ -400,6 +401,7 @@ const loadData = async () => {
                 messages = backup.messages.map(m => ({
                     ...m, timestamp: new Date(m.timestamp)
                 }));
+                window.messages = messages; // 暴露到全局
                 if (backup.settings) Object.assign(settings, backup.settings);
                 if (backup.anniversaries && Array.isArray(backup.anniversaries)) {
                     anniversaries = backup.anniversaries;
@@ -411,6 +413,7 @@ const loadData = async () => {
                 );
             } else {
                 messages = [];
+                window.messages = messages; // 暴露到全局
             }
         }
 
@@ -1158,7 +1161,7 @@ function createMessageFragment(msg, prevMsg, nextMsg, lastSenderRef) {
         messageHTML += content;
     }
 
-               const messageDiv = document.createElement('div');
+                   const messageDiv = document.createElement('div');
     // 根据是否有 html 字段和是否纯图片决定样式
     if (msg.html) {
         // 有 html 字段时（如一起听卡片），不加 message 类，让卡片直接显示
