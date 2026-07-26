@@ -793,6 +793,13 @@
 
         clearState();
 
+        // ===== 恢复系统通知（带时长） =====
+        if (typeof showNotification === 'function') {
+            showNotification('🎵 一起听已结束 · 陪伴了 ' + durationText, 'info', 3000);
+        }
+        console.log('[TLBubble] 已退出一起听，时长:', durationText);
+    }
+
         if (typeof showNotification === 'function') {
             showNotification('已退出一起听', 'info', 2000);
         }
