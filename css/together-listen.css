@@ -622,3 +622,18 @@
 .tl-music-card .tl-status-rejected {
     color: var(--text-secondary, #888) !important;
 }
+
+/* 卡片消息包装器（不加气泡样式） */
+.message-html-wrapper {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+}
+.message-html-wrapper.sent {
+    background: transparent !important;
+}
+.message-html-wrapper.received {
+    background: transparent !important;
+}
