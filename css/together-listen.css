@@ -623,17 +623,83 @@
     color: var(--text-secondary, #888) !important;
 }
 
-/* 卡片消息包装器（不加气泡样式） */
+/* ===== 一起听卡片消息包装器 ===== */
 .message-html-wrapper {
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
     padding: 0 !important;
     border-radius: 0 !important;
+    max-width: 100%;
+    width: 100%;
 }
 .message-html-wrapper.sent {
     background: transparent !important;
+    align-self: flex-end;
 }
 .message-html-wrapper.received {
     background: transparent !important;
+    align-self: flex-start;
+}
+
+/* 一起听卡片样式（已有，确认存在） */
+.tl-music-card {
+    background: var(--secondary-bg);
+    border-radius: 14px;
+    padding: 14px 16px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    min-width: 200px;
+    max-width: 280px;
+}
+.tl-music-card .tl-card-top {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+.tl-music-card .tl-card-cover {
+    width: 52px;
+    height: 52px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--border-color), rgba(var(--accent-color-rgb), 0.15));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 24px;
+    color: var(--accent-color);
+}
+.tl-music-card .tl-card-info {
+    flex: 1;
+    min-width: 0;
+}
+.tl-music-card .tl-card-song {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.tl-music-card .tl-card-artist {
+    font-size: 12px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    opacity: 0.8;
+}
+.tl-music-card .tl-card-divider {
+    height: 1px;
+    background: var(--border-color);
+    margin: 10px 0 8px;
+    opacity: 0.5;
+}
+.tl-music-card .tl-card-status {
+    text-align: left;
+    color: var(--text-secondary, #888);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    padding-left: 0;
 }
