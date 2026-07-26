@@ -55,14 +55,29 @@
         return div.innerHTML;
     }
 
-    // ============================================================
-    // 发送卡片（直接操作 messages 数组 + 渲染）
+        // ============================================================
+    // 发送卡片（带重试机制，等待 messages 可用）
     // ============================================================
 
-    function sendCard(song, artist, statusText, sender, cardType) {
+    function sendCard(song, artist, statusText, sender, cardType, retries) {
+        retries = retries || 0;
         var songName = song || '未知歌曲';
         var artistName = artist || '未知歌手';
         var isUser = sender === 'user';
+
+        // 如果 messages 还没准备好，等待 500ms 后重试（最多重试 20 次 = 10 秒）
+        if (!window.messages || !Array.isArray(window.messages)) {
+            if (retries < 20) {
+                console.log('[TLCore] messages 未就绪，等待重试 (' + (retries + 1) + '/20)...');
+                setTimeout(function() {
+                    sendCard(song, artist, statusText, sender, cardType, retries + 1);
+                }, 500);
+                return;
+            } else {
+                console.error('[TLCore] messages 始终不可用，放弃发送卡片');
+                return;
+            }
+        }
 
         var cardHtml = `
             <div class="tl-music-card">
@@ -96,20 +111,14 @@
             note: null,
         };
 
-        if (window.messages && Array.isArray(window.messages)) {
-            window.messages.push(msg);
-            if (typeof window.renderMessages === 'function') {
-                window.renderMessages();
-            }
-            if (typeof window.throttledSaveData === 'function') {
-                window.throttledSaveData();
-            }
-            console.log('[TLCore] 卡片已发送:', cardType, sender);
-            return true;
-        } else {
-            console.error('[TLCore] messages 不可用');
-            return false;
+        window.messages.push(msg);
+        if (typeof window.renderMessages === 'function') {
+            window.renderMessages();
         }
+        if (typeof window.throttledSaveData === 'function') {
+            window.throttledSaveData();
+        }
+        console.log('[TLCore] 卡片已发送:', cardType, sender);
     }
 
     // ============================================================
