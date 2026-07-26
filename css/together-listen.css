@@ -606,3 +606,19 @@
     cursor: grabbing;
     transition: none !important;
 }
+
+/* 卡片状态文案左对齐 + 灰色 */
+.tl-music-card .tl-card-status {
+    text-align: left;
+    color: var(--text-secondary, #888);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    padding-left: 0;
+}
+
+/* 移除之前的绿色/红色状态 */
+.tl-music-card .tl-status-accepted,
+.tl-music-card .tl-status-rejected {
+    color: var(--text-secondary, #888) !important;
+}
