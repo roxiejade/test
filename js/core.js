@@ -1159,11 +1159,17 @@ function createMessageFragment(msg, prevMsg, nextMsg, lastSenderRef) {
     }
 
     const messageDiv = document.createElement('div');
+    // 根据是否有 html 字段和是否纯图片决定样式
+if (msg.html) {
+    messageDiv.className = `message message-${msg.sender === 'user' ? 'sent' : 'received'} ${settings.bubbleStyle}`;
+} else {
+    const isImageOnly = !msg.text && !!msg.image;
     if (isImageOnly) {
         messageDiv.className = `message message-${msg.sender === 'user' ? 'sent' : 'received'} message-image-bubble-none`;
     } else {
         messageDiv.className = `message message-${msg.sender === 'user' ? 'sent' : 'received'} ${settings.bubbleStyle}`;
     }
+}
     messageDiv.innerHTML = messageHTML;
 
     let actionsHTML = '';
