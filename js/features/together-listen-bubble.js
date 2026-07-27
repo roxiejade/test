@@ -490,27 +490,51 @@
     var baselineY = (startY + endY) / 2;
 
     // ============================================================
-    // 构建波形数据（1个周期）- 丘比特之箭版
+    // 固定参数（从调试面板截图提取）
+    // ============================================================
+    var FIXED_LEFT_BASE = 5;
+    var FIXED_RIGHT_BASE = 44;
+    var FIXED_STRETCH = 60;
+    var FIXED_SCALE_Y = 0.69;
+    var FIXED_OFF_X = -7;
+    var FIXED_OFF_Y = 3;
+    var FIXED_HEART_SIZE = 0.82;
+    var FIXED_HEART_OFF_X = -10;
+    var FIXED_HEART_OFF_Y = -6;
+    var FIXED_ARROW_SIZE = 1.0;
+    var FIXED_ARROW_OFF_X = 1;
+    var FIXED_ARROW_OFF_Y = -5;
+    var FIXED_SHOW_ARROW = true;
+    var FIXED_SHOW_GLOW = true;
+    var CYCLE_DURATION = 3000; // 3秒
+
+    // ============================================================
+    // 构建波形数据（1个周期）
     // ============================================================
     function buildOneCycle(leftBase, rightBase, stretch) {
         var dataStart = points[0];
         var dataEnd = points[points.length - 1];
         var dataWidth = dataEnd.x - dataStart.x;
+        
+        // 波形宽度 = 原始宽度 * 拉伸系数
         var waveWidth = dataWidth * (stretch / 100);
-        var baselineWidth = leftBase + rightBase;
-        var totalWidth = baselineWidth + waveWidth;
+        
+        // 总宽度 = 左侧基线 + 波形宽度 + 右侧基线
+        // 把 leftBase 和 rightBase 当作归一化值（0-1范围），但这里它们实际上是像素值转百分比
+        // 为了简单，我们把它们当作相对于波形宽度的比例
+        var totalWidth = leftBase + waveWidth + rightBase;
+        
         var leftBaseNorm = leftBase / totalWidth;
         var waveWidthNorm = waveWidth / totalWidth;
+        var rightBaseNorm = rightBase / totalWidth;
 
         var result = [];
 
         // 左侧基线
-        var leftStartX = 0;
-        var leftEndX = leftBaseNorm;
         for (var i = 0; i < 10; i++) {
             var t = i / 9;
             result.push({
-                x: leftStartX + t * (leftEndX - leftStartX),
+                x: t * leftBaseNorm,
                 y: baselineY,
                 isBaseline: true,
                 isWave: false
@@ -519,7 +543,6 @@
 
         // 波形
         var waveStartX = leftBaseNorm;
-        var waveEndX = leftBaseNorm + waveWidthNorm;
         for (var i = 0; i < points.length; i++) {
             var normX = (points[i].x - dataStart.x) / dataWidth;
             var px = waveStartX + normX * waveWidthNorm;
@@ -532,12 +555,11 @@
         }
 
         // 右侧基线
-        var rightStartX = waveEndX;
-        var rightEndX = waveEndX + (rightBase / totalWidth);
+        var waveEndX = leftBaseNorm + waveWidthNorm;
         for (var i = 0; i < 10; i++) {
             var t = i / 9;
             result.push({
-                x: rightStartX + t * (rightEndX - rightStartX),
+                x: waveEndX + t * rightBaseNorm,
                 y: baselineY,
                 isBaseline: true,
                 isWave: false
@@ -721,30 +743,14 @@
         ctx.setTransform(1, 0, 0, 1, 0, 0);
         ctx.scale(dpr, dpr);
 
-        // 固定参数（从调试面板截图提取）
-        var leftBase = 5;
-        var rightBase = 44;
-        var stretch = 60;
-        var scaleY = 0.69;
-        var offX = -7;
-        var offY = 3;
-        var heartSize = 0.82;
-        var heartOffX = -10;
-        var heartOffY = -6;
-        var arrowSize = 1.0;
-        var arrowOffX = 1;
-        var arrowOffY = -5;
-        var showArrow = true;
-        var showGlow = true;
-
         var pad = 4;
         var drawW = w - pad * 2;
         var drawH = h - pad * 2;
         var midY = pad + drawH / 2;
 
-        var amp = (drawH / 2) * Math.max(0.05, scaleY) * 0.85;
+        var amp = (drawH / 2) * Math.max(0.05, FIXED_SCALE_Y) * 0.85;
 
-        var data = buildOneCycle(leftBase, rightBase, stretch);
+        var data = buildOneCycle(FIXED_LEFT_BASE, FIXED_RIGHT_BASE, FIXED_STRETCH);
 
         ctx.clearRect(0, 0, w, h);
 
@@ -757,15 +763,15 @@
         ctx.lineCap = 'round';
         ctx.beginPath();
         for (var i = 0; i < data.length; i++) {
-            var px = pad + data[i].normX * drawW + offX;
-            var py = midY + (data[i].y / scaleBase) * amp + offY;
+            var px = pad + data[i].normX * drawW + FIXED_OFF_X;
+            var py = midY + (data[i].y / scaleBase) * amp + FIXED_OFF_Y;
             if (i === 0) ctx.moveTo(px, py);
             else ctx.lineTo(px, py);
         }
         ctx.stroke();
 
         // 波形发光段（0.00 - 0.70）
-        if (showGlow) {
+        if (FIXED_SHOW_GLOW) {
             var waveGlowProgress = Math.max(0, Math.min(1, progress / 0.70));
             if (waveGlowProgress > 0) {
                 var glowPoints = [];
@@ -782,8 +788,8 @@
                     ctx.strokeStyle = 'rgba(255, 255, 255, 0.95)';
                     ctx.beginPath();
                     for (var i = 0; i < glowPoints.length; i++) {
-                        var gx = pad + glowPoints[i].normX * drawW + offX;
-                        var gy = midY + (glowPoints[i].y / scaleBase) * amp + offY;
+                        var gx = pad + glowPoints[i].normX * drawW + FIXED_OFF_X;
+                        var gy = midY + (glowPoints[i].y / scaleBase) * amp + FIXED_OFF_Y;
                         if (i === 0) ctx.moveTo(gx, gy);
                         else ctx.lineTo(gx, gy);
                     }
@@ -794,8 +800,8 @@
                     ctx.strokeStyle = 'rgba(150, 220, 255, 0.2)';
                     ctx.beginPath();
                     for (var i = 0; i < glowPoints.length; i++) {
-                        var hx = pad + glowPoints[i].normX * drawW + offX;
-                        var hy = midY + (glowPoints[i].y / scaleBase) * amp + offY;
+                        var hx = pad + glowPoints[i].normX * drawW + FIXED_OFF_X;
+                        var hy = midY + (glowPoints[i].y / scaleBase) * amp + FIXED_OFF_Y;
                         if (i === 0) ctx.moveTo(hx, hy);
                         else ctx.lineTo(hx, hy);
                     }
@@ -806,8 +812,8 @@
                     ctx.strokeStyle = 'rgba(100, 180, 255, 0.08)';
                     ctx.beginPath();
                     for (var i = 0; i < glowPoints.length; i++) {
-                        var fx = pad + glowPoints[i].normX * drawW + offX;
-                        var fy = midY + (glowPoints[i].y / scaleBase) * amp + offY;
+                        var fx = pad + glowPoints[i].normX * drawW + FIXED_OFF_X;
+                        var fy = midY + (glowPoints[i].y / scaleBase) * amp + FIXED_OFF_Y;
                         if (i === 0) ctx.moveTo(fx, fy);
                         else ctx.lineTo(fx, fy);
                     }
@@ -829,8 +835,8 @@
                     ctx.strokeStyle = 'rgba(255, 255, 255, 0.95)';
                     ctx.beginPath();
                     for (var i = 0; i < allWavePoints.length; i++) {
-                        var gx = pad + allWavePoints[i].normX * drawW + offX;
-                        var gy = midY + (allWavePoints[i].y / scaleBase) * amp + offY;
+                        var gx = pad + allWavePoints[i].normX * drawW + FIXED_OFF_X;
+                        var gy = midY + (allWavePoints[i].y / scaleBase) * amp + FIXED_OFF_Y;
                         if (i === 0) ctx.moveTo(gx, gy);
                         else ctx.lineTo(gx, gy);
                     }
@@ -841,8 +847,8 @@
                     ctx.strokeStyle = 'rgba(150, 220, 255, 0.2)';
                     ctx.beginPath();
                     for (var i = 0; i < allWavePoints.length; i++) {
-                        var hx = pad + allWavePoints[i].normX * drawW + offX;
-                        var hy = midY + (allWavePoints[i].y / scaleBase) * amp + offY;
+                        var hx = pad + allWavePoints[i].normX * drawW + FIXED_OFF_X;
+                        var hy = midY + (allWavePoints[i].y / scaleBase) * amp + FIXED_OFF_Y;
                         if (i === 0) ctx.moveTo(hx, hy);
                         else ctx.lineTo(hx, hy);
                     }
@@ -852,24 +858,24 @@
         }
 
         // 爱心（0.70 - 0.90）
-        var heartBaseX = pad + 0.78 * drawW + offX;
-        var heartBaseY = midY + offY;
-        var heartCx = heartBaseX + heartOffX;
-        var heartCy = heartBaseY + heartOffY;
-        var heartScale = heartSize * 0.5;
+        var heartBaseX = pad + 0.78 * drawW + FIXED_OFF_X;
+        var heartBaseY = midY + FIXED_OFF_Y;
+        var heartCx = heartBaseX + FIXED_HEART_OFF_X;
+        var heartCy = heartBaseY + FIXED_HEART_OFF_Y;
+        var heartScale = FIXED_HEART_SIZE * 0.5;
         drawHeart(ctx, heartCx, heartCy, heartScale * 22, progress, 0.70, 0.90);
 
         // 箭矢（0.90 - 1.00）
-        if (showArrow) {
-            var arrowBaseX = heartBaseX + 16 + arrowOffX;
-            var arrowBaseY = heartBaseY + arrowOffY;
-            var arrowScale = arrowSize * 0.8;
-            drawArrow(ctx, arrowBaseX, arrowBaseY, arrowScale * 14, progress, 0.90, 1.00, showGlow);
+        if (FIXED_SHOW_ARROW) {
+            var arrowBaseX = heartBaseX + 16 + FIXED_ARROW_OFF_X;
+            var arrowBaseY = heartBaseY + FIXED_ARROW_OFF_Y;
+            var arrowScale = FIXED_ARROW_SIZE * 0.8;
+            drawArrow(ctx, arrowBaseX, arrowBaseY, arrowScale * 14, progress, 0.90, 1.00, FIXED_SHOW_GLOW);
         }
     }
 
     // ============================================================
-    // 绘制悬浮球波形（保留原有风格）
+    // 绘制悬浮球波形
     // ============================================================
     function drawBallWave(canvas, progress) {
         var rect = canvas.getBoundingClientRect();
@@ -890,7 +896,6 @@
         var midY = pad + drawH / 2;
         var amp = (drawH / 2) * 0.75;
 
-        // 灰色轮廓
         ctx.lineWidth = 1.0;
         ctx.strokeStyle = 'rgba(180, 180, 190, 0.25)';
         ctx.shadowColor = 'transparent';
@@ -906,7 +911,6 @@
         }
         ctx.stroke();
 
-        // 发光段
         var halfWidth = 0.10;
         var startX = progress - halfWidth;
         var endX = progress + halfWidth;
@@ -1013,12 +1017,11 @@
 
         if (!timestamp) timestamp = performance.now();
 
-        var cycleDuration = 3000; // 3秒完整循环
         if (lastTimestamp === 0) lastTimestamp = timestamp;
         var delta = timestamp - lastTimestamp;
         lastTimestamp = timestamp;
 
-        ecgProgress = (ecgProgress + delta / cycleDuration) % 1;
+        ecgProgress = (ecgProgress + delta / CYCLE_DURATION) % 1;
 
         if (ecgCanvas && ecgCtx) {
             drawBubbleWave(ecgCanvas, ecgProgress);
@@ -1120,7 +1123,7 @@
         var myAvatar = getMyAvatarSrc() || '';
 
         bubbleEl.innerHTML = `
-            <div class="tl-bubble-toolbar" style="display:flex;justify-content:space-between;align-items:center;width:100%;padding:0 2px;margin-bottom:4px;">
+            <div class="tl-bubble-toolbar" style="display:flex;justify-content:space-between;align-items:center;width:100%;padding:0 2px;margin-bottom:4px;flex-shrink:0;">
                 <span style="display:flex;align-items:center;">
                     <button class="tl-tool-btn" id="tl-upload-btn" title="上传背景图片" style="color:rgba(255,255,255,0.5);font-size:12px;padding:2px 4px;background:none;border:none;cursor:pointer;"><i class="fas fa-image"></i></button>
                 </span>
@@ -1129,11 +1132,11 @@
                     <button class="tl-tool-btn tl-close-btn" id="tl-close-btn" title="关闭" style="color:rgba(255,255,255,0.5);font-size:12px;padding:2px 4px;background:none;border:none;cursor:pointer;"><i class="fas fa-power-off"></i></button>
                 </span>
             </div>
-            <div class="tl-avatars" id="tl-avatars-container" style="position:relative;overflow:visible;display:flex;align-items:center;justify-content:center;height:60px;width:100%;background:transparent !important;">
-                <div class="tl-avatar-item tl-avatar-left" style="width:44px;height:44px;border-radius:50%;overflow:hidden;flex-shrink:0;position:relative;transform:translateX(5px);z-index:2;background:transparent !important;">
+            <div class="tl-avatars" id="tl-avatars-container" style="position:relative;overflow:visible;display:flex;align-items:center;justify-content:center;height:60px;width:100%;flex-shrink:0;background:transparent !important;">
+                <div class="tl-avatar-item tl-avatar-left" style="width:44px;height:44px;border-radius:50%;overflow:hidden;flex-shrink:0;position:relative;transform:translateX(5px);z-index:2;background:transparent !important;border:2px solid rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;">
                     ${partnerAvatar ? '<img src="' + partnerAvatar + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">' : '<i class="fas fa-user" style="font-size:20px;display:flex;align-items:center;justify-content:center;width:100%;height:100%;"></i>'}
                 </div>
-                <div class="tl-avatar-item tl-avatar-right" style="width:44px;height:44px;border-radius:50%;overflow:hidden;flex-shrink:0;position:relative;transform:translateX(-5px);z-index:1;background:transparent !important;">
+                <div class="tl-avatar-item tl-avatar-right" style="width:44px;height:44px;border-radius:50%;overflow:hidden;flex-shrink:0;position:relative;transform:translateX(-5px);z-index:1;background:transparent !important;border:2px solid rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;">
                     ${myAvatar ? '<img src="' + myAvatar + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">' : '<i class="fas fa-user" style="font-size:20px;display:flex;align-items:center;justify-content:center;width:100%;height:100%;"></i>'}
                 </div>
                 <div class="tl-earphone" style="position:absolute;left:18px;top:50%;transform:translateY(-50%);width:7px;height:9px;border-radius:50%/55%;border:2px solid rgba(200,200,205,0.85);background:rgba(220,220,225,0.3);box-shadow:0 1px 4px rgba(0,0,0,0.1);pointer-events:none;z-index:10;box-sizing:border-box;"></div>
@@ -1141,7 +1144,7 @@
                 <div class="tl-cord" style="position:absolute;left:20px;top:calc(50% + 3px);width:2px;height:40px;background:linear-gradient(to bottom,rgba(180,180,190,0.6) 0%,rgba(180,180,190,0.1) 70%,transparent 100%);border-radius:2px;transform:rotate(6deg);transform-origin:top center;pointer-events:none;z-index:10;box-sizing:border-box;"></div>
                 <div class="tl-cord" style="position:absolute;right:20px;top:calc(50% + 3px);width:2px;height:40px;background:linear-gradient(to bottom,rgba(180,180,190,0.6) 0%,rgba(180,180,190,0.1) 70%,transparent 100%);border-radius:2px;transform:rotate(-6deg);transform-origin:top center;pointer-events:none;z-index:10;box-sizing:border-box;"></div>
             </div>
-            <div class="tl-wave-container" style="width:100%;flex:1;border-radius:4px;overflow:visible;position:relative;background:transparent !important;border:none;">
+            <div class="tl-wave-container" style="width:100%;flex:1 1 0;min-height:0;border-radius:4px;overflow:visible;position:relative;background:transparent !important;border:none;">
                 <canvas id="tl-ecg-canvas" style="width:100%;height:100%;display:block;"></canvas>
             </div>
             <div class="tl-timer" id="tl-timer-display" style="text-align:center;font-size:18px;font-weight:500;font-variant-numeric:tabular-nums;letter-spacing:2px;color:rgba(255,255,255,0.9);text-shadow:0 0 20px rgba(0,0,0,0.6),0 1px 4px rgba(0,0,0,0.8);font-family:'SF Mono','Menlo','Consolas',monospace;padding:2px 0 0;flex-shrink:0;z-index:10;background:transparent !important;">00:00:00</div>
@@ -1210,7 +1213,8 @@
 
         var minBtn = bubbleEl.querySelector('#tl-minimize-btn');
         if (minBtn) {
-            minBtn.addEventListener('click', function() {
+            minBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
                 showBall();
             });
         }
