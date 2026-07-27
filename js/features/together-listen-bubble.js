@@ -239,8 +239,7 @@
         var container = canvas.parentElement;
         var dpr = window.devicePixelRatio || 1;
         var w = container.clientWidth || 200;
-        var h = container.clientHeight || 48;
-
+        var h = container.clientHeight || 68;
         canvas.width = w * dpr;
         canvas.height = h * dpr;
         canvas.style.width = w + 'px';
