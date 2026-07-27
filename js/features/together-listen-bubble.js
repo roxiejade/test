@@ -646,7 +646,7 @@ function buildTwoCycles() {
         result.push({ x: offsetEnd1 + (i / 6) * 0.02, y: baselineY });
     }
     var gapStart = result[result.length - 1].x;
-    var gapEnd = gapStart + 0.06;
+var gapEnd = gapStart + 0.02;
     for (var i = 0; i < 6; i++) {
         result.push({ x: gapEnd + (i / 6) * 0.02, y: baselineY });
     }
@@ -944,7 +944,7 @@ function drawBallWave(canvas, progress) {
 
         if (!timestamp) timestamp = performance.now();
 
-        var cycleDuration = 1000;
+        var cycleDuration = 4000;
         if (lastTimestamp === 0) lastTimestamp = timestamp;
         var delta = timestamp - lastTimestamp;
         lastTimestamp = timestamp;
