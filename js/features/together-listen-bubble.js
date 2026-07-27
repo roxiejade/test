@@ -509,24 +509,12 @@
     var CYCLE_DURATION = 3000; // 3秒
 
     // ============================================================
-    // 构建波形数据（1个周期）
+    // 构建波形数据（1个周期）- 与调试版一致
     // ============================================================
-    function buildOneCycle(leftBase, rightBase, stretch) {
-        var dataStart = points[0];
-        var dataEnd = points[points.length - 1];
-        var dataWidth = dataEnd.x - dataStart.x;
-        
-        // 波形宽度 = 原始宽度 * 拉伸系数
-        var waveWidth = dataWidth * (stretch / 100);
-        
-        // 总宽度 = 左侧基线 + 波形宽度 + 右侧基线
-        // 把 leftBase 和 rightBase 当作归一化值（0-1范围），但这里它们实际上是像素值转百分比
-        // 为了简单，我们把它们当作相对于波形宽度的比例
-        var totalWidth = leftBase + waveWidth + rightBase;
-        
-        var leftBaseNorm = leftBase / totalWidth;
-        var waveWidthNorm = waveWidth / totalWidth;
-        var rightBaseNorm = rightBase / totalWidth;
+    function buildOneCycle(leftBaselinePx, rightBaselinePx, stretch, drawW) {
+        var waveWidth = 0.72 * (stretch / 100);
+        var leftBase = leftBaselinePx / drawW;
+        var rightBase = rightBaselinePx / drawW;
 
         var result = [];
 
@@ -534,7 +522,7 @@
         for (var i = 0; i < 10; i++) {
             var t = i / 9;
             result.push({
-                x: t * leftBaseNorm,
+                x: t * leftBase,
                 y: baselineY,
                 isBaseline: true,
                 isWave: false
@@ -542,10 +530,12 @@
         }
 
         // 波形
-        var waveStartX = leftBaseNorm;
+        var waveStartX = leftBase;
+        var waveEndX = leftBase + waveWidth;
+        var dataStart = 0;
+        var dataEnd = points.length - 1;
         for (var i = 0; i < points.length; i++) {
-            var normX = (points[i].x - dataStart.x) / dataWidth;
-            var px = waveStartX + normX * waveWidthNorm;
+            var px = waveStartX + (points[i].x - points[dataStart].x) / (points[dataEnd].x - points[dataStart].x) * waveWidth;
             result.push({
                 x: px,
                 y: points[i].y,
@@ -555,11 +545,12 @@
         }
 
         // 右侧基线
-        var waveEndX = leftBaseNorm + waveWidthNorm;
+        var rightStartX = waveEndX;
+        var rightEndX = waveEndX + rightBase;
         for (var i = 0; i < 10; i++) {
             var t = i / 9;
             result.push({
-                x: waveEndX + t * rightBaseNorm,
+                x: rightStartX + t * (rightEndX - rightStartX),
                 y: baselineY,
                 isBaseline: true,
                 isWave: false
@@ -750,7 +741,7 @@
 
         var amp = (drawH / 2) * Math.max(0.05, FIXED_SCALE_Y) * 0.85;
 
-        var data = buildOneCycle(FIXED_LEFT_BASE, FIXED_RIGHT_BASE, FIXED_STRETCH);
+        var data = buildOneCycle(FIXED_LEFT_BASE, FIXED_RIGHT_BASE, FIXED_STRETCH, drawW);
 
         ctx.clearRect(0, 0, w, h);
 
@@ -1074,9 +1065,11 @@
 
     function showBubble() {
         if (bubbleEl) {
+            bubbleEl.style.display = 'flex';
             bubbleEl.classList.add('active');
         }
         if (ballEl) {
+            ballEl.style.display = 'none';
             ballEl.classList.remove('active');
         }
         tlState.isMinimized = false;
@@ -1084,19 +1077,22 @@
     }
 
     function showBall() {
+        if (bubbleEl) {
+            bubbleEl.style.display = 'none';
+            bubbleEl.classList.remove('active');
+        }
         if (ballEl) {
+            ballEl.style.display = 'block';
             ballEl.classList.add('active');
             var canvas = ballEl.querySelector('#tl-ball-canvas');
             if (canvas) setupBallCanvas(canvas);
-        }
-        if (bubbleEl) {
-            bubbleEl.classList.remove('active');
         }
         tlState.isMinimized = true;
     }
 
     function hideBall() {
         if (ballEl) {
+            ballEl.style.display = 'none';
             ballEl.classList.remove('active');
         }
         tlState.isMinimized = false;
@@ -1144,7 +1140,7 @@
                 <div class="tl-cord" style="position:absolute;left:20px;top:calc(50% + 3px);width:2px;height:40px;background:linear-gradient(to bottom,rgba(180,180,190,0.6) 0%,rgba(180,180,190,0.1) 70%,transparent 100%);border-radius:2px;transform:rotate(6deg);transform-origin:top center;pointer-events:none;z-index:10;box-sizing:border-box;"></div>
                 <div class="tl-cord" style="position:absolute;right:20px;top:calc(50% + 3px);width:2px;height:40px;background:linear-gradient(to bottom,rgba(180,180,190,0.6) 0%,rgba(180,180,190,0.1) 70%,transparent 100%);border-radius:2px;transform:rotate(-6deg);transform-origin:top center;pointer-events:none;z-index:10;box-sizing:border-box;"></div>
             </div>
-            <div class="tl-wave-container" style="width:100%;flex:1 1 0;min-height:0;border-radius:4px;overflow:visible;position:relative;background:transparent !important;border:none;">
+            <div class="tl-wave-container" style="width:100%;flex:1;min-height:0;border-radius:4px;overflow:hidden;position:relative;background:transparent !important;border:none;">
                 <canvas id="tl-ecg-canvas" style="width:100%;height:100%;display:block;"></canvas>
             </div>
             <div class="tl-timer" id="tl-timer-display" style="text-align:center;font-size:18px;font-weight:500;font-variant-numeric:tabular-nums;letter-spacing:2px;color:rgba(255,255,255,0.9);text-shadow:0 0 20px rgba(0,0,0,0.6),0 1px 4px rgba(0,0,0,0.8);font-family:'SF Mono','Menlo','Consolas',monospace;padding:2px 0 0;flex-shrink:0;z-index:10;background:transparent !important;">00:00:00</div>
@@ -1190,8 +1186,10 @@
             setupBallCanvas(ballCanvasEl);
         }
 
+        // 初始隐藏悬浮球
+        ballEl.style.display = 'none';
+
         bindBallEvents();
-        ballEl.classList.remove('active');
         tlState.isMinimized = false;
 
         console.log('[TLBubble] 标准弹窗已创建（丘比特之箭版）');
@@ -1224,11 +1222,15 @@
         if (uploadBtn && panel) {
             uploadBtn.addEventListener('click', function(e) {
                 e.stopPropagation();
-                panel.classList.toggle('open');
+                if (panel.style.display === 'flex') {
+                    panel.style.display = 'none';
+                } else {
+                    panel.style.display = 'flex';
+                }
             });
             document.addEventListener('click', function(e) {
-                if (panel.classList.contains('open') && !panel.contains(e.target) && e.target !== uploadBtn) {
-                    panel.classList.remove('open');
+                if (panel.style.display === 'flex' && !panel.contains(e.target) && e.target !== uploadBtn) {
+                    panel.style.display = 'none';
                 }
             });
         }
@@ -1249,7 +1251,7 @@
                         applyBubbleBg(data);
                         saveState();
                         var panel2 = bubbleEl.querySelector('#tl-settings-panel');
-                        if (panel2) panel2.classList.remove('open');
+                        if (panel2) panel2.style.display = 'none';
                         if (typeof showNotification === 'function') {
                             showNotification('背景图片已更新', 'success');
                         }
@@ -1267,7 +1269,7 @@
                 applyBubbleBg(null);
                 saveState();
                 var panel2 = bubbleEl.querySelector('#tl-settings-panel');
-                if (panel2) panel2.classList.remove('open');
+                if (panel2) panel2.style.display = 'none';
                 if (typeof showNotification === 'function') {
                     showNotification('已恢复原本样式', 'info');
                 }
