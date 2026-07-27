@@ -301,9 +301,10 @@
     animation: tlBubbleIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
     user-select: none;
     -webkit-user-select: none;
-    display: flex;
+    display: none;
     flex-direction: column;
-    overflow: visible;
+    overflow: hidden;
+    flex-shrink: 0;
 }
 .tl-bubble.active {
     display: flex;
@@ -330,6 +331,7 @@
     justify-content: flex-end;
     gap: 8px;
     margin-bottom: 6px;
+    flex-shrink: 0;
 }
 .tl-bubble .tl-bubble-toolbar .tl-tool-btn {
     background: none;
@@ -351,7 +353,7 @@
     background: rgba(255, 107, 107, 0.15);
 }
 
-/* 头像区域 - 透明背景，波形可穿透 */
+/* 头像区域 - 透明背景 */
 .tl-bubble .tl-avatars {
     display: flex;
     align-items: center;
@@ -359,6 +361,7 @@
     position: relative;
     height: 60px;
     margin-bottom: 2px;
+    flex-shrink: 0;
     background: transparent !important;
 }
 .tl-bubble .tl-avatar-item {
@@ -436,13 +439,14 @@
     transform: rotate(-8deg);
 }
 
-/* 波形 Canvas 容器 - 透明，溢出可见 */
+/* 波形 Canvas 容器 - 透明，flex 自适应 */
 .tl-bubble .tl-wave-container {
     width: 100%;
     flex: 1;
+    min-height: 0;
     margin: 2px 0 4px;
     border-radius: 4px;
-    overflow: visible;
+    overflow: hidden;
     position: relative;
     background: transparent !important;
     border: none;
@@ -464,6 +468,7 @@
     text-shadow: 0 0 20px rgba(0, 0, 0, 0.6), 0 1px 4px rgba(0, 0, 0, 0.8);
     font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
     padding: 2px 0 0;
+    flex-shrink: 0;
     background: transparent !important;
 }
 
