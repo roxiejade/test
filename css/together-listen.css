@@ -1,5 +1,5 @@
 /* ================================================================
-   together-listen.css — 一起听功能样式
+   together-listen.css — 一起听功能样式（丘比特之箭版）
    ================================================================ */
 
 /* ── 顶部按钮 ──────────────────────────────────────────────────── */
@@ -135,16 +135,6 @@
     color: var(--accent-color);
     transition: all 0.3s ease;
 }
-/* 后续替换为 PNG 图片时，取消注释下面两行，注释掉上面的背景 */
-/* .tl-music-card .tl-card-cover {
-    background-image: url('../assets/vinyl.png');
-    background-size: cover;
-    background-position: center;
-    background-color: transparent;
-}
-.tl-music-card .tl-card-cover i {
-    display: none;
-} */
 .tl-music-card .tl-card-info {
     flex: 1;
     min-width: 0;
@@ -190,7 +180,7 @@
     color: #ef5350;
 }
 
-/* ── 全屏反馈弹窗（参考陪伴功能） ────────────────────────────── */
+/* ── 全屏反馈弹窗 ────────────────────────────────────────────── */
 .tl-feedback-overlay {
     position: fixed;
     inset: 0;
@@ -299,6 +289,8 @@
     left: 16px;
     z-index: 9997;
     display: none;
+    width: 160px;
+    height: 260px;
     background: rgba(0, 0, 0, 0.55);
     backdrop-filter: blur(24px) saturate(1.2);
     -webkit-backdrop-filter: blur(24px) saturate(1.2);
@@ -306,14 +298,15 @@
     padding: 16px 18px 14px;
     border: 1px solid rgba(255, 255, 255, 0.08);
     box-shadow: 0 12px 48px rgba(0, 0, 0, 0.4), 0 0 0 0.5px rgba(255, 255, 255, 0.04);
-    width: 155px;
-    /* min-width和max-width已删除，让宽度由width控制 */
     animation: tlBubbleIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
     user-select: none;
     -webkit-user-select: none;
+    display: flex;
+    flex-direction: column;
+    overflow: visible;
 }
 .tl-bubble.active {
-    display: block;
+    display: flex;
 }
 @keyframes tlBubbleIn {
     from {
@@ -358,7 +351,7 @@
     background: rgba(255, 107, 107, 0.15);
 }
 
-/* 头像区域（两个头像重叠 + 耳机） */
+/* 头像区域 - 透明背景，波形可穿透 */
 .tl-bubble .tl-avatars {
     display: flex;
     align-items: center;
@@ -366,6 +359,7 @@
     position: relative;
     height: 60px;
     margin-bottom: 2px;
+    background: transparent !important;
 }
 .tl-bubble .tl-avatar-item {
     width: 44px;
@@ -375,7 +369,7 @@
     border: 2px solid rgba(255, 255, 255, 0.15);
     flex-shrink: 0;
     position: relative;
-    background: rgba(255, 255, 255, 0.06);
+    background: transparent !important;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -389,18 +383,16 @@
     font-size: 18px;
     color: rgba(255, 255, 255, 0.3);
 }
-/* 左边头像（梦角） */
 .tl-bubble .tl-avatar-left {
     transform: translateX(6px);
     z-index: 2;
 }
-/* 右边头像（用户） */
 .tl-bubble .tl-avatar-right {
     transform: translateX(-6px);
     z-index: 1;
 }
 
-/* 耳机（半弧形，银色金属灰） */
+/* 耳机 */
 .tl-bubble .tl-earphone {
     position: absolute;
     top: 50%;
@@ -444,14 +436,16 @@
     transform: rotate(-8deg);
 }
 
-/* 波形 Canvas 容器 */
+/* 波形 Canvas 容器 - 透明，溢出可见 */
 .tl-bubble .tl-wave-container {
     width: 100%;
-    height: 68px;
+    flex: 1;
     margin: 2px 0 4px;
     border-radius: 4px;
-    overflow: hidden;
+    overflow: visible;
     position: relative;
+    background: transparent !important;
+    border: none;
 }
 .tl-bubble .tl-wave-container canvas {
     width: 100%;
@@ -459,7 +453,7 @@
     display: block;
 }
 
-/* 计时器 */
+/* 计时器 - 透明背景 */
 .tl-bubble .tl-timer {
     text-align: center;
     font-size: 18px;
@@ -470,9 +464,10 @@
     text-shadow: 0 0 20px rgba(0, 0, 0, 0.6), 0 1px 4px rgba(0, 0, 0, 0.8);
     font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
     padding: 2px 0 0;
+    background: transparent !important;
 }
 
-/* ── 角落气泡：设置面板（上传图片） ────────────────────────────── */
+/* ── 角落气泡：设置面板 ────────────────────────────────────── */
 .tl-settings-panel {
     position: absolute;
     top: 32px;
@@ -620,16 +615,6 @@
     cursor: grabbing;
     transition: none;
 }
-@keyframes tlBallIn {
-    from {
-        opacity: 0;
-        transform: scale(0.6) translateY(8px);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-    }
-}
 
 /* 球内 Canvas（波形） */
 .tl-float-ball canvas {
@@ -704,7 +689,7 @@
     align-self: flex-start;
 }
 
-/* 一起听卡片样式（已有，确认存在） */
+/* 一起听卡片样式 */
 .tl-music-card {
     background: var(--secondary-bg);
     border-radius: 14px;
