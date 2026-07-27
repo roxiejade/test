@@ -1140,7 +1140,7 @@
                 <div class="tl-cord" style="position:absolute;left:20px;top:calc(50% + 3px);width:2px;height:40px;background:linear-gradient(to bottom,rgba(180,180,190,0.6) 0%,rgba(180,180,190,0.1) 70%,transparent 100%);border-radius:2px;transform:rotate(6deg);transform-origin:top center;pointer-events:none;z-index:10;box-sizing:border-box;"></div>
                 <div class="tl-cord" style="position:absolute;right:20px;top:calc(50% + 3px);width:2px;height:40px;background:linear-gradient(to bottom,rgba(180,180,190,0.6) 0%,rgba(180,180,190,0.1) 70%,transparent 100%);border-radius:2px;transform:rotate(-6deg);transform-origin:top center;pointer-events:none;z-index:10;box-sizing:border-box;"></div>
             </div>
-            <div class="tl-wave-container" style="width:100%;flex:1;min-height:0;border-radius:4px;overflow:hidden;position:relative;background:transparent !important;border:none;">
+            <div class="tl-wave-container">
                 <canvas id="tl-ecg-canvas" style="width:100%;height:100%;display:block;"></canvas>
             </div>
             <div class="tl-timer" id="tl-timer-display" style="text-align:center;font-size:18px;font-weight:500;font-variant-numeric:tabular-nums;letter-spacing:2px;color:rgba(255,255,255,0.9);text-shadow:0 0 20px rgba(0,0,0,0.6),0 1px 4px rgba(0,0,0,0.8);font-family:'SF Mono','Menlo','Consolas',monospace;padding:2px 0 0;flex-shrink:0;z-index:10;background:transparent !important;">00:00:00</div>
