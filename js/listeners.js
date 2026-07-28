@@ -435,10 +435,7 @@ if (_chatSettingsEl) _chatSettingsEl.addEventListener('click', () => {
         '#read-receipts-toggle': { prop: 'readReceiptsEnabled', name: '已读回执' },
         '#typing-indicator-toggle': { prop: 'typingIndicatorEnabled', name: '正在输入' },
         '#read-no-reply-toggle': { prop: 'allowReadNoReply', name: '已读不回' },
-        '#emoji-mix-toggle': { prop: 'emojiMixEnabled', name: '表情消息' },
-        // ===== 🆕 拼字卡同步 =====
-        '#puzzle-card-toggle': { prop: 'puzzleCardEnabled', name: '拼字卡' }
-        // ===== 🆕 拼字卡同步结束 =====
+        '#emoji-mix-toggle': { prop: 'emojiMixEnabled', name: '表情消息' }
     };
     for (const [selector, { prop }] of Object.entries(toggleSyncMap)) {
         const el = document.querySelector(selector);
@@ -1118,10 +1115,7 @@ if (vfmtOptions.length > 0) {
                 '#typing-indicator-toggle': {
                     prop: 'typingIndicatorEnabled', name: '正在输入'},
                     '#read-no-reply-toggle': { prop: 'allowReadNoReply', name: '已读不回' },
-                    '#emoji-mix-toggle': { prop: 'emojiMixEnabled', name: '表情混入消息' },
-                    // ===== 🆕 拼字卡 toggle =====
-                    '#puzzle-card-toggle': { prop: 'puzzleCardEnabled', name: '拼字卡' }
-                    // ===== 🆕 拼字卡 toggle 结束 =====
+                    '#emoji-mix-toggle': { prop: 'emojiMixEnabled', name: '表情混入消息' }
 };
 
             for (const [selector, {
