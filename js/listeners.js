@@ -435,7 +435,10 @@ if (_chatSettingsEl) _chatSettingsEl.addEventListener('click', () => {
         '#read-receipts-toggle': { prop: 'readReceiptsEnabled', name: '已读回执' },
         '#typing-indicator-toggle': { prop: 'typingIndicatorEnabled', name: '正在输入' },
         '#read-no-reply-toggle': { prop: 'allowReadNoReply', name: '已读不回' },
-        '#emoji-mix-toggle': { prop: 'emojiMixEnabled', name: '表情消息' }
+        '#emoji-mix-toggle': { prop: 'emojiMixEnabled', name: '表情消息' },
+        // ===== 🆕 拼字卡同步 =====
+        '#puzzle-card-toggle': { prop: 'puzzleCardEnabled', name: '拼字卡' }
+        // ===== 🆕 拼字卡同步结束 =====
     };
     for (const [selector, { prop }] of Object.entries(toggleSyncMap)) {
         const el = document.querySelector(selector);
@@ -1115,7 +1118,10 @@ if (vfmtOptions.length > 0) {
                 '#typing-indicator-toggle': {
                     prop: 'typingIndicatorEnabled', name: '正在输入'},
                     '#read-no-reply-toggle': { prop: 'allowReadNoReply', name: '已读不回' },
-                    '#emoji-mix-toggle': { prop: 'emojiMixEnabled', name: '表情混入消息' }
+                    '#emoji-mix-toggle': { prop: 'emojiMixEnabled', name: '表情混入消息' },
+                    // ===== 🆕 拼字卡 toggle =====
+                    '#puzzle-card-toggle': { prop: 'puzzleCardEnabled', name: '拼字卡' }
+                    // ===== 🆕 拼字卡 toggle 结束 =====
 };
 
             for (const [selector, {
@@ -1137,6 +1143,29 @@ if (vfmtOptions.length > 0) {
                     showNotification(`${name}已${settings[prop] ? '开启': '关闭'}`, 'success');
                 });
             }
+
+            // ===== 🆕 拼字卡独立事件绑定（需要特殊处理）=====
+            const puzzleToggle = document.getElementById('puzzle-card-toggle');
+            if (puzzleToggle) {
+                // 初始化状态
+                if (settings.puzzleCardEnabled) {
+                    puzzleToggle.classList.add('active');
+                }
+                puzzleToggle.addEventListener('click', function() {
+                    settings.puzzleCardEnabled = !settings.puzzleCardEnabled;
+                    this.classList.toggle('active', settings.puzzleCardEnabled);
+                    if (typeof throttledSaveData === 'function') throttledSaveData();
+                    // 拼字卡不需要重新渲染消息，只需要保存状态
+                    if (typeof showNotification === 'function') {
+                        showNotification(
+                            settings.puzzleCardEnabled ? '✦ 拼字卡已开启' : '拼字卡已关闭',
+                            settings.puzzleCardEnabled ? 'success' : 'info',
+                            1500
+                        );
+                    }
+                });
+            }
+            // ===== 🆕 拼字卡独立事件绑定结束 =====
 
             const soundVolSlider = document.getElementById('sound-volume-slider');
             const soundVolVal = document.getElementById('sound-volume-value');
