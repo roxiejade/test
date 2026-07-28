@@ -1930,30 +1930,28 @@ for (let i = 0; i < loopCount; i++) {
     const delayRange = settings.replyDelayMax - settings.replyDelayMin;
     delay += settings.replyDelayMin + Math.random() * delayRange;
     setTimeout(() => {
-                    try {
-                    setTimeout(() => {
-    try {
-    const replyPool = replyPoolOnce;
-    // 被屏蔽或无效项直接换下一个，尽量保证每次都产出可用回复
-    let replyText = '';
+        try {
+            const replyPool = replyPoolOnce;
+            // 被屏蔽或无效项直接换下一个，尽量保证每次都产出可用回复
+            let replyText = '';
 
-    // ===== 🆕 拼字卡：使用预拼好的文本 =====
-    if (puzzleCombinedText && i === 0) {
-        // 拼字卡模式：直接使用预拼好的文本（只发这一条）
-        replyText = puzzleCombinedText;
-    } else {
-        // 非拼字卡模式：走原有随机抽取逻辑
-        for (let t = 0; t < 6; t++) {
-            const picked = replyPool[Math.floor(Math.random() * replyPool.length)];
-            if (picked && String(picked).trim()) {
-                replyText = String(picked).trim();
-                break;
+            // ===== 🆕 拼字卡：使用预拼好的文本 =====
+            if (puzzleCombinedText && i === 0) {
+                // 拼字卡模式：直接使用预拼好的文本（只发这一条）
+                replyText = puzzleCombinedText;
+            } else {
+                // 非拼字卡模式：走原有随机抽取逻辑
+                for (let t = 0; t < 6; t++) {
+                    const picked = replyPool[Math.floor(Math.random() * replyPool.length)];
+                    if (picked && String(picked).trim()) {
+                        replyText = String(picked).trim();
+                        break;
+                    }
+                }
             }
-        }
-    }
-    // ===== 拼字卡结束 =====
+            // ===== 拼字卡结束 =====
 
-    if (!replyText && i === loopCount - 1) {
+            if (!replyText && i === loopCount - 1) {
         // ⚠️ 注意：这里把 replyCount 改成了 loopCount
                         (function(){try{if(window._typingIndicatorAutoHideTimer){clearTimeout(window._typingIndicatorAutoHideTimer);window._typingIndicatorAutoHideTimer=null;}}catch(e){}var _tiW=document.getElementById('typing-indicator-wrapper');if(_tiW){var _tiInner=_tiW.querySelector('.typing-indicator');if(_tiInner){_tiInner.classList.add('hiding');setTimeout(function(){_tiW.style.display='none';if(_tiInner)_tiInner.classList.remove('hiding');},240);}else{_tiW.style.display='none';}}})();
                         return;
