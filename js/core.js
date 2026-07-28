@@ -186,6 +186,7 @@ function loadMoreHistory() {
         soundVolume: 0.15,
         bottomCollapseMode: false,
         emojiMixEnabled: true,
+            puzzleCardEnabled: false,
 
                 // ===== 虚拟时钟配置（新增）=====
         oppTime: '00:00:00',
@@ -1860,7 +1861,17 @@ if (partnerPersonas && partnerPersonas.length > 0 && Math.random() < 0.3) {
                 return;
             }
 
-            const replyCount = Math.random() < 0.75 ? 1: (Math.random() < 0.95 ? 2: 3);
+            // ===== 🆕 拼字卡：决定回复条数 =====
+let replyCount = 1; // 默认 1 条（原有逻辑）
+if (settings.puzzleCardEnabled) {
+    const r = Math.random() * 100;
+    if (r < 45) replyCount = 1;   // 45% 概率发 1 条
+    else if (r < 75) replyCount = 2; // 30% 概率发 2 条 (45+30)
+    else replyCount = 3;            // 25% 概率发 3 条
+} else {
+    replyCount = 1; // 关闭拼字卡时永远是 1 条
+}
+// ===== 拼字卡结束 =====
             if (!customReplies || customReplies.length === 0) {
                 showNotification('回复库为空，请先到「自定义回复」中添加内容', 'info', 3500);
                 return;
@@ -1885,28 +1896,65 @@ if (partnerPersonas && partnerPersonas.length > 0 && Math.random() < 0.3) {
             }
 
             // 确认有可用回复后再展示“正在输入中”，避免空转
-            showTypingIndicator();
-            let delay = 0;
-            // 陪伴页静默触发时不引用用户消息（陪伴中的触发不是用户发了某条具体消息）
-            const recentUserMsgs = (settings.replyEnabled && !window._companionSilentTrigger)
-                ? messages.filter(m => m.sender === 'user' && m.text).slice(-10)
-                : [];
-            for (let i = 0; i < replyCount; i++) {
-                const delayRange = settings.replyDelayMax - settings.replyDelayMin;
-                delay += settings.replyDelayMin + Math.random() * delayRange;
-                setTimeout(() => {
+showTypingIndicator();
+let delay = 0;
+// 陪伴页静默触发时不引用用户消息（陪伴中的触发不是用户发了某条具体消息）
+const recentUserMsgs = (settings.replyEnabled && !window._companionSilentTrigger)
+    ? messages.filter(m => m.sender === 'user' && m.text).slice(-10)
+    : [];
+
+// ===== 🆕 拼字卡：提前抽取所有字卡并拼好 =====
+let puzzleCombinedText = null;
+if (settings.puzzleCardEnabled && replyCount > 1) {
+    // 从字卡池里随机取 replyCount 条不重复的字卡
+    const shuffled = [...replyPoolOnce].sort(() => Math.random() - 0.5);
+    const selected = shuffled.slice(0, Math.min(replyCount, shuffled.length));
+    // 如果选中的少于 replyCount，用随机补充（极端情况，字卡库太少）
+    while (selected.length < replyCount) {
+        const fallback = replyPoolOnce[Math.floor(Math.random() * replyPoolOnce.length)];
+        if (fallback && !selected.includes(fallback)) {
+            selected.push(fallback);
+        } else {
+            // 实在不够就重复填充
+            selected.push(replyPoolOnce[Math.floor(Math.random() * replyPoolOnce.length)]);
+        }
+    }
+    puzzleCombinedText = selected.join(' · ');
+}
+// 拼字卡模式下，循环只跑 1 次（发送拼好的那一条）
+// 非拼字卡模式，循环跑 replyCount 次（原有逻辑）
+const loopCount = (settings.puzzleCardEnabled && replyCount > 1) ? 1 : replyCount;
+// ===== 拼字卡准备结束 =====
+
+for (let i = 0; i < loopCount; i++) {
+    const delayRange = settings.replyDelayMax - settings.replyDelayMin;
+    delay += settings.replyDelayMin + Math.random() * delayRange;
+    setTimeout(() => {
                     try {
-                    const replyPool = replyPoolOnce;
-                    // 被屏蔽或无效项直接换下一个，尽量保证每次都产出可用回复
-                    let replyText = '';
-                    for (let t = 0; t < 6; t++) {
-                        const picked = replyPool[Math.floor(Math.random() * replyPool.length)];
-                        if (picked && String(picked).trim()) {
-                            replyText = String(picked).trim();
-                            break;
-                        }
-                    }
-                    if (!replyText && i === replyCount - 1) {
+                    setTimeout(() => {
+    try {
+    const replyPool = replyPoolOnce;
+    // 被屏蔽或无效项直接换下一个，尽量保证每次都产出可用回复
+    let replyText = '';
+
+    // ===== 🆕 拼字卡：使用预拼好的文本 =====
+    if (puzzleCombinedText && i === 0) {
+        // 拼字卡模式：直接使用预拼好的文本（只发这一条）
+        replyText = puzzleCombinedText;
+    } else {
+        // 非拼字卡模式：走原有随机抽取逻辑
+        for (let t = 0; t < 6; t++) {
+            const picked = replyPool[Math.floor(Math.random() * replyPool.length)];
+            if (picked && String(picked).trim()) {
+                replyText = String(picked).trim();
+                break;
+            }
+        }
+    }
+    // ===== 拼字卡结束 =====
+
+    if (!replyText && i === loopCount - 1) {
+        // ⚠️ 注意：这里把 replyCount 改成了 loopCount
                         (function(){try{if(window._typingIndicatorAutoHideTimer){clearTimeout(window._typingIndicatorAutoHideTimer);window._typingIndicatorAutoHideTimer=null;}}catch(e){}var _tiW=document.getElementById('typing-indicator-wrapper');if(_tiW){var _tiInner=_tiW.querySelector('.typing-indicator');if(_tiInner){_tiInner.classList.add('hiding');setTimeout(function(){_tiW.style.display='none';if(_tiInner)_tiInner.classList.remove('hiding');},240);}else{_tiW.style.display='none';}}})();
                         return;
                     }
@@ -2001,7 +2049,7 @@ if (typeof window.trySystemRedPacket === 'function') {
                         }, 300 + Math.random() * 400);
                     }
 
-                    if (i === replyCount - 1) {
+                    if (i === loopCount - 1) {
                         (function() {
                             try {
                                 if (window._typingIndicatorAutoHideTimer) {
