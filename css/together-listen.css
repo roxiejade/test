@@ -551,7 +551,11 @@
     width: 56px;
     height: 56px;
     border-radius: 50%;
-    background: radial-gradient(circle at 35% 30%, rgba(180, 220, 255, 0.25), rgba(120, 180, 255, 0.08) 60%, rgba(80, 100, 200, 0.02) 100%);
+    /* ⬇️ 修改：先铺一层深色底色 ⬇️ */
+    background: 
+        radial-gradient(circle at 35% 30%, rgba(180, 220, 255, 0.25), rgba(120, 180, 255, 0.08) 60%, rgba(80, 100, 200, 0.02) 100%),
+        rgba(0, 0, 0, 0.65);
+    /* ⬆️ 修改结束 ⬆️ */
     box-shadow: 0 0 30px rgba(100, 180, 255, 0.15), 0 0 60px rgba(150, 200, 255, 0.05), inset 0 0 30px rgba(200, 230, 255, 0.05);
     animation: breatheGlow 4s ease-in-out infinite;
     border: 1.5px solid rgba(200, 230, 255, 0.25);
