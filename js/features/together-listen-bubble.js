@@ -981,6 +981,13 @@ if (FIXED_SHOW_GLOW) {
         if (ecgCanvas && ecgCtx) {
             drawBubbleWave(ecgCanvas, ecgProgress);
         }
+
+// <<< 新增：绘制粒子 >>>
+        if (particleCanvas && particleCtx && particles.length > 0) {
+            drawParticles(performance.now());
+        }
+        // <<< 新增结束 >>>
+        
         if (ballCanvas && ballCtx && ballEl && ballEl.classList.contains('active')) {
             drawBallWave(ballCanvas, ecgProgress);
         }
@@ -1096,6 +1103,9 @@ if (FIXED_SHOW_GLOW) {
         var myAvatar = getMyAvatarSrc() || '';
 
         bubbleEl.innerHTML = `
+        <!-- <<< 新增：粒子 Canvas（覆盖整个弹窗，最底层） >>> -->
+            <canvas id="tl-particle-canvas" style="position:absolute;top:0;left:0;width:100%;height:100%;display:block;pointer-events:none;z-index:0;"></canvas>
+            <!-- <<< 新增结束 >>> -->
             <div class="tl-bubble-toolbar" style="display:flex;justify-content:space-between;align-items:center;width:100%;padding:0 2px;margin-bottom:4px;flex-shrink:0;">
                 <span style="display:flex;align-items:center;">
                     <button class="tl-tool-btn" id="tl-upload-btn" title="上传背景图片" style="color:rgba(255,255,255,0.5);font-size:12px;padding:2px 4px;background:none;border:none;cursor:pointer;"><i class="fas fa-image"></i></button>
@@ -1139,6 +1149,13 @@ if (FIXED_SHOW_GLOW) {
             ecgCtx = canvas.getContext('2d');
             setupEcgCanvas(canvas);
         }
+
+        // <<< 新增：初始化粒子 Canvas >>>
+        var particleCanvasEl = bubbleEl.querySelector('#tl-particle-canvas');
+        if (particleCanvasEl) {
+            initParticles(particleCanvasEl);
+        }
+        // <<< 新增结束 >>>
 
         // 绑定气泡事件
         bindBubbleEvents();
@@ -1271,9 +1288,9 @@ if (FIXED_SHOW_GLOW) {
             bubbleEl.style.backgroundImage = '';
             bubbleEl.style.backgroundSize = '';
             bubbleEl.style.backgroundPosition = '';
-            bubbleEl.style.backgroundColor = 'rgba(0, 0, 0, 0.55)';
-            bubbleEl.style.backdropFilter = 'blur(24px) saturate(1.2)';
-            bubbleEl.style.webkitBackdropFilter = 'blur(24px) saturate(1.2)';
+            bubbleEl.style.backgroundColor = 'rgba(0, 0, 0, 0.85)';  // ⬅️ 改成更黑的背景
+            bubbleEl.style.backdropFilter = 'blur(12px)';  // ⬅️ 降低模糊让粒子更清晰
+            bubbleEl.style.webkitBackdropFilter = 'blur(12px)';
         }
     }
 
@@ -1481,6 +1498,104 @@ if (FIXED_SHOW_GLOW) {
         console.log('[TLBubble] 标准弹窗已启动（丘比特之箭版）');
     }
 
+// ============================================================
+    // 粒子系统（覆盖整个弹窗）
+    // ============================================================
+
+    var particleCanvas = null;
+    var particleCtx = null;
+    var particles = [];
+    var particleAnimId = null;
+
+    // 固定粒子参数（密度98，亮度36，大小1，浮动13，速度37）
+    var PARTICLE_CONFIG = {
+        density: 98,
+        brightness: 36,
+        size: 1,
+        amplitude: 13,
+        speed: 37,
+    };
+
+    function initParticles(canvas) {
+        if (!canvas) return;
+        particleCanvas = canvas;
+        particleCtx = canvas.getContext('2d');
+        
+        var bubble = document.getElementById('tl-bubble');
+        if (!bubble) return;
+        
+        var rect = bubble.getBoundingClientRect();
+        var w = rect.width || 150;
+        var h = rect.height || 200;
+        var dpr = window.devicePixelRatio || 1;
+
+        particleCanvas.width = w * dpr;
+        particleCanvas.height = h * dpr;
+        particleCanvas.style.width = w + 'px';
+        particleCanvas.style.height = h + 'px';
+        particleCtx.scale(dpr, dpr);
+
+        particles = [];
+        var count = PARTICLE_CONFIG.density;
+        var sizeFactor = PARTICLE_CONFIG.size / 2;
+        var ampFactor = PARTICLE_CONFIG.amplitude;
+        var brightnessFactor = PARTICLE_CONFIG.brightness / 10;
+
+        for (var i = 0; i < count; i++) {
+            var baseOpacity = (Math.random() * 0.06 + 0.01) * brightnessFactor;
+            particles.push({
+                x: Math.random() * w,
+                y: Math.random() * h,
+                radius: (Math.random() * 1.2 + 0.4) * sizeFactor,
+                phase: Math.random() * Math.PI * 2,
+                phaseY: Math.random() * Math.PI * 2,
+                ampX: (0.5 + Math.random() * 0.5) * ampFactor,
+                ampY: (0.5 + Math.random() * 0.5) * ampFactor,
+                opacity: Math.min(baseOpacity, 0.25),
+                speedOff: 0.6 + Math.random() * 0.4,
+            });
+        }
+    }
+
+    function drawParticles(time) {
+        if (!particleCanvas || !particleCtx) return;
+        
+        var w = parseFloat(particleCanvas.style.width) || 150;
+        var h = parseFloat(particleCanvas.style.height) || 200;
+        particleCtx.clearRect(0, 0, w, h);
+
+        var speedFactor = PARTICLE_CONFIG.speed / 8;
+        var t = time / 6000 * speedFactor;
+
+        for (var i = 0; i < particles.length; i++) {
+            var p = particles[i];
+            var dx = Math.sin(t + p.phase) * p.ampX * 0.5;
+            var dy = Math.cos(t * 0.7 + p.phaseY) * p.ampY * 0.5;
+            var px = p.x + dx;
+            var py = p.y + dy;
+
+            if (px < -10) px = w + 10;
+            if (px > w + 10) px = -10;
+            if (py < -10) py = h + 10;
+            if (py > h + 10) py = -10;
+
+            particleCtx.beginPath();
+            particleCtx.arc(px, py, p.radius, 0, Math.PI * 2);
+            particleCtx.fillStyle = 'rgba(255, 255, 255, ' + p.opacity + ')';
+            particleCtx.fill();
+
+            if (p.radius > 0.5 && p.opacity > 0.02) {
+                particleCtx.shadowColor = 'rgba(200, 220, 255, ' + (p.opacity * 0.3) + ')';
+                particleCtx.shadowBlur = 6;
+                particleCtx.beginPath();
+                particleCtx.arc(px, py, p.radius * 2.5, 0, Math.PI * 2);
+                particleCtx.fillStyle = 'rgba(200, 220, 255, ' + (p.opacity * 0.15) + ')';
+                particleCtx.fill();
+                particleCtx.shadowBlur = 0;
+            }
+        }
+    }
+    
     // ============================================================
     // 对外接口
     // ============================================================
