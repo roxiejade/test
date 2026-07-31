@@ -490,83 +490,90 @@
     var baselineY = (startY + endY) / 2;
 
     // ============================================================
-    // 固定参数（从调试面板截图提取）
-    // ============================================================
-    var FIXED_LEFT_BASE = 5;
-    var FIXED_RIGHT_BASE = 44;
-    var FIXED_STRETCH = 60;
-    var FIXED_SCALE_Y = 0.69;
-    var FIXED_OFF_X = -7;
-    var FIXED_OFF_Y = 3;
-    var FIXED_HEART_SIZE = 0.82;
-    var FIXED_HEART_OFF_X = -10;
-    var FIXED_HEART_OFF_Y = -6;
-    var FIXED_ARROW_SIZE = 1.0;
-    var FIXED_ARROW_OFF_X = 1;
-    var FIXED_ARROW_OFF_Y = -5;
-    var FIXED_SHOW_ARROW = true;
-    var FIXED_SHOW_GLOW = true;
-    var CYCLE_DURATION = 3000; // 3秒
+// 固定参数（从调试面板截图提取）
+// ============================================================
+var FIXED_LEFT_BASE = 5;
+var FIXED_RIGHT_BASE = 77;
+var FIXED_STRETCH = 105;
+var FIXED_SCALE_Y = 0.51;
+var FIXED_OFF_X = -6;
+var FIXED_OFF_Y = 3;
+var FIXED_HEART_SIZE = 0.82;
+var FIXED_HEART_OFF_X = -10;
+var FIXED_HEART_OFF_Y = -4;
+var FIXED_ARROW_SIZE = 1.0;
+var FIXED_ARROW_OFF_X = 0;
+var FIXED_ARROW_OFF_Y = -3;
+var FIXED_SHOW_ARROW = true;
+var FIXED_SHOW_GLOW = true;
+var CYCLE_DURATION = 3000; // 3秒
 
     // ============================================================
-    // 构建波形数据（1个周期）- 与调试版一致
-    // ============================================================
-    function buildOneCycle(leftBaselinePx, rightBaselinePx, stretch, drawW) {
-        var waveWidth = 0.72 * (stretch / 100);
-        var leftBase = leftBaselinePx / drawW;
-        var rightBase = rightBaselinePx / drawW;
+// 构建波形数据（1个周期）
+// ============================================================
+function buildOneCycle(leftBase, rightBase, stretch) {
+    var dataStart = points[0];
+    var dataEnd = points[points.length - 1];
+    var dataWidth = dataEnd.x - dataStart.x;
+    
+    // 波形宽度 = 原始宽度 * 拉伸系数
+    var waveWidth = dataWidth * (stretch / 100);
+    
+    // 把 leftBase 和 rightBase 当作像素值，映射到归一化空间
+    var totalWidth = leftBase + waveWidth + rightBase;
+    
+    var leftBaseNorm = leftBase / totalWidth;
+    var waveWidthNorm = waveWidth / totalWidth;
+    var rightBaseNorm = rightBase / totalWidth;
 
-        var result = [];
+    var result = [];
 
-        // 左侧基线
-        for (var i = 0; i < 10; i++) {
-            var t = i / 9;
-            result.push({
-                x: t * leftBase,
-                y: baselineY,
-                isBaseline: true,
-                isWave: false
-            });
-        }
-
-        // 波形
-        var waveStartX = leftBase;
-        var waveEndX = leftBase + waveWidth;
-        var dataStart = 0;
-        var dataEnd = points.length - 1;
-        for (var i = 0; i < points.length; i++) {
-            var px = waveStartX + (points[i].x - points[dataStart].x) / (points[dataEnd].x - points[dataStart].x) * waveWidth;
-            result.push({
-                x: px,
-                y: points[i].y,
-                isBaseline: false,
-                isWave: true
-            });
-        }
-
-        // 右侧基线
-        var rightStartX = waveEndX;
-        var rightEndX = waveEndX + rightBase;
-        for (var i = 0; i < 10; i++) {
-            var t = i / 9;
-            result.push({
-                x: rightStartX + t * (rightEndX - rightStartX),
-                y: baselineY,
-                isBaseline: true,
-                isWave: false
-            });
-        }
-
-        // 归一化到 [0, 1]
-        var xMin = result[0].x;
-        var xMax = result[result.length - 1].x;
-        var xRange = xMax - xMin || 1;
-        for (var i = 0; i < result.length; i++) {
-            result[i].normX = (result[i].x - xMin) / xRange;
-        }
-
-        return result;
+    // 左侧基线
+    for (var i = 0; i < 10; i++) {
+        var t = i / 9;
+        result.push({
+            x: t * leftBaseNorm,
+            y: baselineY,
+            isBaseline: true,
+            isWave: false
+        });
     }
+
+    // 波形
+    var waveStartX = leftBaseNorm;
+    for (var i = 0; i < points.length; i++) {
+        var normX = (points[i].x - dataStart.x) / dataWidth;
+        var px = waveStartX + normX * waveWidthNorm;
+        result.push({
+            x: px,
+            y: points[i].y,
+            isBaseline: false,
+            isWave: true
+        });
+    }
+
+    // 右侧基线
+    var waveEndX = leftBaseNorm + waveWidthNorm;
+    for (var i = 0; i < 10; i++) {
+        var t = i / 9;
+        result.push({
+            x: waveEndX + t * rightBaseNorm,
+            y: baselineY,
+            isBaseline: true,
+            isWave: false
+        });
+    }
+
+    // 归一化到 [0, 1]
+    var xMin = result[0].x;
+    var xMax = result[result.length - 1].x;
+    var xRange = xMax - xMin || 1;
+    for (var i = 0; i < result.length; i++) {
+        result[i].normX = (result[i].x - xMin) / xRange;
+    }
+
+    return result;
+}
 
     // ============================================================
     // 绘制爱心
@@ -719,151 +726,115 @@
     }
 
     // ============================================================
-    // 绘制标准弹窗波形（丘比特之箭版）
-    // ============================================================
-    function drawBubbleWave(canvas, progress) {
-        var rect = canvas.getBoundingClientRect();
-        var dpr = window.devicePixelRatio || 1;
-        var w = rect.width || canvas.width / dpr;
-        var h = rect.height || canvas.height / dpr;
-        if (canvas.width !== w * dpr) {
-            canvas.width = w * dpr;
-            canvas.height = h * dpr;
-        }
-        var ctx = canvas.getContext('2d');
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
-        ctx.scale(dpr, dpr);
+// 绘制标准弹窗波形（丘比特之箭版）
+// ============================================================
+function drawBubbleWave(canvas, progress) {
+    var rect = canvas.getBoundingClientRect();
+    var dpr = window.devicePixelRatio || 1;
+    var w = rect.width || canvas.width / dpr;
+    var h = rect.height || canvas.height / dpr;
+    if (canvas.width !== w * dpr) {
+        canvas.width = w * dpr;
+        canvas.height = h * dpr;
+    }
+    var ctx = canvas.getContext('2d');
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.scale(dpr, dpr);
 
-        var pad = 4;
-        var drawW = w - pad * 2;
-        var drawH = h - pad * 2;
-        var midY = pad + drawH / 2;
+    var pad = 4;
+    var drawW = w - pad * 2;
+    var drawH = h - pad * 2;
+    var midY = pad + drawH / 2;
 
-        var amp = (drawH / 2) * Math.max(0.05, FIXED_SCALE_Y) * 0.85;
+    var amp = (drawH / 2) * Math.max(0.05, FIXED_SCALE_Y) * 0.85;
 
-        var data = buildOneCycle(FIXED_LEFT_BASE, FIXED_RIGHT_BASE, FIXED_STRETCH, drawW);
+    var data = buildOneCycle(FIXED_LEFT_BASE, FIXED_RIGHT_BASE, FIXED_STRETCH);
 
-        ctx.clearRect(0, 0, w, h);
+    ctx.clearRect(0, 0, w, h);
 
-        // 灰色轮廓
-        ctx.lineWidth = 1.8;
-        ctx.strokeStyle = 'rgba(180, 180, 190, 0.35)';
-        ctx.shadowColor = 'transparent';
-        ctx.shadowBlur = 0;
-        ctx.lineJoin = 'round';
-        ctx.lineCap = 'round';
-        ctx.beginPath();
+    // ---- 灰色轮廓 ----
+    ctx.lineWidth = 1.8;
+    ctx.strokeStyle = 'rgba(180, 180, 190, 0.35)';
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    for (var i = 0; i < data.length; i++) {
+        var px = pad + data[i].normX * drawW + FIXED_OFF_X;
+        var py = midY + (data[i].y / scaleBase) * amp + FIXED_OFF_Y;
+        if (i === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+
+    // ---- 波形发光段 ----
+    if (FIXED_SHOW_GLOW) {
+        var halfWidth = 0.06;
+        var startX = progress - halfWidth;
+        var endX = progress + halfWidth;
+        var glowPoints = [];
         for (var i = 0; i < data.length; i++) {
-            var px = pad + data[i].normX * drawW + FIXED_OFF_X;
-            var py = midY + (data[i].y / scaleBase) * amp + FIXED_OFF_Y;
-            if (i === 0) ctx.moveTo(px, py);
-            else ctx.lineTo(px, py);
-        }
-        ctx.stroke();
-
-        // 波形发光段（0.00 - 0.70）
-        if (FIXED_SHOW_GLOW) {
-            var waveGlowProgress = Math.max(0, Math.min(1, progress / 0.70));
-            if (waveGlowProgress > 0) {
-                var glowPoints = [];
-                var targetIdx = Math.floor(waveGlowProgress * data.length);
-                for (var i = 0; i < data.length && i < targetIdx; i++) {
-                    if (data[i].isWave) {
-                        glowPoints.push(data[i]);
-                    }
-                }
-                if (glowPoints.length > 1) {
-                    ctx.shadowColor = 'rgba(120, 200, 255, 0.5)';
-                    ctx.shadowBlur = 18;
-                    ctx.lineWidth = 3.0;
-                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.95)';
-                    ctx.beginPath();
-                    for (var i = 0; i < glowPoints.length; i++) {
-                        var gx = pad + glowPoints[i].normX * drawW + FIXED_OFF_X;
-                        var gy = midY + (glowPoints[i].y / scaleBase) * amp + FIXED_OFF_Y;
-                        if (i === 0) ctx.moveTo(gx, gy);
-                        else ctx.lineTo(gx, gy);
-                    }
-                    ctx.stroke();
-                    ctx.shadowColor = 'rgba(100, 180, 255, 0.3)';
-                    ctx.shadowBlur = 30;
-                    ctx.lineWidth = 8;
-                    ctx.strokeStyle = 'rgba(150, 220, 255, 0.2)';
-                    ctx.beginPath();
-                    for (var i = 0; i < glowPoints.length; i++) {
-                        var hx = pad + glowPoints[i].normX * drawW + FIXED_OFF_X;
-                        var hy = midY + (glowPoints[i].y / scaleBase) * amp + FIXED_OFF_Y;
-                        if (i === 0) ctx.moveTo(hx, hy);
-                        else ctx.lineTo(hx, hy);
-                    }
-                    ctx.stroke();
-                    ctx.shadowColor = 'rgba(100, 180, 255, 0.12)';
-                    ctx.shadowBlur = 50;
-                    ctx.lineWidth = 16;
-                    ctx.strokeStyle = 'rgba(100, 180, 255, 0.08)';
-                    ctx.beginPath();
-                    for (var i = 0; i < glowPoints.length; i++) {
-                        var fx = pad + glowPoints[i].normX * drawW + FIXED_OFF_X;
-                        var fy = midY + (glowPoints[i].y / scaleBase) * amp + FIXED_OFF_Y;
-                        if (i === 0) ctx.moveTo(fx, fy);
-                        else ctx.lineTo(fx, fy);
-                    }
-                    ctx.stroke();
-                }
-            }
-            // progress >= 0.70 时波形全部点亮常亮
-            if (waveGlowProgress >= 1) {
-                var allWavePoints = [];
-                for (var i = 0; i < data.length; i++) {
-                    if (data[i].isWave) {
-                        allWavePoints.push(data[i]);
-                    }
-                }
-                if (allWavePoints.length > 1) {
-                    ctx.shadowColor = 'rgba(120, 200, 255, 0.5)';
-                    ctx.shadowBlur = 18;
-                    ctx.lineWidth = 3.0;
-                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.95)';
-                    ctx.beginPath();
-                    for (var i = 0; i < allWavePoints.length; i++) {
-                        var gx = pad + allWavePoints[i].normX * drawW + FIXED_OFF_X;
-                        var gy = midY + (allWavePoints[i].y / scaleBase) * amp + FIXED_OFF_Y;
-                        if (i === 0) ctx.moveTo(gx, gy);
-                        else ctx.lineTo(gx, gy);
-                    }
-                    ctx.stroke();
-                    ctx.shadowColor = 'rgba(100, 180, 255, 0.3)';
-                    ctx.shadowBlur = 30;
-                    ctx.lineWidth = 8;
-                    ctx.strokeStyle = 'rgba(150, 220, 255, 0.2)';
-                    ctx.beginPath();
-                    for (var i = 0; i < allWavePoints.length; i++) {
-                        var hx = pad + allWavePoints[i].normX * drawW + FIXED_OFF_X;
-                        var hy = midY + (allWavePoints[i].y / scaleBase) * amp + FIXED_OFF_Y;
-                        if (i === 0) ctx.moveTo(hx, hy);
-                        else ctx.lineTo(hx, hy);
-                    }
-                    ctx.stroke();
-                }
+            if (data[i].normX >= startX && data[i].normX <= endX && data[i].isWave) {
+                glowPoints.push(data[i]);
             }
         }
-
-        // 爱心（0.70 - 0.90）
-        var heartBaseX = pad + 0.78 * drawW + FIXED_OFF_X;
-        var heartBaseY = midY + FIXED_OFF_Y;
-        var heartCx = heartBaseX + FIXED_HEART_OFF_X;
-        var heartCy = heartBaseY + FIXED_HEART_OFF_Y;
-        var heartScale = FIXED_HEART_SIZE * 0.5;
-        drawHeart(ctx, heartCx, heartCy, heartScale * 22, progress, 0.70, 0.90);
-
-        // 箭矢（0.90 - 1.00）
-        if (FIXED_SHOW_ARROW) {
-            var arrowBaseX = heartBaseX + 16 + FIXED_ARROW_OFF_X;
-            var arrowBaseY = heartBaseY + FIXED_ARROW_OFF_Y;
-            var arrowScale = FIXED_ARROW_SIZE * 0.8;
-            drawArrow(ctx, arrowBaseX, arrowBaseY, arrowScale * 14, progress, 0.90, 1.00, FIXED_SHOW_GLOW);
+        if (glowPoints.length > 1) {
+            ctx.shadowColor = 'rgba(120, 200, 255, 0.5)';
+            ctx.shadowBlur = 18;
+            ctx.lineWidth = 3.0;
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.95)';
+            ctx.beginPath();
+            for (var i = 0; i < glowPoints.length; i++) {
+                var gx = pad + glowPoints[i].normX * drawW + FIXED_OFF_X;
+                var gy = midY + (glowPoints[i].y / scaleBase) * amp + FIXED_OFF_Y;
+                if (i === 0) ctx.moveTo(gx, gy);
+                else ctx.lineTo(gx, gy);
+            }
+            ctx.stroke();
+            ctx.shadowColor = 'rgba(100, 180, 255, 0.3)';
+            ctx.shadowBlur = 30;
+            ctx.lineWidth = 8;
+            ctx.strokeStyle = 'rgba(150, 220, 255, 0.2)';
+            ctx.beginPath();
+            for (var i = 0; i < glowPoints.length; i++) {
+                var hx = pad + glowPoints[i].normX * drawW + FIXED_OFF_X;
+                var hy = midY + (glowPoints[i].y / scaleBase) * amp + FIXED_OFF_Y;
+                if (i === 0) ctx.moveTo(hx, hy);
+                else ctx.lineTo(hx, hy);
+            }
+            ctx.stroke();
+            ctx.shadowColor = 'rgba(100, 180, 255, 0.12)';
+            ctx.shadowBlur = 50;
+            ctx.lineWidth = 16;
+            ctx.strokeStyle = 'rgba(100, 180, 255, 0.08)';
+            ctx.beginPath();
+            for (var i = 0; i < glowPoints.length; i++) {
+                var fx = pad + glowPoints[i].normX * drawW + FIXED_OFF_X;
+                var fy = midY + (glowPoints[i].y / scaleBase) * amp + FIXED_OFF_Y;
+                if (i === 0) ctx.moveTo(fx, fy);
+                else ctx.lineTo(fx, fy);
+            }
+            ctx.stroke();
         }
     }
+
+    // ---- 爱心位置（0.70 - 0.90） ----
+    var heartBaseX = pad + 0.85 * drawW + FIXED_OFF_X;
+    var heartBaseY = midY + FIXED_OFF_Y;
+    var heartCx = heartBaseX + FIXED_HEART_OFF_X;
+    var heartCy = heartBaseY + FIXED_HEART_OFF_Y;
+    var heartScale = FIXED_HEART_SIZE * 0.5;
+    drawHeart(ctx, heartCx, heartCy, heartScale * 22, progress, 0.70, 0.90);
+
+    // ---- 箭矢位置（0.90 - 1.00） ----
+    if (FIXED_SHOW_ARROW) {
+        var arrowBaseX = heartBaseX + 20 + FIXED_ARROW_OFF_X;
+        var arrowBaseY = heartBaseY + FIXED_ARROW_OFF_Y;
+        var arrowScale = FIXED_ARROW_SIZE * 0.8;
+        drawArrow(ctx, arrowBaseX, arrowBaseY, arrowScale * 14, progress, 0.90, 1.00, FIXED_SHOW_GLOW);
+    }
+}
 
     // ============================================================
     // 绘制悬浮球波形
@@ -1140,9 +1111,11 @@
                 <div class="tl-cord" style="position:absolute;left:20px;top:calc(50% + 3px);width:2px;height:40px;background:linear-gradient(to bottom,rgba(180,180,190,0.6) 0%,rgba(180,180,190,0.1) 70%,transparent 100%);border-radius:2px;transform:rotate(6deg);transform-origin:top center;pointer-events:none;z-index:10;box-sizing:border-box;"></div>
                 <div class="tl-cord" style="position:absolute;right:20px;top:calc(50% + 3px);width:2px;height:40px;background:linear-gradient(to bottom,rgba(180,180,190,0.6) 0%,rgba(180,180,190,0.1) 70%,transparent 100%);border-radius:2px;transform:rotate(-6deg);transform-origin:top center;pointer-events:none;z-index:10;box-sizing:border-box;"></div>
             </div>
-            <div class="tl-wave-container">
-                <canvas id="tl-ecg-canvas" style="width:100%;height:100%;display:block;"></canvas>
-            </div>
+            <div class="tl-wave-wrapper" style="width:100%;flex-shrink:1;margin:-10px 0 -10px 0;position:relative;z-index:1;overflow:visible;">
+    <div class="tl-wave-container" style="width:100%;flex:1;border-radius:4px;overflow:visible;position:relative;background:transparent !important;border:none;height:56px;">
+        <canvas id="tl-ecg-canvas" style="width:100%;height:100%;display:block;"></canvas>
+    </div>
+</div>
             <div class="tl-timer" id="tl-timer-display" style="text-align:center;font-size:18px;font-weight:500;font-variant-numeric:tabular-nums;letter-spacing:2px;color:rgba(255,255,255,0.9);text-shadow:0 0 20px rgba(0,0,0,0.6),0 1px 4px rgba(0,0,0,0.8);font-family:'SF Mono','Menlo','Consolas',monospace;padding:2px 0 0;flex-shrink:0;z-index:10;background:transparent !important;">00:00:00</div>
             <div class="tl-settings-panel" id="tl-settings-panel" style="position:absolute;top:32px;right:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-radius:12px;padding:12px 14px;border:1px solid rgba(255,255,255,0.08);box-shadow:0 8px 24px rgba(0,0,0,0.4);display:none;flex-direction:column;gap:6px;min-width:140px;z-index:10;">
                 <button class="tl-settings-btn" id="tl-upload-bg-btn" style="background:none;border:none;color:rgba(255,255,255,0.7);padding:7px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:inherit;text-align:left;transition:all 0.15s;display:flex;align-items:center;gap:8px;"><i class="fas fa-upload"></i> 上传图片</button>
