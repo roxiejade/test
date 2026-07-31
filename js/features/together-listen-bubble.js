@@ -511,65 +511,53 @@ var CYCLE_DURATION = 3000; // 3秒
     // ============================================================
 // 构建波形数据（1个周期）
 // ============================================================
-function buildOneCycle(leftBase, rightBase, stretch) {
-    var dataStart = points[0];
-    var dataEnd = points[points.length - 1];
-    var dataWidth = dataEnd.x - dataStart.x;
-    
-    // 波形宽度 = 原始宽度 * 拉伸系数
-    var waveWidth = dataWidth * (stretch / 100);
-    
-    // 把 leftBase 和 rightBase 当作像素值，映射到归一化空间
-    var totalWidth = leftBase + waveWidth + rightBase;
-    
-    var leftBaseNorm = leftBase / totalWidth;
-    var waveWidthNorm = waveWidth / totalWidth;
-    var rightBaseNorm = rightBase / totalWidth;
+function buildOneCycle(leftBaselinePx, rightBaselinePx, stretch, drawW) {
+    var waveWidth = 0.72;
+    var scaledWaveWidth = waveWidth * (stretch / 100);
+
+    var leftBase = leftBaselinePx / drawW;
+    var rightBase = rightBaselinePx / drawW;
 
     var result = [];
 
     // 左侧基线
+    var baseStartX = 0;
+    var baseEndX = leftBase;
     for (var i = 0; i < 10; i++) {
         var t = i / 9;
-        result.push({
-            x: t * leftBaseNorm,
-            y: baselineY,
-            isBaseline: true,
-            isWave: false
-        });
+        result.push({ x: baseStartX + t * (baseEndX - baseStartX), y: baselineY, isBaseline: true });
     }
 
-    // 波形
-    var waveStartX = leftBaseNorm;
+    // 波形（1个周期）
+    var waveStartX = leftBase;
+    var waveEndX = leftBase + scaledWaveWidth;
+    var dataStart = 0;
+    var dataEnd = points.length - 1;
     for (var i = 0; i < points.length; i++) {
-        var normX = (points[i].x - dataStart.x) / dataWidth;
-        var px = waveStartX + normX * waveWidthNorm;
-        result.push({
-            x: px,
-            y: points[i].y,
-            isBaseline: false,
-            isWave: true
-        });
+        var px = waveStartX + (points[i].x - points[dataStart].x) / (points[dataEnd].x - points[dataStart].x) *
+            (waveEndX - waveStartX);
+        result.push({ x: px, y: points[i].y, isBaseline: false });
     }
 
     // 右侧基线
-    var waveEndX = leftBaseNorm + waveWidthNorm;
+    var rightStartX = waveEndX;
+    var rightEndX = waveEndX + rightBaselinePx / 200;
     for (var i = 0; i < 10; i++) {
         var t = i / 9;
-        result.push({
-            x: waveEndX + t * rightBaseNorm,
-            y: baselineY,
-            isBaseline: true,
-            isWave: false
-        });
+        result.push({ x: rightStartX + t * (rightEndX - rightStartX), y: baselineY, isBaseline: true });
     }
 
     // 归一化到 [0, 1]
     var xMin = result[0].x;
     var xMax = result[result.length - 1].x;
-    var xRange = xMax - xMin || 1;
+    var xRange = xMax - xMin;
     for (var i = 0; i < result.length; i++) {
         result[i].normX = (result[i].x - xMin) / xRange;
+        if (!result[i].isBaseline) {
+            result[i].isWave = true;
+        } else {
+            result[i].isWave = false;
+        }
     }
 
     return result;
@@ -748,7 +736,7 @@ function drawBubbleWave(canvas, progress) {
 
     var amp = (drawH / 2) * Math.max(0.05, FIXED_SCALE_Y) * 0.85;
 
-    var data = buildOneCycle(FIXED_LEFT_BASE, FIXED_RIGHT_BASE, FIXED_STRETCH);
+    var data = buildOneCycle(FIXED_LEFT_BASE, FIXED_RIGHT_BASE, FIXED_STRETCH, drawW);
 
     ctx.clearRect(0, 0, w, h);
 
