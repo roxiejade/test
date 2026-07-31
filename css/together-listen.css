@@ -481,6 +481,7 @@
     flex-shrink: 0;
     z-index: 10;
     background: transparent !important;
+   margin-top: 10px;
 }
 
 /* ── 角落气泡：设置面板 ────────────────────────────────────── */
