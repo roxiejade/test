@@ -1049,10 +1049,23 @@ if (FIXED_SHOW_GLOW) {
             ballEl.style.display = 'block';
             ballEl.classList.add('active');
             var canvas = ballEl.querySelector('#tl-ball-canvas');
-            if (canvas) setupBallCanvas(canvas);
+        if (canvas) {
+            // ⬇️ 强制重新初始化，确保尺寸正确 ⬇️
+            var container = canvas.parentElement;
+            var size = container.clientWidth || 56;
+            var dpr = window.devicePixelRatio || 1;
+            canvas.width = size * dpr;
+            canvas.height = size * dpr;
+            canvas.style.width = size + 'px';
+            canvas.style.height = size + 'px';
+            var ctx = canvas.getContext('2d');
+            ctx.scale(dpr, dpr);
+            canvas._size = size;
+            // ⬆️ 强制重新初始化结束 ⬆️
         }
-        tlState.isMinimized = true;
     }
+    tlState.isMinimized = true;
+}
 
     function hideBall() {
         if (ballEl) {
