@@ -560,6 +560,24 @@
     touch-action: none;
     user-select: none;
     -webkit-user-select: none;
+
+    /* ⭐ C. 边缘流光：旋转的彩色光晕 */
+    &::after {
+        content: '';
+        position: absolute;
+        inset: -3px;
+        border-radius: 50%;
+        background: conic-gradient(from 0deg at 50% 50%,
+                rgba(200, 230, 255, 0.0),
+                rgba(200, 230, 255, 0.08),
+                rgba(180, 200, 255, 0.0),
+                rgba(200, 230, 255, 0.08),
+                rgba(200, 230, 255, 0.0));
+        animation: edgeGlow 6s linear infinite;
+        pointer-events: none;
+        z-index: 0;
+        filter: blur(4px);
+    }
 }
 .tl-float-ball.active {
     display: block;
@@ -588,6 +606,35 @@
         border-color: rgba(200, 230, 255, 0.35);
     }
 }
+
+/* <<< 新增：边缘流光旋转动画 >>> */
+@keyframes edgeGlow {
+    0% {
+        transform: rotate(0deg) scale(1);
+        opacity: 0.4;
+    }
+    50% {
+        opacity: 0.8;
+    }
+    100% {
+        transform: rotate(360deg) scale(1);
+        opacity: 0.4;
+    }
+}
+/* <<< 新增结束 >>> */
+
+/* <<< 新增：计时器呼吸动画 >>> */
+@keyframes timerBreath {
+    0%, 100% {
+        opacity: 0.9;
+        transform: translate(-50%, -50%) scale(1);
+    }
+    50% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.04);
+    }
+}
+/* <<< 新增结束 >>> */
 .tl-float-ball canvas {
     width: 100%;
     height: 100%;
