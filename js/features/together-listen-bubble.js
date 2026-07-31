@@ -757,16 +757,21 @@ function drawBubbleWave(canvas, progress) {
     ctx.stroke();
 
     // ---- 波形发光段 ----
-    if (FIXED_SHOW_GLOW) {
-        var halfWidth = 0.06;
-        var startX = progress - halfWidth;
-        var endX = progress + halfWidth;
-        var glowPoints = [];
-        for (var i = 0; i < data.length; i++) {
-            if (data[i].normX >= startX && data[i].normX <= endX && data[i].isWave) {
-                glowPoints.push(data[i]);
-            }
+if (FIXED_SHOW_GLOW) {
+    var halfWidth = 0.06;
+    var startX = progress - halfWidth;
+    var endX = progress + halfWidth;
+    var glowPoints = [];
+    for (var i = 0; i < data.length; i++) {
+        // ⬅️ 只排除左侧基线（左侧基线的 x 范围是 0 ~ leftBase，且 isBaseline === true）
+        // 判断是否为左侧基线：左侧基线的 x 在 0 ~ FIXED_LEFT_BASE/drawW 范围内
+        var leftBaseNorm = FIXED_LEFT_BASE / drawW;
+        var isLeftBaseline = data[i].isBaseline && data[i].normX < leftBaseNorm + 0.01;
+        
+        if (data[i].normX >= startX && data[i].normX <= endX && !isLeftBaseline) {
+            glowPoints.push(data[i]);
         }
+    }
         if (glowPoints.length > 1) {
             ctx.shadowColor = 'rgba(120, 200, 255, 0.5)';
             ctx.shadowBlur = 18;
