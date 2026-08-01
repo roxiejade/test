@@ -858,7 +858,7 @@ function drawFourPointStar(ctx, cx, cy, outerRadius) {
 }
 
     // ============================================================
-// 绘制悬浮球波形（完整版：彩虹波形 + 四芒星进度 + 三高光四芒星）
+// 绘制悬浮球波形（雾蓝底色 + 纯白发光条 + 三高光四芒星）
 // ============================================================
 function drawBallWave(canvas, progress) {
     var rect = canvas.getBoundingClientRect();
@@ -882,30 +882,33 @@ function drawBallWave(canvas, progress) {
     var midY = pad + drawH / 2;
     var amp = (drawH / 2) * 0.75;
 
-    // ---- 彩虹配色（柔光彩虹 · 薄荷绿版） ----
-    var RAINBOW_MINT = {
-        colors: [
-            { pos: 0.00, r: 255, g: 180, b: 180 },
-            { pos: 0.10, r: 255, g: 200, b: 160 },
-            { pos: 0.20, r: 255, g: 215, b: 150 },
-            { pos: 0.30, r: 255, g: 230, b: 160 },
-            { pos: 0.40, r: 245, g: 240, b: 170 },
-            { pos: 0.48, r: 170, g: 225, b: 190 },
-            { pos: 0.52, r: 150, g: 215, b: 185 },
-            { pos: 0.56, r: 150, g: 215, b: 200 },
-            { pos: 0.65, r: 150, g: 205, b: 210 },
-            { pos: 0.78, r: 160, g: 190, b: 220 },
-            { pos: 0.89, r: 180, g: 185, b: 230 },
-            { pos: 1.00, r: 210, g: 180, b: 225 },
-        ],
-        gray: 'rgba(180, 180, 190, 0.25)',
-    };
+    // ===== 雾蓝底色（外深内浅） =====
+    // 固定参数：RGB(30, 80, 120) · 暗度16 · 柔化80 · 边缘透0
+    var r = 30,
+        g = 80,
+        b = 120;
+    var darkness = 0.16;
+    var feather = 0.80;
+    var edgeOpacity = 0;
 
-    var scheme = RAINBOW_MINT;
+    var centerX = w / 2;
+    var centerY = h / 2;
+    var radius = Math.min(w, h) / 2;
 
-    // ---- 第一步：灰色轮廓 ----
+    // 外深内浅：边缘深，中心浅
+    var grad = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
+    grad.addColorStop(0, 'rgba(' + r + ',' + g + ',' + b + ',' + edgeOpacity + ')');
+    grad.addColorStop(feather, 'rgba(' + r + ',' + g + ',' + b + ',' + (darkness * 0.3) + ')');
+    grad.addColorStop(1, 'rgba(' + r + ',' + g + ',' + b + ',' + darkness + ')');
+
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+    ctx.fill();
+
+    // ===== 灰色轮廓 =====
     ctx.lineWidth = 1.0;
-    ctx.strokeStyle = scheme.gray;
+    ctx.strokeStyle = 'rgba(180, 180, 190, 0.25)';
     ctx.shadowColor = 'transparent';
     ctx.shadowBlur = 0;
     ctx.lineJoin = 'round';
@@ -920,75 +923,64 @@ function drawBallWave(canvas, progress) {
     }
     ctx.stroke();
 
-    // ---- 第二步：已扫过的彩色波形 ----
-    var coloredPoints = [];
+    // ===== 发光段（纯白色 + 蓝色光晕，与原版一致） =====
+    var halfWidth = 0.10;
+    var startX = progress - halfWidth;
+    var endX = progress + halfWidth;
+
+    var glowPoints = [];
     for (var j = 0; j < points.length; j++) {
-        if (points[j].x <= progress) {
-            coloredPoints.push(points[j]);
+        if (points[j].x >= startX && points[j].x <= endX) {
+            glowPoints.push(points[j]);
         }
     }
 
-    if (coloredPoints.length > 1) {
-        var fullGrad = ctx.createLinearGradient(
-            pad + 0 * drawW, 0,
-            pad + 1 * drawW, 0
-        );
-
-        for (var k = 0; k < scheme.colors.length; k++) {
-            var c = scheme.colors[k];
-            fullGrad.addColorStop(c.pos, 'rgb(' + c.r + ',' + c.g + ',' + c.b + ')');
-        }
-
-        // 主发光层
-        ctx.shadowColor = 'rgba(180, 200, 255, 0.25)';
-        ctx.shadowBlur = 8;
+    if (glowPoints.length > 1) {
+        // 主发光层（纯白色）
+        ctx.shadowColor = 'rgba(120, 200, 255, 0.4)';
+        ctx.shadowBlur = 10;
         ctx.lineWidth = 2.0;
-        ctx.strokeStyle = fullGrad;
-        ctx.lineJoin = 'round';
-        ctx.lineCap = 'round';
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+
         ctx.beginPath();
-        for (var m = 0; m < coloredPoints.length; m++) {
-            var gx = pad + coloredPoints[m].x * drawW;
-            var gy = midY + (coloredPoints[m].y / scaleBase) * amp;
-            if (m === 0) ctx.moveTo(gx, gy);
+        for (var k = 0; k < glowPoints.length; k++) {
+            var gx = pad + glowPoints[k].x * drawW;
+            var gy = midY + (glowPoints[k].y / scaleBase) * amp;
+            if (k === 0) ctx.moveTo(gx, gy);
             else ctx.lineTo(gx, gy);
         }
         ctx.stroke();
 
-        // 光晕层
-        ctx.shadowColor = 'rgba(180, 200, 255, 0.12)';
-        ctx.shadowBlur = 16;
-        ctx.lineWidth = 5;
-        ctx.globalAlpha = 0.3;
-        ctx.strokeStyle = fullGrad;
+        // 光晕层1（蓝色光晕）
+        ctx.shadowColor = 'rgba(100, 180, 255, 0.2)';
+        ctx.shadowBlur = 18;
+        ctx.lineWidth = 6;
+        ctx.strokeStyle = 'rgba(150, 220, 255, 0.12)';
         ctx.beginPath();
-        for (var m = 0; m < coloredPoints.length; m++) {
-            var hx = pad + coloredPoints[m].x * drawW;
-            var hy = midY + (coloredPoints[m].y / scaleBase) * amp;
+        for (var m = 0; m < glowPoints.length; m++) {
+            var hx = pad + glowPoints[m].x * drawW;
+            var hy = midY + (glowPoints[m].y / scaleBase) * amp;
             if (m === 0) ctx.moveTo(hx, hy);
             else ctx.lineTo(hx, hy);
         }
         ctx.stroke();
-        ctx.globalAlpha = 1.0;
 
         // 最外层柔光
-        ctx.shadowColor = 'rgba(180, 200, 255, 0.05)';
-        ctx.shadowBlur = 28;
-        ctx.lineWidth = 10;
-        ctx.globalAlpha = 0.12;
-        ctx.strokeStyle = fullGrad;
+        ctx.shadowColor = 'rgba(100, 180, 255, 0.06)';
+        ctx.shadowBlur = 30;
+        ctx.lineWidth = 12;
+        ctx.strokeStyle = 'rgba(100, 180, 255, 0.04)';
         ctx.beginPath();
-        for (var m = 0; m < coloredPoints.length; m++) {
-            var fx = pad + coloredPoints[m].x * drawW;
-            var fy = midY + (coloredPoints[m].y / scaleBase) * amp;
-            if (m === 0) ctx.moveTo(fx, fy);
+        for (var n = 0; n < glowPoints.length; n++) {
+            var fx = pad + glowPoints[n].x * drawW;
+            var fy = midY + (glowPoints[n].y / scaleBase) * amp;
+            if (n === 0) ctx.moveTo(fx, fy);
             else ctx.lineTo(fx, fy);
         }
         ctx.stroke();
-        ctx.globalAlpha = 1.0;
     }
 
-    // ---- 第三步：四芒星进度（缩小版，沿波形移动） ----
+    // ===== 进度四芒星（沿波形移动） =====
     var scanX = progress;
     var scanPx = pad + scanX * drawW;
     var scanY = midY;
@@ -1002,7 +994,6 @@ function drawBallWave(canvas, progress) {
     }
 
     var starSize = 2.5;
-
     ctx.shadowColor = 'rgba(255, 255, 255, 0.5)';
     ctx.shadowBlur = 8;
     ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
@@ -1016,18 +1007,18 @@ function drawBallWave(canvas, progress) {
     ctx.arc(scanPx, scanY, starSize * 0.25, 0, Math.PI * 2);
     ctx.fill();
 
-    // ---- 第四步：三高光四芒星（固定位置） ----
+    // ===== 三高光四芒星（固定位置） =====
     function drawHighlightStar(cx, cy, size, opacity) {
         opacity = opacity || 1;
 
         var glowSize = size * 4;
-        var grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, glowSize);
-        grad.addColorStop(0, 'rgba(255, 255, 255, ' + (0.2 * opacity) + ')');
-        grad.addColorStop(0.5, 'rgba(255, 255, 255, ' + (0.08 * opacity) + ')');
-        grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+        var grad2 = ctx.createRadialGradient(cx, cy, 0, cx, cy, glowSize);
+        grad2.addColorStop(0, 'rgba(255, 255, 255, ' + (0.2 * opacity) + ')');
+        grad2.addColorStop(0.5, 'rgba(255, 255, 255, ' + (0.08 * opacity) + ')');
+        grad2.addColorStop(1, 'rgba(255, 255, 255, 0)');
         ctx.shadowColor = 'transparent';
         ctx.shadowBlur = 0;
-        ctx.fillStyle = grad;
+        ctx.fillStyle = grad2;
         ctx.beginPath();
         ctx.arc(cx, cy, glowSize, 0, Math.PI * 2);
         ctx.fill();
@@ -1046,11 +1037,8 @@ function drawBallWave(canvas, progress) {
         ctx.fill();
     }
 
-    // 主高光（左上）
     drawHighlightStar(HIGHLIGHT_STARS.main.x, HIGHLIGHT_STARS.main.y, HIGHLIGHT_STARS.main.size, 1);
-    // 辅高光1（左下）
     drawHighlightStar(HIGHLIGHT_STARS.sub1.x, HIGHLIGHT_STARS.sub1.y, HIGHLIGHT_STARS.sub1.size, 0.7);
-    // 辅高光2（右上）
     drawHighlightStar(HIGHLIGHT_STARS.sub2.x, HIGHLIGHT_STARS.sub2.y, HIGHLIGHT_STARS.sub2.size, 0.6);
 
     ctx.shadowColor = 'transparent';
@@ -1313,7 +1301,7 @@ function drawBallWave(canvas, progress) {
         ballEl.id = 'tl-float-ball';
         ballEl.innerHTML = `
             <canvas id="tl-ball-canvas"></canvas>
-            <div class="tl-ball-timer" id="tl-ball-timer">00:00:00</div>
+            <div class="tl-ball-timer" id="tl-ball-timer" style="text-shadow: 0 0 2px rgba(0,20,40,0.2), 0 0 20px rgba(255,255,255,0.08);">00:00:00</div>
         `;
         document.body.appendChild(ballEl);
 
