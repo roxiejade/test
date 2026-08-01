@@ -654,7 +654,7 @@
     font-variant-numeric: tabular-nums;
     letter-spacing: 0.5px;
     color: rgba(255, 255, 255, 0.92);
-    text-shadow: 0 0 10px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 0, 0, 0.5), 0 1px 4px rgba(0, 0, 0, 0.9);
+    /* text-shadow 由 JS 内联样式控制，此处不写 */
     font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
     pointer-events: none;
     text-align: center;
