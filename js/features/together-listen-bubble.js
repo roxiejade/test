@@ -508,6 +508,14 @@ var FIXED_SHOW_ARROW = true;
 var FIXED_SHOW_GLOW = true;
 var CYCLE_DURATION = 3000; // 3秒
 
+    // <<< 新增：三高光四芒星固定参数（最终调试结果） >>>
+var HIGHLIGHT_STARS = {
+    main: { x: 13, y: 10, size: 3.5 },
+    sub1: { x: 19, y: 40, size: 3 },
+    sub2: { x: 44, y: 15, size: 2.5 }
+};
+// <<< 新增结束 >>>
+
     // ============================================================
 // 构建波形数据（1个周期）
 // ============================================================
@@ -830,90 +838,224 @@ if (FIXED_SHOW_GLOW) {
 }
 
     // ============================================================
-    // 绘制悬浮球波形
-    // ============================================================
-    function drawBallWave(canvas, progress) {
-        var rect = canvas.getBoundingClientRect();
-        var dpr = window.devicePixelRatio || 1;
-        var w = rect.width || canvas.width / dpr;
-        var h = rect.height || canvas.height / dpr;
-        if (canvas.width !== w * dpr) {
-            canvas.width = w * dpr;
-            canvas.height = h * dpr;
-        }
-        var ctx = canvas.getContext('2d');
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
-        ctx.scale(dpr, dpr);
-        ctx.clearRect(0, 0, w, h);
-        var pad = 8;
-        var drawW = w - pad * 2;
-        var drawH = h - pad * 2;
-        var midY = pad + drawH / 2;
-        var amp = (drawH / 2) * 0.75;
+// 绘制四芒星（通用函数）
+// ============================================================
+function drawFourPointStar(ctx, cx, cy, outerRadius) {
+    var innerRadius = outerRadius * 0.4;
+    var points = 4;
+    var step = Math.PI / points;
 
-        ctx.lineWidth = 1.0;
-        ctx.strokeStyle = 'rgba(180, 180, 190, 0.25)';
-        ctx.shadowColor = 'transparent';
-        ctx.shadowBlur = 0;
+    ctx.beginPath();
+    for (var i = 0; i < points * 2; i++) {
+        var radius = i % 2 === 0 ? outerRadius : innerRadius;
+        var angle = i * step - Math.PI / 2;
+        var x = cx + Math.cos(angle) * radius;
+        var y = cy + Math.sin(angle) * radius;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+}
+
+    // ============================================================
+// 绘制悬浮球波形（完整版：彩虹波形 + 四芒星进度 + 三高光四芒星）
+// ============================================================
+function drawBallWave(canvas, progress) {
+    var rect = canvas.getBoundingClientRect();
+    var dpr = window.devicePixelRatio || 1;
+    var w = rect.width || canvas.width / dpr;
+    var h = rect.height || canvas.height / dpr;
+
+    if (canvas.width !== w * dpr) {
+        canvas.width = w * dpr;
+        canvas.height = h * dpr;
+    }
+    var ctx = canvas.getContext('2d');
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.scale(dpr, dpr);
+
+    ctx.clearRect(0, 0, w, h);
+
+    var pad = 8;
+    var drawW = w - pad * 2;
+    var drawH = h - pad * 2;
+    var midY = pad + drawH / 2;
+    var amp = (drawH / 2) * 0.75;
+
+    // ---- 彩虹配色（柔光彩虹 · 薄荷绿版） ----
+    var RAINBOW_MINT = {
+        colors: [
+            { pos: 0.00, r: 255, g: 180, b: 180 },
+            { pos: 0.10, r: 255, g: 200, b: 160 },
+            { pos: 0.20, r: 255, g: 215, b: 150 },
+            { pos: 0.30, r: 255, g: 230, b: 160 },
+            { pos: 0.40, r: 245, g: 240, b: 170 },
+            { pos: 0.48, r: 170, g: 225, b: 190 },
+            { pos: 0.52, r: 150, g: 215, b: 185 },
+            { pos: 0.56, r: 150, g: 215, b: 200 },
+            { pos: 0.65, r: 150, g: 205, b: 210 },
+            { pos: 0.78, r: 160, g: 190, b: 220 },
+            { pos: 0.89, r: 180, g: 185, b: 230 },
+            { pos: 1.00, r: 210, g: 180, b: 225 },
+        ],
+        gray: 'rgba(180, 180, 190, 0.25)',
+    };
+
+    var scheme = RAINBOW_MINT;
+
+    // ---- 第一步：灰色轮廓 ----
+    ctx.lineWidth = 1.0;
+    ctx.strokeStyle = scheme.gray;
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+
+    ctx.beginPath();
+    for (var i = 0; i < points.length; i++) {
+        var px = pad + points[i].x * drawW;
+        var py = midY + (points[i].y / scaleBase) * amp;
+        if (i === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+
+    // ---- 第二步：已扫过的彩色波形 ----
+    var coloredPoints = [];
+    for (var j = 0; j < points.length; j++) {
+        if (points[j].x <= progress) {
+            coloredPoints.push(points[j]);
+        }
+    }
+
+    if (coloredPoints.length > 1) {
+        var fullGrad = ctx.createLinearGradient(
+            pad + 0 * drawW, 0,
+            pad + 1 * drawW, 0
+        );
+
+        for (var k = 0; k < scheme.colors.length; k++) {
+            var c = scheme.colors[k];
+            fullGrad.addColorStop(c.pos, 'rgb(' + c.r + ',' + c.g + ',' + c.b + ')');
+        }
+
+        // 主发光层
+        ctx.shadowColor = 'rgba(180, 200, 255, 0.25)';
+        ctx.shadowBlur = 8;
+        ctx.lineWidth = 2.0;
+        ctx.strokeStyle = fullGrad;
         ctx.lineJoin = 'round';
         ctx.lineCap = 'round';
         ctx.beginPath();
-        for (var i = 0; i < points.length; i++) {
-            var px = pad + points[i].x * drawW;
-            var py = midY + (points[i].y / scaleBase) * amp;
-            if (i === 0) ctx.moveTo(px, py);
-            else ctx.lineTo(px, py);
+        for (var m = 0; m < coloredPoints.length; m++) {
+            var gx = pad + coloredPoints[m].x * drawW;
+            var gy = midY + (coloredPoints[m].y / scaleBase) * amp;
+            if (m === 0) ctx.moveTo(gx, gy);
+            else ctx.lineTo(gx, gy);
         }
         ctx.stroke();
 
-        var halfWidth = 0.10;
-        var startX = progress - halfWidth;
-        var endX = progress + halfWidth;
-        var glowPoints = [];
-        for (var j = 0; j < points.length; j++) {
-            if (points[j].x >= startX && points[j].x <= endX) {
-                glowPoints.push(points[j]);
-            }
+        // 光晕层
+        ctx.shadowColor = 'rgba(180, 200, 255, 0.12)';
+        ctx.shadowBlur = 16;
+        ctx.lineWidth = 5;
+        ctx.globalAlpha = 0.3;
+        ctx.strokeStyle = fullGrad;
+        ctx.beginPath();
+        for (var m = 0; m < coloredPoints.length; m++) {
+            var hx = pad + coloredPoints[m].x * drawW;
+            var hy = midY + (coloredPoints[m].y / scaleBase) * amp;
+            if (m === 0) ctx.moveTo(hx, hy);
+            else ctx.lineTo(hx, hy);
         }
-        if (glowPoints.length > 1) {
-            ctx.shadowColor = 'rgba(120, 200, 255, 0.4)';
-            ctx.shadowBlur = 10;
-            ctx.lineWidth = 2.0;
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
-            ctx.beginPath();
-            for (var k = 0; k < glowPoints.length; k++) {
-                var gx = pad + glowPoints[k].x * drawW;
-                var gy = midY + (glowPoints[k].y / scaleBase) * amp;
-                if (k === 0) ctx.moveTo(gx, gy);
-                else ctx.lineTo(gx, gy);
-            }
-            ctx.stroke();
-            ctx.shadowColor = 'rgba(100, 180, 255, 0.2)';
-            ctx.shadowBlur = 18;
-            ctx.lineWidth = 6;
-            ctx.strokeStyle = 'rgba(150, 220, 255, 0.12)';
-            ctx.beginPath();
-            for (var m = 0; m < glowPoints.length; m++) {
-                var hx = pad + glowPoints[m].x * drawW;
-                var hy = midY + (glowPoints[m].y / scaleBase) * amp;
-                if (m === 0) ctx.moveTo(hx, hy);
-                else ctx.lineTo(hx, hy);
-            }
-            ctx.stroke();
-            ctx.shadowColor = 'rgba(100, 180, 255, 0.06)';
-            ctx.shadowBlur = 30;
-            ctx.lineWidth = 12;
-            ctx.strokeStyle = 'rgba(100, 180, 255, 0.04)';
-            ctx.beginPath();
-            for (var n = 0; n < glowPoints.length; n++) {
-                var fx = pad + glowPoints[n].x * drawW;
-                var fy = midY + (glowPoints[n].y / scaleBase) * amp;
-                if (n === 0) ctx.moveTo(fx, fy);
-                else ctx.lineTo(fx, fy);
-            }
-            ctx.stroke();
+        ctx.stroke();
+        ctx.globalAlpha = 1.0;
+
+        // 最外层柔光
+        ctx.shadowColor = 'rgba(180, 200, 255, 0.05)';
+        ctx.shadowBlur = 28;
+        ctx.lineWidth = 10;
+        ctx.globalAlpha = 0.12;
+        ctx.strokeStyle = fullGrad;
+        ctx.beginPath();
+        for (var m = 0; m < coloredPoints.length; m++) {
+            var fx = pad + coloredPoints[m].x * drawW;
+            var fy = midY + (coloredPoints[m].y / scaleBase) * amp;
+            if (m === 0) ctx.moveTo(fx, fy);
+            else ctx.lineTo(fx, fy);
+        }
+        ctx.stroke();
+        ctx.globalAlpha = 1.0;
+    }
+
+    // ---- 第三步：四芒星进度（缩小版，沿波形移动） ----
+    var scanX = progress;
+    var scanPx = pad + scanX * drawW;
+    var scanY = midY;
+    for (var n = 0; n < points.length - 1; n++) {
+        if (points[n].x <= scanX && points[n + 1].x >= scanX) {
+            var t = (scanX - points[n].x) / (points[n + 1].x - points[n].x);
+            var yVal = points[n].y + (points[n + 1].y - points[n].y) * t;
+            scanY = midY + (yVal / scaleBase) * amp;
+            break;
         }
     }
+
+    var starSize = 2.5;
+
+    ctx.shadowColor = 'rgba(255, 255, 255, 0.5)';
+    ctx.shadowBlur = 8;
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+    drawFourPointStar(ctx, scanPx, scanY, starSize);
+    ctx.fill();
+
+    ctx.shadowColor = 'rgba(255, 255, 255, 0.6)';
+    ctx.shadowBlur = 4;
+    ctx.fillStyle = 'rgba(255, 255, 255, 1)';
+    ctx.beginPath();
+    ctx.arc(scanPx, scanY, starSize * 0.25, 0, Math.PI * 2);
+    ctx.fill();
+
+    // ---- 第四步：三高光四芒星（固定位置） ----
+    function drawHighlightStar(cx, cy, size, opacity) {
+        opacity = opacity || 1;
+
+        var glowSize = size * 4;
+        var grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, glowSize);
+        grad.addColorStop(0, 'rgba(255, 255, 255, ' + (0.2 * opacity) + ')');
+        grad.addColorStop(0.5, 'rgba(255, 255, 255, ' + (0.08 * opacity) + ')');
+        grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+        ctx.shadowColor = 'transparent';
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(cx, cy, glowSize, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.shadowColor = 'rgba(255, 255, 255, ' + (0.3 * opacity) + ')';
+        ctx.shadowBlur = 10;
+        ctx.fillStyle = 'rgba(255, 255, 255, ' + (0.5 * opacity) + ')';
+        drawFourPointStar(ctx, cx, cy, size);
+        ctx.fill();
+
+        ctx.shadowColor = 'rgba(255, 255, 255, ' + (0.4 * opacity) + ')';
+        ctx.shadowBlur = 4;
+        ctx.fillStyle = 'rgba(255, 255, 255, ' + (0.7 * opacity) + ')';
+        ctx.beginPath();
+        ctx.arc(cx, cy, size * 0.3, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    // 主高光（左上）
+    drawHighlightStar(HIGHLIGHT_STARS.main.x, HIGHLIGHT_STARS.main.y, HIGHLIGHT_STARS.main.size, 1);
+    // 辅高光1（左下）
+    drawHighlightStar(HIGHLIGHT_STARS.sub1.x, HIGHLIGHT_STARS.sub1.y, HIGHLIGHT_STARS.sub1.size, 0.7);
+    // 辅高光2（右上）
+    drawHighlightStar(HIGHLIGHT_STARS.sub2.x, HIGHLIGHT_STARS.sub2.y, HIGHLIGHT_STARS.sub2.size, 0.6);
+
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
+}
 
     // ============================================================
     // Canvas 设置
