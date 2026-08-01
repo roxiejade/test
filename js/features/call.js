@@ -7,6 +7,24 @@
     const KEY_PILL_POS = 'callPillPos';
     const BG_LF_KEY    = 'callBgImageData';
 
+    // ===== 新增以下代码 =====
+// ── 梦角挂断配置 ──
+const PARTNER_HANGUP_CONFIG = {
+    enabled: true,
+    baseChance: 0.08,           // 8% 的通话会被挂断
+    checkDelay: 3000,           // 接通后 3 秒判定
+    hangupDelayMin: 2000,       // 挂断前最小延迟 2 秒
+    hangupDelayMax: 6000,       // 挂断前最大延迟 6 秒
+    timeRanges: [
+        { min: 1 * 3600 * 1000, max: 2 * 3600 * 1000, weight: 20 },
+        { min: 2 * 3600 * 1000, max: 4 * 3600 * 1000, weight: 35 },
+        { min: 4 * 3600 * 1000, max: 6 * 3600 * 1000, weight: 25 },
+        { min: 6 * 3600 * 1000, max: 8 * 3600 * 1000, weight: 12 },
+        { min: 8 * 3600 * 1000, max: 12 * 3600 * 1000, weight: 6 },
+        { min: 12 * 3600 * 1000, max: Infinity, weight: 2 },
+    ]
+};
+
     const S = {
         enabled:         localStorage.getItem(KEY_ENABLED) !== 'false',
         active:          false,
@@ -672,6 +690,8 @@ html:not([data-theme="dark"])[data-color-theme="black-white"] .message-sent{
                 // 通话接通：立即写入第一次心跳
                 writeCallSession();
                 tick();
+                // ===== 新增：触发梦角挂断判定 =====
+    schedulePartnerHangup();
             }, 1400 + Math.random() * 1400);
         }
     }
@@ -682,6 +702,12 @@ html:not([data-theme="dark"])[data-color-theme="black-white"] .message-sent{
         S.active = false; S.startTime = null;
         cancelAnimationFrame(S.timerRAF);
         clearTimeout(S.connectingTimer); clearTimeout(S.incomingTimer);
+
+        // ===== 新增：清除梦角挂断定时器 =====
+    if (window._partnerHangupTimer) {
+        clearTimeout(window._partnerHangupTimer);
+        window._partnerHangupTimer = null;
+    }
 
         // 清除闪退恢复用的 live session
         clearCallSession();
