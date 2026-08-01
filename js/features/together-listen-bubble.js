@@ -1687,7 +1687,7 @@ function drawBallWave(canvas, progress) {
         }
     }
 
-    function drawParticles(time) {
+        function drawParticles(time) {
         if (!particleCanvas || !particleCtx) return;
         
         var w = parseFloat(particleCanvas.style.width) || 150;
@@ -1709,21 +1709,40 @@ function drawBallWave(canvas, progress) {
             if (py < -10) py = h + 10;
             if (py > h + 10) py = -10;
 
+            // ===== 方案 A：核心高亮（星星效果） =====
+            var opacity = p.opacity;
+
+            // 外层光晕（扩散，比原版更柔和）
+            particleCtx.shadowColor = 'rgba(200, 220, 255, ' + (opacity * 0.2) + ')';
+            particleCtx.shadowBlur = 8;
             particleCtx.beginPath();
-            particleCtx.arc(px, py, p.radius, 0, Math.PI * 2);
-            particleCtx.fillStyle = 'rgba(255, 255, 255, ' + p.opacity + ')';
+            particleCtx.arc(px, py, p.radius * 2.8, 0, Math.PI * 2);
+            particleCtx.fillStyle = 'rgba(200, 220, 255, ' + (opacity * 0.15) + ')';
             particleCtx.fill();
 
-            if (p.radius > 0.5 && p.opacity > 0.02) {
-                particleCtx.shadowColor = 'rgba(200, 220, 255, ' + (p.opacity * 0.3) + ')';
-                particleCtx.shadowBlur = 6;
-                particleCtx.beginPath();
-                particleCtx.arc(px, py, p.radius * 2.5, 0, Math.PI * 2);
-                particleCtx.fillStyle = 'rgba(200, 220, 255, ' + (p.opacity * 0.15) + ')';
-                particleCtx.fill();
-                particleCtx.shadowBlur = 0;
-            }
+            // 主体（比原版稍亮）
+            particleCtx.shadowColor = 'rgba(200, 220, 255, ' + (opacity * 0.3) + ')';
+            particleCtx.shadowBlur = 4;
+            particleCtx.beginPath();
+            particleCtx.arc(px, py, p.radius, 0, Math.PI * 2);
+            particleCtx.fillStyle = 'rgba(255, 255, 255, ' + (opacity * 1.5) + ')';
+            particleCtx.fill();
+
+            // 核心高亮（白色亮芯，让粒子有"星星"感）
+            particleCtx.shadowColor = 'rgba(255, 255, 255, 0.2)';
+            particleCtx.shadowBlur = 3;
+            particleCtx.beginPath();
+            particleCtx.arc(px - 0.3, py - 0.3, p.radius * 0.35, 0, Math.PI * 2);
+            particleCtx.fillStyle = 'rgba(255, 255, 255, ' + Math.min(opacity * 3, 0.7) + ')';
+            particleCtx.fill();
+
+            // 重置阴影（避免影响下一个粒子）
+            particleCtx.shadowBlur = 0;
         }
+
+        // 重置阴影
+        particleCtx.shadowColor = 'transparent';
+        particleCtx.shadowBlur = 0;
     }
     
     // ============================================================
