@@ -1687,7 +1687,27 @@ function drawBallWave(canvas, progress) {
         }
     }
 
-        function drawParticles(time) {
+        // ============================================================
+    // 绘制小四芒星（用于粒子）
+    // ============================================================
+    function drawSmallStar(ctx, cx, cy, outerRadius) {
+        var innerRadius = outerRadius * 0.4;
+        var points = 4;
+        var step = Math.PI / points;
+
+        ctx.beginPath();
+        for (var i = 0; i < points * 2; i++) {
+            var radius = i % 2 === 0 ? outerRadius : innerRadius;
+            var angle = i * step - Math.PI / 2;
+            var x = cx + Math.cos(angle) * radius;
+            var y = cy + Math.sin(angle) * radius;
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+    }
+
+            function drawParticles(time) {
         if (!particleCanvas || !particleCtx) return;
         
         var w = parseFloat(particleCanvas.style.width) || 150;
@@ -1709,31 +1729,32 @@ function drawBallWave(canvas, progress) {
             if (py < -10) py = h + 10;
             if (py > h + 10) py = -10;
 
-            // ===== 方案 A：核心高亮（星星效果） =====
+            // ===== 全部小四芒星（星星粒子） =====
             var opacity = p.opacity;
+            // 四芒星大小 = 圆形粒子 × 1.2（稍微大一点点）
+            var starRadius = p.radius * 1.2;
 
-            // 外层光晕（扩散，比原版更柔和）
+            // 外层光晕
             particleCtx.shadowColor = 'rgba(200, 220, 255, ' + (opacity * 0.2) + ')';
-            particleCtx.shadowBlur = 8;
+            particleCtx.shadowBlur = 6;
             particleCtx.beginPath();
-            particleCtx.arc(px, py, p.radius * 2.8, 0, Math.PI * 2);
-            particleCtx.fillStyle = 'rgba(200, 220, 255, ' + (opacity * 0.15) + ')';
+            particleCtx.arc(px, py, starRadius * 2.5, 0, Math.PI * 2);
+            particleCtx.fillStyle = 'rgba(200, 220, 255, ' + (opacity * 0.12) + ')';
             particleCtx.fill();
 
-            // 主体（比原版稍亮）
+            // 四芒星主体
             particleCtx.shadowColor = 'rgba(200, 220, 255, ' + (opacity * 0.3) + ')';
-            particleCtx.shadowBlur = 4;
-            particleCtx.beginPath();
-            particleCtx.arc(px, py, p.radius, 0, Math.PI * 2);
+            particleCtx.shadowBlur = 3;
             particleCtx.fillStyle = 'rgba(255, 255, 255, ' + (opacity * 1.5) + ')';
+            drawSmallStar(particleCtx, px, py, starRadius);
             particleCtx.fill();
 
-            // 核心高亮（白色亮芯，让粒子有"星星"感）
-            particleCtx.shadowColor = 'rgba(255, 255, 255, 0.2)';
-            particleCtx.shadowBlur = 3;
+            // 核心高亮（让四芒星有"闪烁"感）
+            particleCtx.shadowColor = 'rgba(255, 255, 255, 0.15)';
+            particleCtx.shadowBlur = 2;
             particleCtx.beginPath();
-            particleCtx.arc(px - 0.3, py - 0.3, p.radius * 0.35, 0, Math.PI * 2);
-            particleCtx.fillStyle = 'rgba(255, 255, 255, ' + Math.min(opacity * 3, 0.7) + ')';
+            particleCtx.arc(px - 0.2, py - 0.2, starRadius * 0.25, 0, Math.PI * 2);
+            particleCtx.fillStyle = 'rgba(255, 255, 255, ' + Math.min(opacity * 3, 0.6) + ')';
             particleCtx.fill();
 
             // 重置阴影（避免影响下一个粒子）
