@@ -1019,6 +1019,65 @@ html:not([data-theme="dark"])[data-color-theme="black-white"] .message-sent{
 
     init();
 
+    // ===== 新增：梦角挂断判定函数 =====
+function schedulePartnerHangup() {
+    if (!PARTNER_HANGUP_CONFIG.enabled) return;
+    if (!S.active) return;
+
+    // 第一步：基础概率判定（8%）
+    const roll = Math.random();
+    if (roll >= PARTNER_HANGUP_CONFIG.baseChance) {
+        // 未命中，本次通话不会挂断
+        return;
+    }
+
+    // 第二步：命中 → 根据权重选择挂断时间区间
+    const ranges = PARTNER_HANGUP_CONFIG.timeRanges;
+    const totalWeight = ranges.reduce((sum, r) => sum + r.weight, 0);
+
+    let rand = Math.random() * totalWeight;
+    let selectedRange = ranges[0];
+    for (const range of ranges) {
+        rand -= range.weight;
+        if (rand <= 0) {
+            selectedRange = range;
+            break;
+        }
+    }
+
+    // 在选中的区间内随机取一个时间点（毫秒）
+    let hangupAfterMs;
+    if (selectedRange.max === Infinity) {
+        // > 12 小时：取 12~20 小时之间的随机值
+        const extra = Math.random() * 8 * 3600 * 1000; // 额外 0~8 小时
+        hangupAfterMs = 12 * 3600 * 1000 + extra;
+    } else {
+        const rangeMs = selectedRange.max - selectedRange.min;
+        hangupAfterMs = selectedRange.min + Math.random() * rangeMs;
+    }
+
+    // 第三步：设定定时器，到时间后挂断
+    const delayMin = PARTNER_HANGUP_CONFIG.hangupDelayMin;
+    const delayMax = PARTNER_HANGUP_CONFIG.hangupDelayMax;
+    const extraDelay = delayMin + Math.random() * (delayMax - delayMin);
+
+    window._partnerHangupTimer = setTimeout(() => {
+        if (!S.active) return;
+        // 挂断前再确认一次通话仍在进行
+        const dur = S.elapsed || 0;
+        // 只记录挂断消息，不额外加文案
+        if (dur > 2000) {
+            sendCallEvent('fa-phone-slash', getName() + ' 挂断了通话', fmt(dur));
+        } else {
+            sendCallEvent('fa-phone-slash', getName() + ' 挂断了通话', null);
+        }
+        endCall();
+        window._partnerHangupTimer = null;
+    }, hangupAfterMs + extraDelay);
+
+    // 把定时器挂到全局，方便 endCall 清除
+}
+
     // v2.5: 暴露给 companion.js 用于统一来电调度
     window._callModule = {
         showIncomingCall: () => {
