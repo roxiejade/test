@@ -293,132 +293,195 @@ function initThemeEditor() {
         }
 
         function populateThemeEditor(currentColors = null) {
-            const grid = document.getElementById('theme-editor-grid');
-            grid.innerHTML = '';
-            const rootStyle = getComputedStyle(document.documentElement);
+    const grid = document.getElementById('theme-editor-grid');
+    grid.innerHTML = '';
+    const rootStyle = getComputedStyle(document.documentElement);
 
-            const groups = [
-                { label: '🖼 背景颜色',  vars: ['--primary-bg','--secondary-bg','--header-bg','--input-area-bg'] },
-                { label: '✏️ 文字 & 线条', vars: ['--text-primary','--text-secondary','--timestamp-color','--border-color'] },
-                { label: '✨ 强调色（影响全局）', vars: ['--accent-color','--accent-color-dark'] },
-                { label: '💬 我方气泡',  vars: ['--message-sent-bg','--message-sent-text'] },
-                { label: '💬 对方气泡',  vars: ['--message-received-bg','--message-received-text'] },
-                { label: '🔧 工具栏按钮', vars: ['--toolbar-btn-bg','--toolbar-btn-color'] },
-                { label: '📤 发送按钮',  vars: ['--send-btn-bg','--send-btn-icon-color'] },
-                { label: '⭐ 其他',       vars: ['--favorite-color'] },
-            ];
+    const groups = [
+        { label: '🖼 背景颜色',  vars: ['--primary-bg','--secondary-bg','--header-bg','--input-area-bg'] },
+        { label: '✏️ 文字 & 线条', vars: ['--text-primary','--text-secondary','--timestamp-color','--border-color'] },
+        { label: '✨ 强调色（影响全局）', vars: ['--accent-color','--accent-color-dark'] },
+        { label: '💬 我方气泡',  vars: ['--message-sent-bg','--message-sent-text'] },
+        { label: '💬 对方气泡',  vars: ['--message-received-bg','--message-received-text'] },
+        { label: '🔧 工具栏按钮', vars: ['--toolbar-btn-bg','--toolbar-btn-color'] },
+        { label: '📤 发送按钮',  vars: ['--send-btn-bg','--send-btn-icon-color'] },
+        { label: '⭐ 其他',       vars: ['--favorite-color'] },
+    ];
 
-            groups.forEach(group => {
-                const heading = document.createElement('div');
-                heading.style.cssText = 'grid-column:1/-1;font-size:11px;font-weight:700;color:var(--text-secondary);letter-spacing:1.5px;text-transform:uppercase;padding:8px 0 4px;border-bottom:1px solid var(--border-color);margin-top:6px;';
-                heading.textContent = group.label;
-                grid.appendChild(heading);
+    groups.forEach(group => {
+        const heading = document.createElement('div');
+        heading.style.cssText = 'grid-column:1/-1;font-size:11px;font-weight:700;color:var(--text-secondary);letter-spacing:1.5px;text-transform:uppercase;padding:8px 0 4px;border-bottom:1px solid var(--border-color);margin-top:6px;';
+        heading.textContent = group.label;
+        grid.appendChild(heading);
 
-                group.vars.forEach(variable => {
-                    const label = themeColorMappings[variable];
-                    if (!label) return;
+        group.vars.forEach(variable => {
+            const label = themeColorMappings[variable];
+            if (!label) return;
 
-                    const rawVal = currentColors
-                        ? (currentColors[variable] || rootStyle.getPropertyValue(variable).trim())
-                        : rootStyle.getPropertyValue(variable).trim();
-                    const colorValue = resolveColorVar(rawVal, rootStyle) || '#888888';
+            const rawVal = currentColors
+                ? (currentColors[variable] || rootStyle.getPropertyValue(variable).trim())
+                : rootStyle.getPropertyValue(variable).trim();
+            const colorValue = resolveColorVar(rawVal, rootStyle) || '#888888';
 
-                    const item = document.createElement('div');
-                    item.style.cssText = 'grid-column:1/-1;display:flex;align-items:center;gap:10px;background:var(--primary-bg);padding:8px 10px;border-radius:10px;border:1px solid var(--border-color);';
-                    item.innerHTML = `
-    <input type="color" data-variable="${variable}" value="${colorValue}"
-        style="width:38px;height:38px;border-radius:8px;border:2px solid var(--border-color);padding:2px;cursor:pointer;background:none;flex-shrink:0;">
-    <div style="flex:1;min-width:0;">
-        <div style="font-size:13px;font-weight:600;color:var(--text-primary);">${label}</div>
-        <div style="display:flex;align-items:center;gap:8px;margin-top:2px;">
-            <span style="font-size:10px;color:var(--text-secondary);font-family:monospace;">${variable}</span>
-            <input type="text" class="te-hex-input" data-variable="${variable}" value="${colorValue}"
-                maxlength="7" placeholder="#FFFFFF"
-                style="width:80px;padding:2px 6px;border:1px solid var(--border-color);border-radius:4px;background:var(--primary-bg);color:var(--text-primary);font-size:10px;font-family:monospace;text-transform:uppercase;outline:none;flex-shrink:0;">
-        </div>
-    </div>
-    <div class="te-swatch" style="width:22px;height:22px;border-radius:5px;border:1px solid var(--border-color);background:${colorValue};flex-shrink:0;"></div>`;
+            const item = document.createElement('div');
+            item.style.cssText = 'grid-column:1/-1;display:flex;align-items:center;gap:10px;background:var(--primary-bg);padding:8px 10px;border-radius:10px;border:1px solid var(--border-color);';
+            item.innerHTML = `
+                <input type="color" data-variable="${variable}" value="${colorValue}"
+                    style="width:38px;height:38px;border-radius:8px;border:2px solid var(--border-color);padding:2px;cursor:pointer;background:none;flex-shrink:0;">
+                <div style="flex:1;min-width:0;">
+                    <div style="font-size:13px;font-weight:600;color:var(--text-primary);">${label}</div>
+                    <div style="display:flex;align-items:center;gap:8px;margin-top:2px;">
+                        <span style="font-size:10px;color:var(--text-secondary);font-family:monospace;">${variable}</span>
+                        <input type="text" class="te-hex-input" data-variable="${variable}" value="${colorValue}"
+                            maxlength="7" placeholder="#FFFFFF"
+                            style="width:80px;padding:2px 6px;border:1px solid var(--border-color);border-radius:4px;background:var(--primary-bg);color:var(--text-primary);font-size:10px;font-family:monospace;text-transform:uppercase;outline:none;flex-shrink:0;">
+                    </div>
+                </div>
+                <div class="te-swatch" style="width:22px;height:22px;border-radius:5px;border:1px solid var(--border-color);background:${colorValue};flex-shrink:0;"></div>`;
 
-                    const input = item.querySelector('input[type="color"]');
-                    const swatch = item.querySelector('.te-swatch');
+            const input = item.querySelector('input[type="color"]');
+            const hexInput = item.querySelector('.te-hex-input');
+            const swatch = item.querySelector('.te-swatch');
 
-                    input.addEventListener('input', (e) => {
-                        const v = e.target.dataset.variable;
-                        const val = e.target.value;
-                        document.documentElement.style.setProperty(v, val);
-                        swatch.style.background = val;
-                        if (v === '--accent-color') {
-                            const h = val.replace('#','');
-                            document.documentElement.style.setProperty('--accent-color-rgb',
-                                `${parseInt(h.slice(0,2),16)},${parseInt(h.slice(2,4),16)},${parseInt(h.slice(4,6),16)}`);
-                        }
-                    });
-
-                    grid.appendChild(item);
-                });
+            // 颜色选择器 → HEX 输入框同步
+            input.addEventListener('input', (e) => {
+                const v = e.target.dataset.variable;
+                const val = e.target.value;
+                document.documentElement.style.setProperty(v, val);
+                swatch.style.background = val;
+                hexInput.value = val.toUpperCase();
+                if (v === '--accent-color') {
+                    const h = val.replace('#','');
+                    document.documentElement.style.setProperty('--accent-color-rgb',
+                        `${parseInt(h.slice(0,2),16)},${parseInt(h.slice(2,4),16)},${parseInt(h.slice(4,6),16)}`);
+                }
             });
 
-            const extraHeading = document.createElement('div');
-            extraHeading.style.cssText = 'grid-column:1/-1;font-size:11px;font-weight:700;color:var(--text-secondary);letter-spacing:1.5px;text-transform:uppercase;padding:8px 0 4px;border-bottom:1px solid var(--border-color);margin-top:6px;';
-            extraHeading.textContent = '⚙️ 数值 & 字重';
-            grid.appendChild(extraHeading);
-
-            for (const [variable, cfg] of Object.entries(themeExtraMappings)) {
-                const rawVal = rootStyle.getPropertyValue(variable).trim() || cfg.default;
-                const numVal = parseFloat(rawVal);
-                const item = document.createElement('div');
-                item.style.cssText = 'grid-column:1/-1;display:flex;align-items:center;gap:10px;background:var(--primary-bg);padding:8px 10px;border-radius:10px;border:1px solid var(--border-color);';
-                if (cfg.type === 'range') {
-                    item.innerHTML = `
-                        <label style="font-size:13px;flex:1;">${cfg.label}</label>
-                        <input type="range" min="${cfg.min}" max="${cfg.max}" step="${cfg.step||1}" value="${numVal||parseFloat(cfg.default)}"
-                            data-variable="${variable}" data-unit="${cfg.unit}"
-                            style="flex:2;max-width:140px;accent-color:var(--accent-color);">
-                        <span style="width:44px;text-align:right;font-size:12px;color:var(--text-secondary);">${numVal||parseFloat(cfg.default)}${cfg.unit}</span>`;
-                    const rangeInput = item.querySelector('input[type="range"]');
-                    const valLabel = item.querySelector('span');
-                    rangeInput.addEventListener('input', () => {
-                        const v = rangeInput.value + cfg.unit;
-                        document.documentElement.style.setProperty(variable, v);
-                        valLabel.textContent = rangeInput.value + cfg.unit;
-                        if (variable === '--radius') { settings.borderRadius = rangeInput.value; throttledSaveData && throttledSaveData(); }
-                        if (variable === '--message-line-height') { settings.messageLineHeight = parseFloat(rangeInput.value); throttledSaveData && throttledSaveData(); }
-                    });
-                } else if (cfg.type === 'select') {
-                    const opts = cfg.options.map(o => `<option value="${o}" ${String(numVal||cfg.default)===o?'selected':''}>${o}</option>`).join('');
-                    item.innerHTML = `<label style="font-size:13px;flex:1;">${cfg.label}</label><select data-variable="${variable}" style="padding:5px 10px;border-radius:8px;border:1px solid var(--border-color);background:var(--secondary-bg);color:var(--text-primary);font-size:13px;cursor:pointer;">${opts}</select>`;
-                    item.querySelector('select').addEventListener('change', (e) => {
-                        const newVal = e.target.value;
-                        document.documentElement.style.setProperty(variable, newVal);
-                        if (variable === '--message-font-weight') { settings.messageFontWeight = newVal; throttledSaveData && throttledSaveData(); }
-                        if (variable === '--message-line-height') { settings.messageLineHeight = parseFloat(newVal); throttledSaveData && throttledSaveData(); }
-                    });
+            // HEX 输入框 → 颜色选择器同步
+            hexInput.addEventListener('input', (e) => {
+                let val = e.target.value.trim();
+                const hexPattern = /^[0-9a-fA-F]{6}$/;
+                const hexWithHash = /^#[0-9a-fA-F]{6}$/;
+                
+                if (hexPattern.test(val)) {
+                    const fullVal = '#' + val.toUpperCase();
+                    const v = e.target.dataset.variable;
+                    document.documentElement.style.setProperty(v, fullVal);
+                    input.value = fullVal;
+                    swatch.style.background = fullVal;
+                    if (v === '--accent-color') {
+                        const h = fullVal.replace('#','');
+                        document.documentElement.style.setProperty('--accent-color-rgb',
+                            `${parseInt(h.slice(0,2),16)},${parseInt(h.slice(2,4),16)},${parseInt(h.slice(4,6),16)}`);
+                    }
+                    e.target.style.borderColor = 'var(--border-color)';
+                } else if (hexWithHash.test(val)) {
+                    const fullVal = val.toUpperCase();
+                    const v = e.target.dataset.variable;
+                    document.documentElement.style.setProperty(v, fullVal);
+                    input.value = fullVal;
+                    swatch.style.background = fullVal;
+                    if (v === '--accent-color') {
+                        const h = fullVal.replace('#','');
+                        document.documentElement.style.setProperty('--accent-color-rgb',
+                            `${parseInt(h.slice(0,2),16)},${parseInt(h.slice(2,4),16)},${parseInt(h.slice(4,6),16)}`);
+                    }
+                    e.target.style.borderColor = 'var(--border-color)';
+                } else if (val === '' || val === '#') {
+                    e.target.style.borderColor = 'var(--border-color)';
+                } else {
+                    e.target.style.borderColor = '#ff6b6b';
                 }
-                grid.appendChild(item);
-            }
+            });
 
-            const previewHeading = document.createElement('div');
-            previewHeading.style.cssText = 'grid-column:1/-1;font-size:11px;font-weight:700;color:var(--text-secondary);letter-spacing:1.5px;text-transform:uppercase;padding:8px 0 4px;border-bottom:1px solid var(--border-color);margin-top:6px;';
-            previewHeading.textContent = '👁 实时预览';
-            grid.appendChild(previewHeading);
+            // 失去焦点时补全 # 并修正格式
+            hexInput.addEventListener('blur', (e) => {
+                let val = e.target.value.trim();
+                const hexPattern = /^[0-9a-fA-F]{6}$/;
+                const hexWithHash = /^#[0-9a-fA-F]{6}$/;
+                
+                if (hexPattern.test(val)) {
+                    e.target.value = '#' + val.toUpperCase();
+                    e.target.style.borderColor = 'var(--border-color)';
+                } else if (hexWithHash.test(val)) {
+                    e.target.value = val.toUpperCase();
+                    e.target.style.borderColor = 'var(--border-color)';
+                } else if (val === '' || val === '#') {
+                    const currentVal = input.value;
+                    e.target.value = currentVal.toUpperCase();
+                    e.target.style.borderColor = 'var(--border-color)';
+                } else {
+                    const currentVal = input.value;
+                    e.target.value = currentVal.toUpperCase();
+                    e.target.style.borderColor = 'var(--border-color)';
+                }
+            });
 
-            const previewBox = document.createElement('div');
-            previewBox.style.cssText = 'grid-column:1/-1;background:var(--chat-bg,var(--primary-bg));border-radius:14px;padding:14px 12px;border:1px solid var(--border-color);';
-            previewBox.innerHTML = `
-                <div style="display:flex;align-items:flex-end;gap:8px;margin-bottom:10px;">
-                    <div style="width:32px;height:32px;border-radius:50%;background:var(--accent-color);flex-shrink:0;display:flex;align-items:center;justify-content:center;">
-                        <i class="fas fa-user" style="font-size:12px;color:#fff;"></i>
-                    </div>
-                    <div class="message message-received" style="max-width:180px;">你是我朝夕相伴触手可及的虚拟</div>
-                </div>
-                <div style="display:flex;align-items:flex-end;gap:8px;justify-content:flex-end;">
-                    <div class="message message-sent" style="max-width:180px;">你是我未曾拥有无法捕捉的亲昵</div>
-                    <div style="width:32px;height:32px;border-radius:50%;background:var(--send-btn-bg,var(--accent-color));flex-shrink:0;display:flex;align-items:center;justify-content:center;">
-                        <i class="fas fa-paper-plane" style="font-size:11px;color:var(--send-btn-icon-color,#fff);"></i>
-                    </div>
-                </div>`;
-            grid.appendChild(previewBox);
+            grid.appendChild(item);
+        });
+    });
+
+    const extraHeading = document.createElement('div');
+    extraHeading.style.cssText = 'grid-column:1/-1;font-size:11px;font-weight:700;color:var(--text-secondary);letter-spacing:1.5px;text-transform:uppercase;padding:8px 0 4px;border-bottom:1px solid var(--border-color);margin-top:6px;';
+    extraHeading.textContent = '⚙️ 数值 & 字重';
+    grid.appendChild(extraHeading);
+
+    for (const [variable, cfg] of Object.entries(themeExtraMappings)) {
+        const rawVal = rootStyle.getPropertyValue(variable).trim() || cfg.default;
+        const numVal = parseFloat(rawVal);
+        const item = document.createElement('div');
+        item.style.cssText = 'grid-column:1/-1;display:flex;align-items:center;gap:10px;background:var(--primary-bg);padding:8px 10px;border-radius:10px;border:1px solid var(--border-color);';
+        if (cfg.type === 'range') {
+            item.innerHTML = `
+                <label style="font-size:13px;flex:1;">${cfg.label}</label>
+                <input type="range" min="${cfg.min}" max="${cfg.max}" step="${cfg.step||1}" value="${numVal||parseFloat(cfg.default)}"
+                    data-variable="${variable}" data-unit="${cfg.unit}"
+                    style="flex:2;max-width:140px;accent-color:var(--accent-color);">
+                <span style="width:44px;text-align:right;font-size:12px;color:var(--text-secondary);">${numVal||parseFloat(cfg.default)}${cfg.unit}</span>`;
+            const rangeInput = item.querySelector('input[type="range"]');
+            const valLabel = item.querySelector('span');
+            rangeInput.addEventListener('input', () => {
+                const v = rangeInput.value + cfg.unit;
+                document.documentElement.style.setProperty(variable, v);
+                valLabel.textContent = rangeInput.value + cfg.unit;
+                if (variable === '--radius') { settings.borderRadius = rangeInput.value; throttledSaveData && throttledSaveData(); }
+                if (variable === '--message-line-height') { settings.messageLineHeight = parseFloat(rangeInput.value); throttledSaveData && throttledSaveData(); }
+            });
+        } else if (cfg.type === 'select') {
+            const opts = cfg.options.map(o => `<option value="${o}" ${String(numVal||cfg.default)===o?'selected':''}>${o}</option>`).join('');
+            item.innerHTML = `<label style="font-size:13px;flex:1;">${cfg.label}</label><select data-variable="${variable}" style="padding:5px 10px;border-radius:8px;border:1px solid var(--border-color);background:var(--secondary-bg);color:var(--text-primary);font-size:13px;cursor:pointer;">${opts}</select>`;
+            item.querySelector('select').addEventListener('change', (e) => {
+                const newVal = e.target.value;
+                document.documentElement.style.setProperty(variable, newVal);
+                if (variable === '--message-font-weight') { settings.messageFontWeight = newVal; throttledSaveData && throttledSaveData(); }
+                if (variable === '--message-line-height') { settings.messageLineHeight = parseFloat(newVal); throttledSaveData && throttledSaveData(); }
+            });
         }
+        grid.appendChild(item);
+    }
+
+    const previewHeading = document.createElement('div');
+    previewHeading.style.cssText = 'grid-column:1/-1;font-size:11px;font-weight:700;color:var(--text-secondary);letter-spacing:1.5px;text-transform:uppercase;padding:8px 0 4px;border-bottom:1px solid var(--border-color);margin-top:6px;';
+    previewHeading.textContent = '👁 实时预览';
+    grid.appendChild(previewHeading);
+
+    const previewBox = document.createElement('div');
+    previewBox.style.cssText = 'grid-column:1/-1;background:var(--chat-bg,var(--primary-bg));border-radius:14px;padding:14px 12px;border:1px solid var(--border-color);';
+    previewBox.innerHTML = `
+        <div style="display:flex;align-items:flex-end;gap:8px;margin-bottom:10px;">
+            <div style="width:32px;height:32px;border-radius:50%;background:var(--accent-color);flex-shrink:0;display:flex;align-items:center;justify-content:center;">
+                <i class="fas fa-user" style="font-size:12px;color:#fff;"></i>
+            </div>
+            <div class="message message-received" style="max-width:180px;">你是我朝夕相伴触手可及的虚拟</div>
+        </div>
+        <div style="display:flex;align-items:flex-end;gap:8px;justify-content:flex-end;">
+            <div class="message message-sent" style="max-width:180px;">你是我未曾拥有无法捕捉的亲昵</div>
+            <div style="width:32px;height:32px;border-radius:50%;background:var(--send-btn-bg,var(--accent-color));flex-shrink:0;display:flex;align-items:center;justify-content:center;">
+                <i class="fas fa-paper-plane" style="font-size:11px;color:var(--send-btn-icon-color,#fff);"></i>
+            </div>
+        </div>`;
+    grid.appendChild(previewBox);
+}
 
 
         function applyTheme(colors, isReset = false) {
