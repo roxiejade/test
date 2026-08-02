@@ -326,13 +326,18 @@ function initThemeEditor() {
                     const item = document.createElement('div');
                     item.style.cssText = 'grid-column:1/-1;display:flex;align-items:center;gap:10px;background:var(--primary-bg);padding:8px 10px;border-radius:10px;border:1px solid var(--border-color);';
                     item.innerHTML = `
-                        <input type="color" data-variable="${variable}" value="${colorValue}"
-                            style="width:38px;height:38px;border-radius:8px;border:2px solid var(--border-color);padding:2px;cursor:pointer;background:none;flex-shrink:0;">
-                        <div style="flex:1;min-width:0;">
-                            <div style="font-size:13px;font-weight:600;color:var(--text-primary);">${label}</div>
-                            <div style="font-size:10px;color:var(--text-secondary);font-family:monospace;margin-top:1px;">${variable}</div>
-                        </div>
-                        <div class="te-swatch" style="width:22px;height:22px;border-radius:5px;border:1px solid var(--border-color);background:${colorValue};flex-shrink:0;"></div>`;
+    <input type="color" data-variable="${variable}" value="${colorValue}"
+        style="width:38px;height:38px;border-radius:8px;border:2px solid var(--border-color);padding:2px;cursor:pointer;background:none;flex-shrink:0;">
+    <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:600;color:var(--text-primary);">${label}</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:2px;">
+            <span style="font-size:10px;color:var(--text-secondary);font-family:monospace;">${variable}</span>
+            <input type="text" class="te-hex-input" data-variable="${variable}" value="${colorValue}"
+                maxlength="7" placeholder="#FFFFFF"
+                style="width:80px;padding:2px 6px;border:1px solid var(--border-color);border-radius:4px;background:var(--primary-bg);color:var(--text-primary);font-size:10px;font-family:monospace;text-transform:uppercase;outline:none;flex-shrink:0;">
+        </div>
+    </div>
+    <div class="te-swatch" style="width:22px;height:22px;border-radius:5px;border:1px solid var(--border-color);background:${colorValue};flex-shrink:0;"></div>`;
 
                     const input = item.querySelector('input[type="color"]');
                     const swatch = item.querySelector('.te-swatch');
