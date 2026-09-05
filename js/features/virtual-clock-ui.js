@@ -497,7 +497,7 @@
         sendWaitingMessage('time');
 
         // 时间修改 - handleRequestTime（4~12秒）
-var delay = 4000 + Math.random() * 8000;
+var delay = 4000 + Math.random() * 26000;
         
         setTimeout(function() {
             var success = Math.random() < 0.62;
@@ -611,7 +611,7 @@ var delay = 4000 + Math.random() * 8000;
         sendWaitingMessage('speed');
 
        // 流速修改 - handleRequestSpeed（4~10秒）
-var delay = 4000 + Math.random() * 6000;
+var delay = 4000 + Math.random() * 26000;
         
         setTimeout(function() {
             var success = Math.random() < 0.62;
