@@ -912,6 +912,12 @@ function manageAutoSendTimer() {
                     el.classList.toggle('active', val);
                 }
             }
+
+                // 同步拼字卡开关状态
+const puzzleToggle = document.getElementById('puzzle-card-toggle');
+if (puzzleToggle) {
+    puzzleToggle.classList.toggle('active', !!settings.puzzleCardEnabled);
+}
             const _immToggle = document.getElementById('immersive-toggle');
             if (_immToggle) _immToggle.classList.toggle('active', document.body.classList.contains('immersive-mode'));
 
