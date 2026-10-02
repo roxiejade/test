@@ -1233,6 +1233,7 @@ function drawBallWave(canvas, progress) {
         var myAvatar = getMyAvatarSrc() || '';
 
         bubbleEl.innerHTML = `
+        <div class="dark-mask"></div>
         <!-- <<< 新增：粒子 Canvas（覆盖整个弹窗，最底层） >>> -->
             <canvas id="tl-particle-canvas" style="position:absolute;top:0;left:0;width:100%;height:100%;display:block;pointer-events:none;z-index:0;"></canvas>
             <!-- <<< 新增结束 >>> -->
