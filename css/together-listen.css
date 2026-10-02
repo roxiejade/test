@@ -937,3 +937,15 @@
     letter-spacing: 0.3px;
     padding-left: 0;
 }
+
+/* ================================================================
+   暗色蒙版（加在最后，避免被覆盖）
+   ================================================================ */
+.tl-bubble .dark-mask {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    border-radius: 18px;
+    background: rgba(0, 0, 0, 0.10);
+    pointer-events: none;
+}
