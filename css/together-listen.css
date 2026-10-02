@@ -328,7 +328,7 @@
         #FB8860 252deg,
         #131B20 306deg,
         #131B20 360deg);
-    filter: blur(60px) brightness(1.15) saturate(1);
+        filter: blur(60px) brightness(1.5);
     z-index: -2;
     border-radius: 18px;
     pointer-events: none;
