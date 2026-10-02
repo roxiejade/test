@@ -407,15 +407,80 @@
     width: 44px;
     height: 44px;
     border-radius: 50%;
-    overflow: hidden;
+    /* ⬇️ 原来是 hidden，会剪掉外圈金线，改成 visible ⬇️ */
+    overflow: visible;
     flex-shrink: 0;
     position: relative;
     background: rgba(255, 255, 255, 0.06);
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 2px solid rgba(255, 255, 255, 0.15);
+    /* ⬇️ 边框从 2px 改成 1.5px，颜色不变 ⬇️ */
+    border: 1.5px solid rgba(255, 255, 255, 0.18);
 }
+
+/* ⬇️⬇️⬇️ 新增：头像图片自身圆角，不受外圈影响 ⬇️⬇️⬇️ */
+.tl-bubble .tl-avatar-item img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    z-index: 1;
+}
+/* ⬆️⬆️⬆️ 新增结束 ⬆️⬆️⬆️ */
+/* ⬇️⬇️⬇️ 新增：香槟金流光（双道渐变） ⬇️⬇️⬇️ */
+.tl-bubble .tl-avatar-item::before {
+    content: '';
+    position: absolute;
+    /* 金圈比头像大 1.5px */
+    inset: -1.5px;
+    border-radius: 50%;
+    z-index: 0;
+    filter: blur(0.3px);
+    pointer-events: none;
+    /* 双道金色渐变：每道约 120°，高亮区约 30° */
+    background: conic-gradient(from 0deg,
+        rgba(210, 190, 148, 0.05) 0deg,
+        rgba(216, 198, 158, 0.20) 15deg,
+        rgba(226, 208, 168, 0.50) 30deg,
+        rgba(240, 224, 188, 0.85) 45deg,
+        rgba(248, 236, 206, 0.95) 55deg,
+        rgba(248, 236, 206, 0.95) 65deg,
+        rgba(240, 224, 188, 0.85) 75deg,
+        rgba(226, 208, 168, 0.50) 90deg,
+        rgba(216, 198, 158, 0.20) 105deg,
+        rgba(210, 190, 148, 0.05) 120deg,
+        rgba(210, 190, 148, 0.05) 180deg,
+        rgba(216, 198, 158, 0.20) 195deg,
+        rgba(226, 208, 168, 0.50) 210deg,
+        rgba(240, 224, 188, 0.85) 225deg,
+        rgba(248, 236, 206, 0.95) 235deg,
+        rgba(248, 236, 206, 0.95) 245deg,
+        rgba(240, 224, 188, 0.85) 255deg,
+        rgba(226, 208, 168, 0.50) 270deg,
+        rgba(216, 198, 158, 0.20) 285deg,
+        rgba(210, 190, 148, 0.05) 300deg,
+        rgba(210, 190, 148, 0.05) 360deg);
+    animation: spinGold 10s linear infinite;
+}
+
+/* 右头像逆时针转 */
+.tl-bubble .tl-avatar-right::before {
+    animation-name: spinGoldReverse;
+}
+
+@keyframes spinGold {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+@keyframes spinGoldReverse {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(-360deg); }
+}
+/* ⬆️⬆️⬆️ 新增结束 ⬆️⬆️⬆️ */
+
 .tl-bubble .tl-avatar-item img {
     width: 100%;
     height: 100%;
