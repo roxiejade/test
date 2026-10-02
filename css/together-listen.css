@@ -289,8 +289,8 @@
     left: 16px;
     z-index: 9997;
     display: none;
-    width: 150px;
-    height: 200px;
+    width: 135px;
+    height: 190px;
     background: rgba(0, 0, 0, 0.85);  /* ⬅️ 改为 0.85，更黑 */
     backdrop-filter: blur(12px);  /* ⬅️ 改为 12px，让粒子更清晰 */
     -webkit-backdrop-filter: blur(12px);
