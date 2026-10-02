@@ -1246,9 +1246,9 @@ function drawBallWave(canvas, progress) {
                 </span>
             </div>
             <div class="tl-avatars" id="tl-avatars-container" style="position:relative;overflow:visible;display:flex;align-items:center;justify-content:center;height:60px;width:100%;flex-shrink:0;background:transparent !important;">
-                <div class="tl-avatar-item tl-avatar-left" style="width:44px;height:44px;border-radius:50%;overflow:hidden;flex-shrink:0;position:relative;transform:translateX(5px);z-index:2;background:transparent !important;border:2px solid rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;">
-                    ${partnerAvatar ? '<img src="' + partnerAvatar + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">' : '<i class="fas fa-user" style="font-size:20px;display:flex;align-items:center;justify-content:center;width:100%;height:100%;"></i>'}
-                </div>
+                <div class="tl-avatar-item tl-avatar-left" style="width:44px;height:44px;border-radius:50%;overflow:visible;flex-shrink:0;position:relative;transform:translateX(5px);z-index:2;background:transparent !important;border:1.5px solid rgba(255,255,255,0.18);display:flex;align-items:center;justify-content:center;">
+    ${partnerAvatar ? '<img src="' + partnerAvatar + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">' : '<i class="fas fa-user" style="font-size:20px;display:flex;align-items:center;justify-content:center;width:100%;height:100%;"></i>'}
+</div>
                 <div class="tl-avatar-item tl-avatar-right" style="width:44px;height:44px;border-radius:50%;overflow:hidden;flex-shrink:0;position:relative;transform:translateX(-5px);z-index:1;background:transparent !important;border:2px solid rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;">
                     ${myAvatar ? '<img src="' + myAvatar + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">' : '<i class="fas fa-user" style="font-size:20px;display:flex;align-items:center;justify-content:center;width:100%;height:100%;"></i>'}
                 </div>
