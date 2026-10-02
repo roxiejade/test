@@ -289,22 +289,57 @@
     left: 16px;
     z-index: 9997;
     display: none;
-    width: 135px;
-    height: 190px;
-    background: rgba(0, 0, 0, 0.85);  /* ⬅️ 改为 0.85，更黑 */
-    backdrop-filter: blur(12px);  /* ⬅️ 改为 12px，让粒子更清晰 */
+    width: 135px;      /* ⬅️ 原 150px */
+    height: 190px;     /* ⬅️ 原 200px */
+    /* ⬇️ 原黑底，注释保留，方便恢复 ⬇️ */
+    /* background: rgba(0, 0, 0, 0.85); */
+    background: transparent;
+    /* ⬆️ 原黑底注释结束 ⬆️ */
+    backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border-radius: 18px;
-    padding: 16px 18px 14px;
-    border: 1px solid rgba(255, 255, 255, 0.06);  /* ⬅️ 边框调暗一点 */
+    padding: 11px 11px 9px;   /* ⬅️ 原 16px 18px 14px */
+    border: 1px solid rgba(255, 255, 255, 0.06);
     box-shadow: 0 12px 48px rgba(0, 0, 0, 0.5);
     animation: tlBubbleIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
     user-select: none;
     -webkit-user-select: none;
     display: flex;
     flex-direction: column;
-    overflow: hidden;  /* ⬅️ 改为 hidden，防止粒子溢出圆角 */
+    overflow: hidden;
+    isolation: isolate;   /* ⬅️ 新增：让伪元素层级只在气泡内生效 */
 }
+
+/* ⬇️⬇️⬇️ 新增：一起听流动彩色背景 ⬇️⬇️⬇️ */
+.tl-bubble::before {
+    content: '';
+    position: absolute;
+    top: -300px;
+    right: -300px;
+    bottom: -300px;
+    left: -300px;
+    background: conic-gradient(from 180deg at 50% 50%,
+        #131B20 -90deg,
+        #131B20 36deg,
+        #4F93F9 90deg,
+        #9098E8 144deg,
+        #D19FC0 198deg,
+        #FB8860 252deg,
+        #131B20 306deg,
+        #131B20 360deg);
+    filter: blur(60px) brightness(1.15) saturate(1);
+    z-index: -2;
+    border-radius: 18px;
+    pointer-events: none;
+    animation: tlMove 30s linear infinite;
+}
+
+@keyframes tlMove {
+    from { transform: rotate(180deg); }
+    to   { transform: rotate(540deg); }
+}
+/* ⬆️⬆️⬆️ 新增结束 ⬆️⬆️⬆️ */
+
 .tl-bubble.active {
     display: flex;
 }
