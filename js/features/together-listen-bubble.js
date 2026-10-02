@@ -1280,12 +1280,12 @@ function drawBallWave(canvas, progress) {
             setupEcgCanvas(canvas);
         }
 
-        // <<< 新增：初始化粒子 Canvas >>>
-        var particleCanvasEl = bubbleEl.querySelector('#tl-particle-canvas');
-        if (particleCanvasEl) {
-            initParticles(particleCanvasEl);
-        }
-        // <<< 新增结束 >>>
+                // ⬇️⬇️⬇️ 原粒子初始化，注释保留，随时可恢复 ⬇️⬇️⬇️
+        // var particleCanvasEl = bubbleEl.querySelector('#tl-particle-canvas');
+        // if (particleCanvasEl) {
+        //     initParticles(particleCanvasEl);
+        // }
+        // ⬆️⬆️⬆️ 原粒子初始化结束 ⬆️⬆️⬆️
 
         // 绑定气泡事件
         bindBubbleEvents();
@@ -1418,7 +1418,9 @@ function drawBallWave(canvas, progress) {
             bubbleEl.style.backgroundImage = '';
             bubbleEl.style.backgroundSize = '';
             bubbleEl.style.backgroundPosition = '';
-            bubbleEl.style.backgroundColor = 'rgba(0, 0, 0, 0.85)';  // ⬅️ 改成更黑的背景
+                        // ⬇️ 原黑底，注释保留
+            // bubbleEl.style.backgroundColor = 'rgba(0, 0, 0, 0.85)';
+            bubbleEl.style.backgroundColor = 'transparent';
             bubbleEl.style.backdropFilter = 'blur(12px)';  // ⬅️ 降低模糊让粒子更清晰
             bubbleEl.style.webkitBackdropFilter = 'blur(12px)';
         }
