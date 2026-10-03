@@ -12969,3 +12969,48 @@ html[data-theme="dark"] .period-stat-value { color: var(--accent-color-dark); }
 .action-icon-btn.edit i {
     font-size: 13px;
 }
+
+/* ═══════════════════════════════════════════════════════════
+   红包金额溢出修复 —— 大金额自动缩放，不裁切不溢出
+   ═══════════════════════════════════════════════════════════ */
+
+/* 1. 聊天流红包卡片里的金额 */
+.red-packet-card {
+    max-width: 195px;
+}
+.red-packet-card .rp-amount-text {
+    font-size: clamp(12px, 4.2vw, 18px) !important;
+    word-break: break-all !important;
+    overflow-wrap: anywhere !important;
+    max-width: 100%;
+    line-height: 1.2 !important;
+    display: block;
+    white-space: normal !important;
+}
+.red-packet-card .rp-content {
+    min-width: 0 !important;
+    overflow: hidden;
+}
+.red-packet-card .rp-msg-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+/* 2. 红包详情弹窗（点开后的金额） */
+#rp-receive-panel [style*="font-size:36px"],
+#rp-receive-panel [style*="font-size: 36px"] {
+    font-size: clamp(18px, 6.5vw, 36px) !important;
+    word-break: break-all !important;
+    overflow-wrap: anywhere !important;
+    max-width: 100%;
+    line-height: 1.15 !important;
+    padding: 0 8px;
+    box-sizing: border-box;
+}
+
+/* 3. 红包详情弹窗容器本身也允许多行 */
+#rp-receive-panel {
+    max-width: calc(100vw - 40px);
+}
