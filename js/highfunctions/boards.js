@@ -400,26 +400,43 @@ function bindStaticEvents() {
     // 详情页替换图片用的文件选择器
   const detailImgInput = document.getElementById('bv2-detail-img-input');
   if (detailImgInput) {
-    detailImgInput.onchange = async function(e) {
+        detailImgInput.onchange = async function(e) {
       const file = e.target.files[0];
       if (!file) return;
-      let base64 = '';
-      if (typeof optimizeImage === 'function') {
-        base64 = await optimizeImage(file);
-      } else {
-        base64 = await new Promise(resolve => {
-          const r = new FileReader();
-          r.onload = ev => resolve(ev.target.result);
-          r.readAsDataURL(file);
-        });
+      
+      if (typeof showNotification === 'function') showNotification('正在上传图片...', 'info', 2000);
+      
+      try {
+        // 1. 压缩
+        let compressed;
+        if (typeof optimizeImage === 'function') {
+          compressed = await optimizeImage(file, 800, 0.7);
+        } else {
+          compressed = await new Promise(resolve => {
+            const r = new FileReader();
+            r.onload = ev => resolve(ev.target.result);
+            r.readAsDataURL(file);
+          });
+        }
+        
+        // 2. 上传图床
+        const imgUrl = await uploadToImgHub(compressed);
+        
+        // 3. 存 URL
+        if (window._bv2_pendingImgId) {
+          if (!window._bv2_imgEdits) window._bv2_imgEdits = {};
+          window._bv2_imgEdits[window._bv2_pendingImgId] = { action: 'replace', data: imgUrl };
+          const imgEl = document.querySelector(`#bv2-img-${window._bv2_pendingImgId} img`);
+          if (imgEl) imgEl.src = imgUrl;
+          window._bv2_pendingImgId = null;
+        }
+        
+        if (typeof showNotification === 'function') showNotification('图片替换成功', 'success', 1500);
+      } catch (err) {
+        console.error('上传失败:', err);
+        if (typeof showNotification === 'function') showNotification('图片上传失败，请重试', 'error', 3000);
       }
-      if (window._bv2_pendingImgId) {
-        if (!window._bv2_imgEdits) window._bv2_imgEdits = {};
-        window._bv2_imgEdits[window._bv2_pendingImgId] = { action: 'replace', data: base64 };
-        const imgEl = document.querySelector(`#bv2-img-${window._bv2_pendingImgId} img`);
-        if (imgEl) imgEl.src = base64;
-        window._bv2_pendingImgId = null;
-      }
+      
       e.target.value = '';
     };
   }
@@ -716,8 +733,34 @@ function openCompose(mode, threadId, type) {
   }, 100);
 }
 
+  /* ⬇️⬇️⬇️ 新增：图床上传函数 ⬇️⬇️⬇️ */
+const IMGHUB_DOMAIN = 'https://94acf255.cloudflare-imgbed-2e7.pages.dev';
+const IMGHUB_AUTH_CODE = '';
 
-function handleImgSelect(e) {
+async function uploadToImgHub(base64) {
+    const blob = await (await fetch(base64)).blob();
+    const formData = new FormData();
+    formData.append('file', blob, 'image.jpg');
+    let url = IMGHUB_DOMAIN + '/upload';
+    if (IMGHUB_AUTH_CODE) {
+        url += '?authCode=' + encodeURIComponent(IMGHUB_AUTH_CODE);
+    }
+    const resp = await fetch(url, {
+        method: 'POST',
+        body: formData
+    });
+    const json = await resp.json();
+    if (json && json.data && json.data[0] && json.data[0].src) {
+        return IMGHUB_DOMAIN + json.data[0].src;
+    } else if (json && json.src) {
+        return IMGHUB_DOMAIN + json.src;
+    } else {
+        throw new Error('上传失败：' + JSON.stringify(json));
+    }
+}
+/* ⬆️⬆️⬆️ 新增结束 ⬆️⬆️⬆️ */
+
+async function handleImgSelect(e) {
   const file = e.target.files[0]; 
   if (!file) return;
   
@@ -726,25 +769,39 @@ function handleImgSelect(e) {
   const hint = document.getElementById('bv2-img-hint');
   const previewArea = document.getElementById('bv2-preview-area');
   
-  if (typeof optimizeImage === 'function') { 
-    optimizeImage(file).then(b => { 
-      selectedImage = b; 
-      previewImg.src = b;
-      previewWrap.style.display = 'block';
-      hint.style.display = 'inline';
-      previewArea.style.display = 'flex';
-    }); 
-  } else { 
-    const r = new FileReader(); 
-    r.onload = ev => { 
-      selectedImage = ev.target.result; 
-      previewImg.src = ev.target.result;
-      previewWrap.style.display = 'block';
-      hint.style.display = 'inline';
-      previewArea.style.display = 'flex';
-    }; 
-    r.readAsDataURL(file); 
+  if (typeof showNotification === 'function') showNotification('正在上传图片...', 'info', 2000);
+  
+  try {
+    // 1. 压缩
+    let compressed;
+    if (typeof optimizeImage === 'function') { 
+      compressed = await optimizeImage(file, 800, 0.7);
+    } else {
+      compressed = await new Promise(resolve => {
+        const r = new FileReader();
+        r.onload = ev => resolve(ev.target.result);
+        r.readAsDataURL(file);
+      });
+    }
+    
+    // 2. 上传到图床
+    const imgUrl = await uploadToImgHub(compressed);
+    
+    // 3. 只存 URL
+    selectedImage = imgUrl;
+    
+    // 4. 显示预览
+    previewImg.src = imgUrl;
+    previewWrap.style.display = 'block';
+    hint.style.display = 'inline';
+    previewArea.style.display = 'flex';
+    
+    if (typeof showNotification === 'function') showNotification('图片上传成功', 'success', 1500);
+  } catch (err) {
+    console.error('上传失败:', err);
+    if (typeof showNotification === 'function') showNotification('图片上传失败，请重试', 'error', 3000);
   }
+  
   e.target.value = '';
 }
 
