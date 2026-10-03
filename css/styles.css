@@ -12998,7 +12998,7 @@ html[data-theme="dark"] .period-stat-value { color: var(--accent-color-dark); }
     max-width: 100%;
 }
 
-/* 2. 红包详情弹窗 —— 金额默认 36px，由 JS 按长度动态调整 */
+/* 2. 红包详情弹窗 —— 金额锁定高度，字号自适应，不引起布局跳动 */
 body > div[style*="position: fixed"][style*="z-index: 1000"] div[style*="font-size:36px"],
 body > div[style*="position:fixed"][style*="z-index:1000"] div[style*="font-size:36px"] {
     font-size: 36px !important;
@@ -13007,9 +13007,13 @@ body > div[style*="position:fixed"][style*="z-index:1000"] div[style*="font-size
     line-height: 1.15 !important;
     box-sizing: border-box !important;
     padding: 0 4px !important;
-    display: block !important;
-    overflow: visible !important;
-            transition: font-size 0.15s ease-out;   /* ← 加这行 */
+    display: flex !important;            /* ← 用 flex 让内容在固定高度里居中 */
+    align-items: center !important;
+    justify-content: center !important;
+    height: 48px !important;             /* ← 锁定高度为 36px 字号时的高度 */
+    min-height: 48px !important;
+    max-height: 48px !important;
+    transition: font-size 0.18s ease-out;
 }
 
 /* 3. 红包详情弹窗容器本身也允许多行 */
