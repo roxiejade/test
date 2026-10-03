@@ -31,6 +31,16 @@
     /** 红包袋 SVG 图标 */
     var RP_SVG = '<svg width="36" height="44" viewBox="0 0 20 28" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="16" height="18" rx="2"/><path d="M2 8l8 6 8-6"/><circle cx="10" cy="14" r="2.5" fill="#fff" stroke="none"/></svg>';
 
+    /** 红包详情弹窗金额 —— 按文本长度决定字号，一行装下不溢出 */
+    function rpAmountFontSize(str) {
+        var len = String(str || '').length;
+        if (len <= 8)  return 36;   // ¥5.20, ¥1,234.56
+        if (len <= 11) return 28;   // ¥12,345.67, ¥1,234,567.89
+        if (len <= 14) return 22;   // ¥123,456,789.99
+        if (len <= 17) return 18;   // ¥9,999,999,999.99
+        return 14;                  // 更长
+    }
+    
     // ========== 节日检测 ==========
 
 window.getFestivals = function getFestivals() {
@@ -510,7 +520,7 @@ panel.innerHTML =
         '</div>' +
         '<div style="font-size:13px;color:rgba(0,0,0,0.5);margin-bottom:6px;">' + senderName + ' 发来的红包</div>' +
         '<div style="font-size:18px;font-weight:700;color:#7A5C1A;">已退回</div>' +
-        '<div style="font-size:28px;font-weight:700;color:#7A5C1A;margin-top:8px;">&yen;' + fmt(record.amount) + '</div>' +
+        '<div class="rp-amount-value" style="font-size:' + rpAmountFontSize('¥' + fmt(record.amount)) + 'px;font-weight:700;color:#7A5C1A;margin-top:8px;white-space:nowrap;">¥' + fmt(record.amount) + '</div>' +
     '</div>' +
     '<div style="padding:20px 20px 30px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(255,255,255,0.15);">' +
         '<button style="width:60px;height:60px;border-radius:50%;background:#d5cdcd;color:#888;font-size:22px;font-weight:700;border:none;box-shadow:none;cursor:default;">已退回</button>' +
@@ -571,7 +581,7 @@ panel.innerHTML =
                         '</div>' +
                         '<div style="font-size:13px;color:rgba(0,0,0,0.5);margin-bottom:6px;">' + senderName + ' 发来的红包</div>' +
                         '<div style="font-size:18px;font-weight:700;color:#7A5C1A;">' + record.message + '</div>' +
-                        '<div style="font-size:28px;font-weight:700;color:#7A5C1A;margin-top:8px;">&yen;' + fmt(record.amount) + '</div>' +
+                        '<div class="rp-amount-value" style="font-size:' + rpAmountFontSize('¥' + fmt(record.amount)) + 'px;font-weight:700;color:#7A5C1A;margin-top:8px;white-space:nowrap;">¥' + fmt(record.amount) + '</div>' +
                     '</div>' +
                     '<div style="padding:20px 20px 30px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(255,255,255,0.15);">' +
                         '<button style="width:60px;height:60px;border-radius:50%;background:#d5cdcd;color:#888;font-size:22px;font-weight:700;border:none;box-shadow:none;cursor:default;">已领取</button>' +
@@ -1209,7 +1219,7 @@ try {
                     '</div>' +
                     '<div style="font-size:13px;color:rgba(0,0,0,0.5);margin-bottom:4px;">' + senderName + ' 发来的红包</div>' +
                     '<div style="font-size:16px;color:#5D4037;font-weight:500;margin-bottom:6px;">' + record.message + '</div>' +
-                    '<div style="font-size:36px;font-weight:700;color:#5D4037;">&yen;' + fmt(record.amount) + '</div>' +
+                    '<div class="rp-amount-value" style="font-size:' + rpAmountFontSize('¥' + fmt(record.amount)) + 'px;font-weight:700;color:#5D4037;white-space:nowrap;">¥' + fmt(record.amount) + '</div>' +
                 '</div>' +
             '</div>' +
             '<div style="' + bottomBg + 'padding:16px 20px 24px;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:0 0 16px 16px;position:relative;">' +
@@ -1245,7 +1255,7 @@ try {
                     '</div>' +
                     '<div style="font-size:13px;color:rgba(0,0,0,0.5);margin-bottom:4px;">' + senderName + ' 发来的红包</div>' +
                     '<div style="font-size:16px;color:#5D4037;font-weight:500;margin-bottom:6px;">已退回</div>' +
-                    '<div style="font-size:36px;font-weight:700;color:#5D4037;">&yen;' + fmt(record.amount) + '</div>' +
+                    '<div class="rp-amount-value" style="font-size:' + rpAmountFontSize('¥' + fmt(record.amount)) + 'px;font-weight:700;color:#5D4037;white-space:nowrap;">¥' + fmt(record.amount) + '</div>' +
                 '</div>' +
             '</div>' +
             '<div style="' + bottomBg + 'padding:16px 20px 24px;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:0 0 16px 16px;position:relative;">' +
