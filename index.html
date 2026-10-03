@@ -3022,76 +3022,7 @@
     <script src="js/app.js"></script>
         <script src="js/features/survey.js"></script>
 
-        <script>
-/* ── 红包详情弹窗：按金额长度自适应字号 ── */
-(function(){
-    function adjustRedPacketAmountFont() {
-        // 找到所有红包详情弹窗 overlay
-        var overlays = document.querySelectorAll('body > div[style*="position: fixed"][style*="z-index: 1000"], body > div[style*="position:fixed"][style*="z-index:1000"]');
-        overlays.forEach(function(overlay) {
-            // 弹窗内的金额元素（style 里含 font-size:36px 的 div，或文本以 ¥ 开头的叶子 div）
-            var amountEls = overlay.querySelectorAll('div');
-            amountEls.forEach(function(el) {
-                if (el.children.length > 0) return;      // 只要叶子节点
-                var txt = (el.textContent || '').trim();
-                if (txt.indexOf('¥') !== 0) return;      // 只处理以 ¥ 开头的
-                var style = el.getAttribute('style') || '';
-                if (style.indexOf('font-size:36px') === -1 && style.indexOf('font-size: 36px') === -1) return;
-
-                // 按长度动态设定字号
-                var len = txt.length;
-                var fs;
-                if (len <= 8)       fs = 36;   // ¥5.20, ¥1,234.56
-                else if (len <= 11) fs = 28;   // ¥12,345.67, ¥1,234,567.89
-                else if (len <= 14) fs = 22;   // ¥123,456,789.99
-                else if (len <= 17) fs = 18;   // ¥9,999,999,999.99
-                else                fs = 14;   // 更长
-
-                el.style.setProperty('font-size', fs + 'px', 'important');
-                el.style.setProperty('white-space', 'nowrap', 'important');
-                el.style.setProperty('word-break', 'normal', 'important');
-                el.style.setProperty('overflow-wrap', 'normal', 'important');
-            });
-        });
-    }
-
-    // 页面加载后先跑一次
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', adjustRedPacketAmountFont);
-    } else {
-        adjustRedPacketAmountFont();
-    }
-
-    // 观察 DOM 变化（弹窗打开时）
-    var observer = new MutationObserver(function(mutations) {
-        var needAdjust = false;
-        mutations.forEach(function(m) {
-            if (m.addedNodes.length) {
-                for (var i = 0; i < m.addedNodes.length; i++) {
-                    var node = m.addedNodes[i];
-                    if (node.nodeType === 1 && node.getAttribute) {
-                        var s = node.getAttribute('style') || '';
-                        if (s.indexOf('z-index: 1000') !== -1 || s.indexOf('z-index:1000') !== -1) {
-                            needAdjust = true;
-                            break;
-                        }
-                    }
-                }
-            }
-        });
-        if (needAdjust) {
-            // 延迟一点等 DOM 完成
-            setTimeout(adjustRedPacketAmountFont, 50);
-        }
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
-
-    // 兜底：每秒检查一次，防止 observer 漏掉
-    setInterval(adjustRedPacketAmountFont, 1000);
-})();
-</script>
-        
-
+       
         
 </body>
 </html>
