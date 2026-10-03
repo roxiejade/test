@@ -12998,10 +12998,10 @@ html[data-theme="dark"] .period-stat-value { color: var(--accent-color-dark); }
     max-width: 100%;
 }
 
-/* 2. 红包详情弹窗 —— 金额不折行，整体缩放 */
+/* 2. 红包详情弹窗 —— 金额默认 36px，由 JS 按长度动态调整 */
 body > div[style*="position: fixed"][style*="z-index: 1000"] div[style*="font-size:36px"],
 body > div[style*="position:fixed"][style*="z-index:1000"] div[style*="font-size:36px"] {
-    font-size: clamp(10px, 4vw, 36px) !important;
+    font-size: 36px !important;
     white-space: nowrap !important;
     max-width: 100% !important;
     line-height: 1.15 !important;
