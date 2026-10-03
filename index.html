@@ -26,6 +26,7 @@
 <link rel="stylesheet" href="css/together-listen.css">
     <!-- 虚拟时钟样式 -->
 <link rel="stylesheet" href="css/virtual-clock.css">
+    <link rel="stylesheet" href="css/survey.css">
 
     <style id="css-live-preview-style"></style>
 </head>
@@ -1845,6 +1846,10 @@
                     <div class="settings-item" id="music-player-toggle">
                         <i class="fas fa-music"></i><span>悬浮音乐播放器</span>
                     </div>
+                    <div class="settings-item" id="survey-function">
+    <i class="fas fa-clipboard-list"></i><span>问卷</span>
+    <span id="survey-entry-badge" style="display:none;position:absolute;top:10px;right:10px;width:8px;height:8px;background:var(--accent-color);border-radius:50%;border:1.5px solid var(--primary-bg);pointer-events:none;"></span>
+</div>
                     <div class="settings-item settings-item-disabled" id="coming-soon-placeholder">
                         <i class="fas fa-hourglass-half"></i><span>敬请期待</span>
                     </div>
@@ -1953,6 +1958,75 @@
                     <i class="fas fa-arrow-left"></i> 返回
                 </button>
                 <button class="modal-btn modal-btn-secondary" id="close-period">关闭</button>
+            </div>
+        </div>
+    </div>
+
+            <!-- ========== 问卷功能：历史记录列表页 ========== -->
+    <div class="modal" id="survey-modal">
+        <div class="modal-content" id="survey-list-content" style="max-width:400px;max-height:85vh;">
+            <div class="modal-title">
+                <span><i class="fas fa-clipboard-list"></i> 问卷</span>
+            </div>
+            <div class="survey-toolbar-row" id="survey-toolbar-row">
+                <div id="survey-fav-filter-bar"></div>
+                <div class="survey-toolbar-actions">
+                    <button type="button" class="survey-icon-btn" id="survey-trash-btn" title="回收站"><i class="fas fa-trash"></i></button>
+                    <button type="button" class="survey-icon-btn" id="survey-add-btn" title="创建问卷"><i class="fas fa-plus"></i></button>
+                </div>
+            </div>
+            <div id="survey-list-body"></div>
+            <div class="modal-buttons" style="position:sticky;bottom:0;background:var(--secondary-bg);border-top:1px solid var(--border-color);padding:12px 0 0;z-index:10;margin-top:8px;margin-left:-24px;margin-right:-24px;padding-left:max(24px, env(safe-area-inset-left, 24px));padding-right:max(24px, env(safe-area-inset-right, 24px));padding-bottom:max(14px, env(safe-area-inset-bottom, 0px));">
+                <button class="modal-btn modal-btn-secondary" id="survey-list-back-btn" onclick="(function(){hideModal(document.getElementById('survey-modal'));showModal(document.getElementById('advanced-modal'))})()">
+                    <i class="fas fa-arrow-left"></i> 返回
+                </button>
+                <button class="modal-btn modal-btn-secondary" id="survey-list-close">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== 问卷功能：历史记录详情页 ========== -->
+    <div class="modal" id="survey-detail-modal">
+        <div class="modal-content" id="survey-detail-content" style="max-width:400px;max-height:85vh;">
+            <div class="modal-title">
+                <button type="button" class="survey-icon-btn" id="survey-detail-back" style="margin-right:2px;"><i class="fas fa-arrow-left"></i></button>
+                <span>问卷详情</span>
+            </div>
+            <div id="survey-detail-body"></div>
+            <div class="modal-buttons" id="survey-detail-actions"></div>
+        </div>
+    </div>
+
+    <!-- ========== 问卷功能：回收站 ========== -->
+    <div class="modal" id="survey-trash-modal">
+        <div class="modal-content" style="max-width:380px;max-height:80vh;">
+            <div class="modal-title">
+                <i class="fas fa-trash"></i><span>问卷回收站</span>
+            </div>
+            <div style="font-size:11.5px;color:var(--text-secondary);margin-bottom:10px;">删除的问卷会保留30天，之后自动清除</div>
+            <div id="survey-trash-body"></div>
+            <div class="modal-buttons">
+                <button class="modal-btn modal-btn-secondary" id="survey-trash-close">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== 问卷功能 Step 1：创建问卷弹窗（我问梦角） ========== -->
+    <div class="modal" id="survey-create-modal">
+        <div class="modal-content" id="survey-create-content">
+            <div class="modal-title">
+                <i class="fas fa-clipboard-list"></i><span>创建问卷</span>
+            </div>
+
+            <div id="survey-q-list"></div>
+
+            <button type="button" class="modal-btn modal-btn-secondary" id="survey-add-q-btn" style="width:100%;margin-top:6px;">
+                <i class="fas fa-plus"></i> 新增问题
+            </button>
+
+            <div class="modal-buttons" style="position:sticky;bottom:0;background:var(--secondary-bg);border-top:1px solid var(--border-color);padding:12px 0 0;z-index:10;margin-top:14px;margin-left:-24px;margin-right:-24px;padding-left:24px;padding-right:24px;padding-bottom:max(14px, env(safe-area-inset-bottom, 0px));">
+                <button class="modal-btn modal-btn-secondary" id="survey-create-cancel">取消</button>
+                <button class="modal-btn modal-btn-primary" id="survey-create-send" disabled>发送</button>
             </div>
         </div>
     </div>
@@ -2932,6 +3006,7 @@
 <script src="js/features/virtual-clock-ui.js"></script>
         <script src="js/features/virtual-clock-trigger.js"></script>
     <script src="js/app.js"></script>
+        <script src="js/features/survey.js"></script>
         
 
         
