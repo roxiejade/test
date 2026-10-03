@@ -750,15 +750,34 @@ async function uploadToImgHub(base64) {
         body: formData
     });
     const json = await resp.json();
-    if (json && json.data && json.data[0] && json.data[0].src) {
-        return IMGHUB_DOMAIN + json.data[0].src;
+    
+    // ⬇️⬇️⬇️ 兼容多种返回格式 ⬇️⬇️⬇️
+    let src = null;
+    if (Array.isArray(json) && json[0] && json[0].src) {
+        // 格式：[{ src: "..." }]   ← 你的图床是这个
+        src = json[0].src;
+    } else if (json && json.data && json.data[0] && json.data[0].src) {
+        // 格式：{ data: [{ src: "..." }] }
+        src = json.data[0].src;
     } else if (json && json.src) {
-        return IMGHUB_DOMAIN + json.src;
+        // 格式：{ src: "..." }
+        src = json.src;
+    } else if (json && json.data && json.data.src) {
+        // 格式：{ data: { src: "..." } }
+        src = json.data.src;
+    }
+    
+    if (src) {
+        // 如果 src 是完整 URL，直接用；否则拼域名
+        if (src.startsWith('http')) {
+            return src;
+        }
+        return IMGHUB_DOMAIN + src;
     } else {
         throw new Error('上传失败：' + JSON.stringify(json));
     }
+    // ⬆️⬆️⬆️ 兼容结束 ⬆️⬆️⬆️
 }
-/* ⬆️⬆️⬆️ 新增结束 ⬆️⬆️⬆️ */
 
 async function handleImgSelect(e) {
   const file = e.target.files[0]; 
