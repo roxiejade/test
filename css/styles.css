@@ -12998,17 +12998,17 @@ html[data-theme="dark"] .period-stat-value { color: var(--accent-color-dark); }
     max-width: 100%;
 }
 
-/* 2. 红包详情弹窗 —— 金额自动缩放（选择器不用 id，改用 style 特征匹配） */
+/* 2. 红包详情弹窗 —— 金额不折行，整体缩放 */
 body > div[style*="position: fixed"][style*="z-index: 1000"] div[style*="font-size:36px"],
 body > div[style*="position:fixed"][style*="z-index:1000"] div[style*="font-size:36px"] {
-    font-size: clamp(16px, 5.5vw, 36px) !important;
-    word-break: break-all !important;
-    overflow-wrap: anywhere !important;
+    font-size: clamp(10px, 4vw, 36px) !important;
+    white-space: nowrap !important;
     max-width: 100% !important;
     line-height: 1.15 !important;
     box-sizing: border-box !important;
     padding: 0 4px !important;
     display: block !important;
+    overflow: visible !important;
 }
 
 /* 3. 红包详情弹窗容器本身也允许多行 */
