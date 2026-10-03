@@ -2003,4 +2003,56 @@ document.addEventListener('visibilitychange', function() {
 
 console.log('[BoardReply] 留言板回复弹窗已加载（envelope 风格）');
 
+  /* ⬇️⬇️⬇️ 临时：把留言板旧图上传到图床 ⬇️⬇️⬇️ */
+window._bv2_uploadOldImages = async function() {
+    if (!confirm('把留言板里所有旧图上传到图床？（图会保留，留言板变快）')) return;
+    
+    const boardData = await localforage.getItem('boardDataV2');
+    if (!boardData) { alert('无数据'); return; }
+    
+    let total = 0, done = 0, failed = 0;
+    
+    const countImgs = (threads) => {
+        threads.forEach(t => {
+            (t.replies || []).forEach(r => {
+                if (r.image && r.image.indexOf('data:image') === 0) total++;
+            });
+        });
+    };
+    countImgs(boardData.myThreads || []);
+    countImgs(boardData.partnerThreads || []);
+    
+    if (total === 0) { alert('没有旧图需要上传'); return; }
+    alert('找到 ' + total + ' 张旧图，开始上传...（需要 1-2 分钟，别关页面）');
+    
+    const uploadAll = async (threads) => {
+        for (const t of threads) {
+            for (const r of (t.replies || [])) {
+                if (r.image && r.image.indexOf('data:image') === 0) {
+                    try {
+                        const url = await uploadToImgHub(r.image);
+                        r.image = url;
+                        done++;
+                        console.log('已上传 ' + done + '/' + total);
+                    } catch(e) {
+                        failed++;
+                        console.error('上传失败', e);
+                    }
+                }
+            }
+        }
+    };
+    
+    await uploadAll(boardData.myThreads || []);
+    await uploadAll(boardData.partnerThreads || []);
+    
+    await localforage.setItem('boardDataV2', boardData);
+    window.boardDataV2 = boardData;
+    
+    alert('完成！成功 ' + done + ' 张，失败 ' + failed + ' 张\n即将刷新页面');
+    location.reload();
+};
+/* ⬆️⬆️⬆️ 新增结束 ⬆️⬆️⬆️ */
+
+
   })();
