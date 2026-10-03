@@ -741,10 +741,14 @@ async function uploadToImgHub(base64) {
     const blob = await (await fetch(base64)).blob();
     const formData = new FormData();
     formData.append('file', blob, 'image.jpg');
-    let url = IMGHUB_DOMAIN + '/upload';
+        let url = IMGHUB_DOMAIN + '/upload';
+    const params = [];
+    params.push('uploadChannel=huggingface');
+    params.push('uploadFolder=photos');
     if (IMGHUB_AUTH_CODE) {
-        url += '?authCode=' + encodeURIComponent(IMGHUB_AUTH_CODE);
+        params.push('authCode=' + encodeURIComponent(IMGHUB_AUTH_CODE));
     }
+    url += '?' + params.join('&');
     const resp = await fetch(url, {
         method: 'POST',
         body: formData
