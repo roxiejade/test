@@ -1433,6 +1433,16 @@ autoSendSlider.addEventListener('change', () => {
 
 
         function initNewFeatureListeners() {
+
+                // Step 2：入口改成先打开历史列表页，"+"里再选"问梦角"打开创建弹窗
+    const surveyEntry = document.getElementById('survey-function');
+    if (surveyEntry) {
+        surveyEntry.addEventListener('click', () => {
+            hideModal(DOMElements.advancedModal.modal);
+            if (typeof window._surveyOpenListModal === 'function') window._surveyOpenListModal();
+        });
+    }
+            
             const flEntry = document.getElementById('fortune-lenormand-function');
             if (flEntry) {
                 flEntry.addEventListener('click', () => {
