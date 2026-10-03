@@ -767,43 +767,73 @@ function removeSelectedImage() {
 
 // ========== 👆 添加结束 ==========
 
+  /* ⬇️⬇️⬇️ 新增：发送防连点锁 ⬇️⬇️⬇️ */
+let _isSubmitting = false;
+/* ⬆️⬆️⬆️ 新增结束 ⬆️⬆️⬆️ */
+
 async function submitPost() {
-  const text = document.getElementById('bv2-compose-text')?.value.trim() || '';
-  const hasStickers = window._bv2_selectedStickers && window._bv2_selectedStickers.length > 0;
-  if (!text && !selectedImage && !hasStickers) {
-    if(typeof showNotification === 'function') showNotification('内容不能为空', 'warning');
-    return;
+  /* ⬇️⬇️⬇️ 防连点：正在发送时，直接返回 ⬇️⬇️⬇️ */
+  if (_isSubmitting) return;
+  _isSubmitting = true;
+
+  const sendBtn = document.getElementById('board-compose-send-btn');
+  const originalBtnText = sendBtn ? sendBtn.innerHTML : '';
+  if (sendBtn) {
+    sendBtn.disabled = true;
+    sendBtn.style.opacity = '0.5';
+    sendBtn.style.cursor = 'not-allowed';
+    sendBtn.innerHTML = '发送中...';
   }
-  const newReply = { 
-    id: genId(), 
-    sender: 'me', 
-    text, 
-    image: selectedImage || null, 
-    sticker: null, 
-    stickers: window._bv2_selectedStickers || [],
-    timestamp: Date.now() 
-};
-  if (currentComposeMode === 'new') {
-    boardData.myThreads.push({ id: genId(), starter: 'me', createdAt: Date.now(), replies: [newReply] });
-  } else {
-    const t = (currentComposeType === 'me' ? boardData.myThreads : boardData.partnerThreads).find(t => t.id === currentThreadId);
-    if(t) { t.replies.push(newReply); delete t.expectedReplyTime; }
-  }
-  await saveData();
-  checkStatus();
-  // 清空表情包选择
-window._bv2_selectedStickers = [];
-updateStickerPreview();
-  
-  // ✅ 核心修复
-  hideModal(document.getElementById('board-compose-modal'));
-  if(typeof showNotification === 'function') showNotification('发布成功', 'success');
-  
-  if (currentComposeMode === 'new') {
-    switchTab(currentComposeType);
-    showModal(document.getElementById('envelope-board-modal'));
-  } else {
-    setTimeout(() => openDetail(currentThreadId, currentComposeType), 100);
+  /* ⬆️⬆️⬆️ 防连点结束 ⬆️⬆️⬆️ */
+
+  try {
+    const text = document.getElementById('bv2-compose-text')?.value.trim() || '';
+    const hasStickers = window._bv2_selectedStickers && window._bv2_selectedStickers.length > 0;
+    if (!text && !selectedImage && !hasStickers) {
+      if(typeof showNotification === 'function') showNotification('内容不能为空', 'warning');
+      return;
+    }
+    const newReply = { 
+      id: genId(), 
+      sender: 'me', 
+      text, 
+      image: selectedImage || null, 
+      sticker: null, 
+      stickers: window._bv2_selectedStickers || [],
+      timestamp: Date.now() 
+    };
+    if (currentComposeMode === 'new') {
+      boardData.myThreads.push({ id: genId(), starter: 'me', createdAt: Date.now(), replies: [newReply] });
+    } else {
+      const t = (currentComposeType === 'me' ? boardData.myThreads : boardData.partnerThreads).find(t => t.id === currentThreadId);
+      if(t) { t.replies.push(newReply); delete t.expectedReplyTime; }
+    }
+    await saveData();
+    checkStatus();
+    // 清空表情包选择
+    window._bv2_selectedStickers = [];
+    updateStickerPreview();
+    
+    // ✅ 核心修复
+    hideModal(document.getElementById('board-compose-modal'));
+    if(typeof showNotification === 'function') showNotification('发布成功', 'success');
+    
+    if (currentComposeMode === 'new') {
+      switchTab(currentComposeType);
+      showModal(document.getElementById('envelope-board-modal'));
+    } else {
+      setTimeout(() => openDetail(currentThreadId, currentComposeType), 100);
+    }
+  } finally {
+    /* ⬇️⬇️⬇️ 无论成功失败，恢复按钮 + 解除锁 ⬇️⬇️⬇️ */
+    _isSubmitting = false;
+    if (sendBtn) {
+      sendBtn.disabled = false;
+      sendBtn.style.opacity = '';
+      sendBtn.style.cursor = '';
+      sendBtn.innerHTML = originalBtnText;
+    }
+    /* ⬆️⬆️⬆️ 恢复结束 ⬆️⬆️⬆️ */
   }
 }
 
