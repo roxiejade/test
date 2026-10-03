@@ -605,12 +605,13 @@ function buildOneCycle(leftBaselinePx, rightBaselinePx, stretch, drawW) {
         ctx.closePath();
         ctx.stroke();
 
-        if (litLength > 0) {
+                if (litLength > 0) {
             var litCount = Math.floor(litLength * pathPoints.length);
             if (litCount > 1) {
-                ctx.shadowColor = 'rgba(120, 200, 255, 0.6)';
+                /* ⬇️ 白金 ⬇️ */
+                ctx.shadowColor = 'rgba(235, 230, 255, 0.65)';
                 ctx.shadowBlur = 16;
-                ctx.strokeStyle = 'rgba(200, 235, 255, 0.9)';
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.95)';
                 ctx.lineWidth = 2.2;
                 ctx.beginPath();
                 for (var i = 0; i < litCount; i++) {
@@ -618,9 +619,9 @@ function buildOneCycle(leftBaselinePx, rightBaselinePx, stretch, drawW) {
                     else ctx.lineTo(pathPoints[i].x, pathPoints[i].y);
                 }
                 ctx.stroke();
-                ctx.shadowColor = 'rgba(100, 180, 255, 0.25)';
+                ctx.shadowColor = 'rgba(225, 220, 245, 0.25)';
                 ctx.shadowBlur = 30;
-                ctx.strokeStyle = 'rgba(150, 220, 255, 0.15)';
+                ctx.strokeStyle = 'rgba(240, 238, 255, 0.16)';
                 ctx.lineWidth = 6;
                 ctx.beginPath();
                 for (var i = 0; i < litCount; i++) {
@@ -628,9 +629,9 @@ function buildOneCycle(leftBaselinePx, rightBaselinePx, stretch, drawW) {
                     else ctx.lineTo(pathPoints[i].x, pathPoints[i].y);
                 }
                 ctx.stroke();
-                ctx.shadowColor = 'rgba(100, 180, 255, 0.08)';
+                ctx.shadowColor = 'rgba(225, 220, 245, 0.09)';
                 ctx.shadowBlur = 50;
-                ctx.strokeStyle = 'rgba(100, 180, 255, 0.06)';
+                ctx.strokeStyle = 'rgba(230, 225, 250, 0.07)';
                 ctx.lineWidth = 12;
                 ctx.beginPath();
                 for (var i = 0; i < litCount; i++) {
@@ -675,14 +676,15 @@ function buildOneCycle(leftBaselinePx, rightBaselinePx, stretch, drawW) {
         ctx.closePath();
         ctx.stroke();
 
-        if (showGlow && litLength > 0) {
+                if (showGlow && litLength > 0) {
             var litEdges = Math.ceil(litLength * 3);
             var litCount = litEdges + 1;
             if (litCount > pts.length) litCount = pts.length;
             if (litCount >= 2) {
-                ctx.shadowColor = 'rgba(120, 200, 255, 0.6)';
+                /* ⬇️ 白金 ⬇️ */
+                ctx.shadowColor = 'rgba(235, 230, 255, 0.65)';
                 ctx.shadowBlur = 16;
-                ctx.strokeStyle = 'rgba(200, 235, 255, 0.9)';
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.95)';
                 ctx.lineWidth = 2.2;
                 ctx.beginPath();
                 for (var i = 0; i < litCount; i++) {
@@ -692,9 +694,9 @@ function buildOneCycle(leftBaselinePx, rightBaselinePx, stretch, drawW) {
                     else ctx.lineTo(px, py);
                 }
                 ctx.stroke();
-                ctx.shadowColor = 'rgba(100, 180, 255, 0.25)';
+                ctx.shadowColor = 'rgba(225, 220, 245, 0.25)';
                 ctx.shadowBlur = 30;
-                ctx.strokeStyle = 'rgba(150, 220, 255, 0.15)';
+                ctx.strokeStyle = 'rgba(240, 238, 255, 0.16)';
                 ctx.lineWidth = 6;
                 ctx.beginPath();
                 for (var i = 0; i < litCount; i++) {
@@ -704,9 +706,9 @@ function buildOneCycle(leftBaselinePx, rightBaselinePx, stretch, drawW) {
                     else ctx.lineTo(px, py);
                 }
                 ctx.stroke();
-                ctx.shadowColor = 'rgba(100, 180, 255, 0.08)';
+                ctx.shadowColor = 'rgba(225, 220, 245, 0.09)';
                 ctx.shadowBlur = 50;
-                ctx.strokeStyle = 'rgba(100, 180, 255, 0.06)';
+                ctx.strokeStyle = 'rgba(230, 225, 250, 0.07)';
                 ctx.lineWidth = 12;
                 ctx.beginPath();
                 for (var i = 0; i < litCount; i++) {
@@ -780,11 +782,12 @@ if (FIXED_SHOW_GLOW) {
             glowPoints.push(data[i]);
         }
     }
-        if (glowPoints.length > 1) {
-            ctx.shadowColor = 'rgba(120, 200, 255, 0.5)';
+                if (glowPoints.length > 1) {
+            /* ⬇️ 白金 ⬇️ */
+            ctx.shadowColor = 'rgba(230, 225, 245, 0.5)';
             ctx.shadowBlur = 18;
             ctx.lineWidth = 3.0;
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.95)';
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.98)';
             ctx.beginPath();
             for (var i = 0; i < glowPoints.length; i++) {
                 var gx = pad + glowPoints[i].normX * drawW + FIXED_OFF_X;
@@ -793,10 +796,10 @@ if (FIXED_SHOW_GLOW) {
                 else ctx.lineTo(gx, gy);
             }
             ctx.stroke();
-            ctx.shadowColor = 'rgba(100, 180, 255, 0.3)';
+            ctx.shadowColor = 'rgba(225, 220, 245, 0.3)';
             ctx.shadowBlur = 30;
             ctx.lineWidth = 8;
-            ctx.strokeStyle = 'rgba(150, 220, 255, 0.2)';
+            ctx.strokeStyle = 'rgba(240, 238, 255, 0.22)';
             ctx.beginPath();
             for (var i = 0; i < glowPoints.length; i++) {
                 var hx = pad + glowPoints[i].normX * drawW + FIXED_OFF_X;
@@ -805,10 +808,10 @@ if (FIXED_SHOW_GLOW) {
                 else ctx.lineTo(hx, hy);
             }
             ctx.stroke();
-            ctx.shadowColor = 'rgba(100, 180, 255, 0.12)';
+            ctx.shadowColor = 'rgba(225, 220, 245, 0.13)';
             ctx.shadowBlur = 50;
             ctx.lineWidth = 16;
-            ctx.strokeStyle = 'rgba(100, 180, 255, 0.08)';
+            ctx.strokeStyle = 'rgba(230, 225, 250, 0.09)';
             ctx.beginPath();
             for (var i = 0; i < glowPoints.length; i++) {
                 var fx = pad + glowPoints[i].normX * drawW + FIXED_OFF_X;
