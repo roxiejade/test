@@ -13009,6 +13009,7 @@ body > div[style*="position:fixed"][style*="z-index:1000"] div[style*="font-size
     padding: 0 4px !important;
     display: block !important;
     overflow: visible !important;
+            transition: font-size 0.15s ease-out;   /* ← 加这行 */
 }
 
 /* 3. 红包详情弹窗容器本身也允许多行 */
