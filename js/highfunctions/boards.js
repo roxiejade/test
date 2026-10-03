@@ -2054,5 +2054,33 @@ window._bv2_uploadOldImages = async function() {
 };
 /* ⬆️⬆️⬆️ 新增结束 ⬆️⬆️⬆️ */
 
+  /* ⬇️⬇️⬇️ 临时：修复图片路径（/file/ → /file/photos/） ⬇️⬇️⬇️ */
+window._bv2_fixImagePaths = async function() {
+    if (!confirm('把所有留言板图片路径 /file/ 改成 /file/photos/？（修复 404）')) return;
+    
+    const data = await localforage.getItem('boardDataV2');
+    if (!data) { alert('无数据'); return; }
+    
+    let count = 0;
+    const fix = (threads) => {
+        threads.forEach(t => {
+            (t.replies || []).forEach(r => {
+                if (r.image && r.image.indexOf('/file/') !== -1 && r.image.indexOf('/file/photos/') === -1) {
+                    r.image = r.image.replace('/file/', '/file/photos/');
+                    count++;
+                }
+            });
+        });
+    };
+    fix(data.myThreads || []);
+    fix(data.partnerThreads || []);
+    
+    await localforage.setItem('boardDataV2', data);
+    window.boardDataV2 = data;
+    alert('已修复 ' + count + ' 张图的路径\n即将刷新页面');
+    location.reload();
+};
+/* ⬆️⬆️⬆️ 新增结束 ⬆️⬆️⬆️ */
+
 
   })();
