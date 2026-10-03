@@ -12971,52 +12971,21 @@ html[data-theme="dark"] .period-stat-value { color: var(--accent-color-dark); }
 }
 
 /* ═══════════════════════════════════════════════════════════
-   红包金额溢出修复 —— 大金额自动缩放，不裁切不溢出
+   红包详情弹窗 —— 金额锁定高度，字号由 JS 按长度计算
    ═══════════════════════════════════════════════════════════ */
 
-/* 1. 聊天流红包卡片里的金额 */
-.red-packet-card {
-    max-width: 195px;
-}
-.red-packet-card .rp-amount-text {
-    font-size: clamp(12px, 4.2vw, 18px) !important;
-    word-break: break-all !important;
-    overflow-wrap: anywhere !important;
-    max-width: 100%;
-    line-height: 1.2 !important;
-    display: block;
-    white-space: normal !important;
-}
-.red-packet-card .rp-content {
-    min-width: 0 !important;
-    overflow: hidden;
-}
-.red-packet-card .rp-msg-text {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 100%;
-}
-
-/* 2. 红包详情弹窗 —— 金额锁定高度，字号自适应，不引起布局跳动 */
-body > div[style*="position: fixed"][style*="z-index: 1000"] div[style*="font-size:36px"],
-body > div[style*="position:fixed"][style*="z-index:1000"] div[style*="font-size:36px"] {
-    font-size: 36px !important;
-    white-space: nowrap !important;
-    max-width: 100% !important;
-    line-height: 1.15 !important;
-    box-sizing: border-box !important;
-    padding: 0 4px !important;
-    display: flex !important;            /* ← 用 flex 让内容在固定高度里居中 */
+.rp-amount-value {
+    display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    height: 48px !important;             /* ← 锁定高度为 36px 字号时的高度 */
+    height: 48px !important;
     min-height: 48px !important;
     max-height: 48px !important;
-    transition: font-size 0.18s ease-out;
-}
-
-/* 3. 红包详情弹窗容器本身也允许多行 */
-#rp-receive-panel {
-    max-width: calc(100vw - 40px);
+    max-width: 100% !important;
+    line-height: 1.15 !important;
+    white-space: nowrap !important;
+    word-break: normal !important;
+    overflow-wrap: normal !important;
+    box-sizing: border-box !important;
+    padding: 0 6px !important;
 }
