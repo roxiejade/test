@@ -66,6 +66,10 @@
     // 非 null 时表示当前是"编辑已有问卷"，值是那份问卷的 id——
     // 编辑态下弹窗复用同一套渲染，但要锁掉"加题/删题/改单多选"这三个操作
     var _editingSurveyId = null;
+    
+    // 当前"回复时间"选择的模式：'random'（默认）或 'instant'——
+    // 每次打开创建弹窗都重置为 'random'，不持久化
+    var _currentReplyMode = 'random';
 
     // ── Storage（照抄 period.js 的取key方式） ──────────────────────
     async function _getKey() {
@@ -287,12 +291,46 @@
             if (titleEl) titleEl.textContent = '创建问卷';
             if (addQBtn) addQBtn.style.display = '';
         }
+// 每次打开弹窗都重置为"随机时间"（不持久化）——
+        // 编辑已有问卷时也一样，因为编辑不涉及"回复时间"这个字段
+        _currentReplyMode = 'random';
+        _renderReplyModeSelector();
         _renderDraftQuestions();
         if (typeof window.showModal === 'function') {
             window.showModal(document.getElementById('survey-create-modal'));
         } else {
             document.getElementById('survey-create-modal').style.display = 'flex';
         }
+    }
+
+        // 渲染"回复时间"选择器的选中态
+    // 每次打开弹窗都会调一次，把两个按钮的 active 类按 _currentReplyMode 重设一遍
+    function _renderReplyModeSelector() {
+        var btns = document.querySelectorAll('#survey-reply-mode-section .survey-reply-mode-btn');
+        if (!btns.length) return;
+        btns.forEach(function (btn) {
+            if (btn.dataset.mode === _currentReplyMode) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+    }
+
+    // 绑定"回复时间"选择器的点击事件——只绑一次（用 _replyModeBound 标记），
+    // 因为这两个按钮是 HTML 里静态写死的，不像问题卡片那样每次重渲染
+    var _replyModeBound = false;
+    function _bindReplyModeSelector() {
+        if (_replyModeBound) return;
+        var section = document.getElementById('survey-reply-mode-section');
+        if (!section) return;
+        section.addEventListener('click', function (e) {
+            var btn = e.target.closest('.survey-reply-mode-btn');
+            if (!btn) return;
+            _currentReplyMode = btn.dataset.mode;
+            _renderReplyModeSelector();
+        });
+        _replyModeBound = true;
     }
 
     function _closeCreateModal() {
@@ -531,7 +569,7 @@
         return Date.now() + hours * 3600000;
     }
 
-    function _submitCreate() {
+        function _submitCreate() {
         if (!_validateDraft()) return;
         var questionsPayload = _draftQuestions.map(function (q) {
             return {
@@ -555,25 +593,235 @@
             if (typeof showNotification === 'function') showNotification('问卷已更新', 'success');
             _refreshOpenViews();
         } else {
+            // 新建：按 _currentReplyMode 分支
+            var isInstant = (_currentReplyMode === 'instant');
             var survey = {
                 id: _uid('sv'),
                 createdAt: Date.now(),
-                dueAt: _randomDueAt(),
+                // 随机模式：给个随机到点时间；立即模式：dueAt 留空
+                dueAt: isInstant ? null : _randomDueAt(),
                 status: 'pending',
                 answeredAt: null,
                 deletedAt: null,
                 viewed: true,
                 favorited: false,
                 selections: null,
-                questions: questionsPayload
+                questions: questionsPayload,
+                replyMode: isInstant ? 'instant' : 'random',
+                // 下面这几个字段只有"立即"模式会用到，先占个位置
+                cardMsgId: null,
+                partnerCardMsgId: null,
+                systemMsgId: null,
+                answerTimerId: null
             };
             _data.askPartner.push(survey);
             _save();
             _migrateOptionImagesToCloud(survey);
             _closeCreateModal();
-            if (typeof showNotification === 'function') showNotification('问卷已发出，等待回复中', 'success');
+            if (isInstant) {
+                // 立即模式：不弹"等待回复中"，直接进"立即流程"
+                if (typeof showNotification === 'function') showNotification('问卷已发出', 'success');
+                _startInstantSurveyFlow(survey);
+            } else {
+                // 随机模式：跟原来一模一样
+                if (typeof showNotification === 'function') showNotification('问卷已发出，等待回复中', 'success');
+            }
             _refreshOpenViews();
         }
+    }
+
+        // ══ 立即收到流程 ══════════════════════════════════════════════
+    // 顺序：
+    //   1. 往会话流插用户方卡片（待回复）
+    //   2. 往会话流插系统小字"梦角正在回答问卷"
+    //   3. 按 (题数 × 3~10 秒) + 3~5 秒 算总时长，排定时器
+    //   4. 到点后调 _finishInstantSurvey
+    function _startInstantSurveyFlow(survey) {
+        if (!survey) return;
+
+        // 1. 用户方卡片
+        var myName = (typeof settings !== 'undefined' && settings.myName) || '我';
+        var cardMsgId = _pushSurveyCardToChat(
+            'user',
+            myName + '发送了一个问卷',
+            '待回复',
+            'pending',
+            survey.id,
+            'user'
+        );
+        survey.cardMsgId = cardMsgId;
+
+        // 2. 系统小字
+        var systemMsgId = _pushSystemTextToChat('梦角正在回答问卷');
+        survey.systemMsgId = systemMsgId;
+
+        _save();
+
+        // 3. 计算延迟：题数 × (3~10秒) + (3~5秒)
+        var qCount = survey.questions.length;
+        var perQ = 3 + Math.random() * 7;      // 3~10 秒
+        var extra = 3 + Math.random() * 2;     // 3~5 秒
+        var totalMs = Math.round((qCount * perQ + extra) * 1000);
+
+        // 4. 排定时器
+        var timerId = setTimeout(function () {
+            _finishInstantSurvey(survey.id);
+        }, totalMs);
+        survey.answerTimerId = timerId;
+        _save();
+    }
+
+        // 立即流程：梦角到点回答
+    //   1. 给问卷算答案（复用 _computeSelection）
+    //   2. status 变 answered，viewed 直接 true（不亮红点，因为已经用卡片通知了）
+    //   3. 往会话流插梦角方卡片（已回复）
+    function _finishInstantSurvey(surveyId) {
+        var survey = _data.askPartner.find(function (s) { return s.id === surveyId; });
+        if (!survey) return;
+        if (survey.status !== 'pending') return; // 已经被删除/撤回/其他状态，就不处理了
+        if (survey.replyMode !== 'instant') return; // 保险：只处理立即模式的
+
+        var now = Date.now();
+        var selections = {};
+        survey.questions.forEach(function (q) { selections[q.id] = _computeSelection(q); });
+        survey.selections = selections;
+        survey.status = 'answered';
+        survey.answeredAt = now;
+        // 立即模式不亮红点：用户已经在会话里看到卡片了，viewed 直接 true
+        survey.viewed = true;
+        survey.answerTimerId = null;
+
+        // 梦角方卡片
+        var pname = (typeof settings !== 'undefined' && settings.partnerName) || '梦角';
+        var partnerCardMsgId = _pushSurveyCardToChat(
+            'partner',
+            pname + '已经回答完毕，点击查看',
+            '已回复',
+            'answered',
+            survey.id,
+            'partner'
+        );
+        survey.partnerCardMsgId = partnerCardMsgId;
+
+        _save();
+        _refreshOpenViews();
+    }
+
+        // ══ 往会话流插卡片 / 系统小字 ══════════════════════════════════
+    // 完全照抄一起听 together-listen-core.js 的 sendCard 套路：
+    //   - 往 window.messages push 一条消息
+    //   - 消息带 html 字段（内容就是卡片 HTML）
+    //   - 调 window.renderMessages() 让界面刷新
+    //   - type 保持 'normal'，靠 html 字段区分渲染
+    function _pushSurveyCardToChat(sender, mainText, statusText, statusCls, surveyId, cardKind) {
+        if (!window.messages || !Array.isArray(window.messages)) {
+            console.warn('[survey] window.messages 不可用，卡片插不进会话');
+            return null;
+        }
+        var escaped = _esc(mainText);
+        var cardHtml =
+            '<div class="survey-chat-card" data-survey-id="' + surveyId + '" data-card-kind="' + cardKind + '">' +
+                '<div class="survey-chat-card-top">' +
+                    '<div class="survey-chat-card-cover"><i class="fas fa-clipboard-list"></i></div>' +
+                    '<div class="survey-chat-card-info">' +
+                        '<div class="survey-chat-card-title">' + escaped + '</div>' +
+                    '</div>' +
+                '</div>' +
+                '<div class="survey-chat-card-divider"></div>' +
+                '<div class="survey-chat-card-status survey-status-' + statusCls + '">' + _esc(statusText) + '</div>' +
+            '</div>';
+
+        var msgId = Date.now() + Math.random();
+        var msg = {
+            id: msgId,
+            sender: sender,               // 'user' 或 'partner'
+            text: '',
+            timestamp: new Date(),
+            status: sender === 'user' ? 'sent' : 'received',
+            type: 'normal',
+            html: cardHtml,
+            isSurveyCard: true,           // 标记：这是问卷卡片
+            surveyId: surveyId,
+            cardKind: cardKind,
+            favorited: false,
+            note: null
+        };
+        window.messages.push(msg);
+        if (typeof window.renderMessages === 'function') {
+            window.renderMessages();
+        }
+        if (typeof window.throttledSaveData === 'function') {
+            window.throttledSaveData();
+        }
+        return msgId;
+    }
+
+    function _pushSystemTextToChat(text) {
+        if (!window.messages || !Array.isArray(window.messages)) {
+            console.warn('[survey] window.messages 不可用，系统小字插不进会话');
+            return null;
+        }
+        var msgId = Date.now() + Math.random();
+        var msg = {
+            id: msgId,
+            sender: 'system',
+            text: text,
+            timestamp: new Date(),
+            type: 'survey-system-text',   // 新类型，靠这个去渲染成系统小字
+            favorited: false,
+            note: null
+        };
+        window.messages.push(msg);
+        if (typeof window.renderMessages === 'function') {
+            window.renderMessages();
+        }
+        if (typeof window.throttledSaveData === 'function') {
+            window.throttledSaveData();
+        }
+        return msgId;
+    }
+
+        // 卡片点击事件：用事件委托绑在 document 上，一次性绑好，
+    // 因为卡片是动态插进会话流的，不能每条卡片单独绑
+    var _surveyCardClickBound = false;
+    function _bindSurveyCardClick() {
+        if (_surveyCardClickBound) return;
+        document.addEventListener('click', function (e) {
+            var card = e.target.closest('.survey-chat-card');
+            if (!card) return;
+            var sid = card.dataset.surveyId;
+            if (!sid) return;
+            e.preventDefault();
+            e.stopPropagation();
+            // 打开问卷详情——复用现成的 _openDetailModal
+            _openDetailModal(sid, 'partner');
+        });
+        _surveyCardClickBound = true;
+    }
+
+        // 页面刷新后续上未完成的"立即"问卷：
+    //   如果 status==='pending' && replyMode==='instant'，说明倒计时没走完，
+    //   重新排一个"剩余时间"的定时器（剩余时间 = 按原公式重算一个，不追求精确续上）
+    function _resumePendingInstantSurveys() {
+        if (!_loaded) return;
+        _data.askPartner.forEach(function (s) {
+            if (s.replyMode !== 'instant') return;
+            if (s.status !== 'pending') return;
+            if (s.deletedAt) return;
+            // 已在倒计时中（同一页面内还没刷新走）：answerTimerId 有效，跳过
+            if (s.answerTimerId) return;
+            // 重新算一遍剩余延迟——不追求跟原来完全一致，
+            // 用户感知上"梦角再过一会儿就回答"就够了
+            var qCount = s.questions.length;
+            var perQ = 3 + Math.random() * 7;
+            var extra = 3 + Math.random() * 2;
+            var totalMs = Math.round((qCount * perQ + extra) * 1000);
+            var timerId = setTimeout(function () {
+                _finishInstantSurvey(s.id);
+            }, totalMs);
+            s.answerTimerId = timerId;
+        });
+        _save();
     }
 
     // ══════════════════════════════════════════════════════════════
@@ -1417,6 +1665,15 @@
             ? '<img src="' + realImg.src + '" style="width:100%;height:100%;object-fit:cover;">'
             : '<i class="fas fa-user" style="font-size:18px;color:var(--text-secondary);"></i>';
 
+                // 拼预览文字：只有一条时显示题干；多条时显示第一条题干 + "等 N 个问卷回复"
+        var previewText = '';
+        if (items.length === 1) {
+            var only = items[0];
+            previewText = _surveyTitle(only.survey);
+        } else if (items.length > 1) {
+            previewText = _surveyTitle(items[0].survey) + ' 等 ' + items.length + ' 个问卷回复';
+        }
+
         var popup = document.createElement('div');
         popup.id = 'survey-notif-popup';
         popup.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);' +
@@ -1427,16 +1684,15 @@
         popup.innerHTML =
             '<style>@keyframes _mSlideUp{from{opacity:0;transform:translateX(-50%) translateY(24px) scale(0.9)}60%{transform:translateX(-50%) translateY(-4px) scale(1.02)}to{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}}</style>' +
             '<div style="display:flex;align-items:center;gap:10px;">' +
-                '<div style="width:36px;height:36px;border-radius:50%;background:rgba(var(--accent-color-rgb),0.12);' +
-                    'display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;">' + avatarHtml + '</div>' +
-                '<div>' +
+                '<span style="font-size:26px;flex-shrink:0;">📋</span>' +
+                '<div style="min-width:0;flex:1;">' +
                     '<div style="font-size:14px;font-weight:700;color:var(--text-primary);">' + pname + ' · 问卷动态</div>' +
-                    '<div style="font-size:11px;color:var(--text-secondary);margin-top:2px;opacity:0.8;">' + bodyText + '</div>' +
+                    '<div style="font-size:11px;color:var(--text-secondary);margin-top:2px;opacity:0.8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + _esc(previewText) + '</div>' +
                 '</div>' +
             '</div>' +
             '<div style="display:flex;gap:8px;">' +
-                '<button id="survey-notif-later" style="flex:1;padding:8px 0;border-radius:12px;border:1px solid var(--border-color);background:var(--primary-bg);color:var(--text-secondary);font-size:13px;cursor:pointer;font-family:inherit;">稍后</button>' +
-                '<button id="survey-notif-view" style="flex:2;padding:8px 0;border-radius:12px;border:none;background:var(--accent-color);color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">立即查看 ✦</button>' +
+                '<button id="survey-notif-later" style="flex:1;padding:8px 0;border-radius:12px;border:1px solid var(--border-color);background:var(--primary-bg);color:var(--text-secondary);font-size:13px;cursor:pointer;font-family:inherit;">稍后查看</button>' +
+                '<button id="survey-notif-view" style="flex:2;padding:8px 0;border-radius:12px;border:none;background:var(--accent-color);color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">立即查看 ✉</button>' +
             '</div>';
         document.body.appendChild(popup);
         popup.querySelector('#survey-notif-later').onclick = function () { popup.remove(); };
@@ -2085,20 +2341,24 @@
         var detailBackBtn = document.getElementById('survey-detail-back');
         if (detailBackBtn) detailBackBtn.onclick = _closeDetailModal;
 
-        var trashCloseBtn = document.getElementById('survey-trash-close');
+                var trashCloseBtn = document.getElementById('survey-trash-close');
         if (trashCloseBtn) trashCloseBtn.onclick = _closeTrashModal;
 
         _bindDelaySliders();
+        _bindReplyModeSelector();
+        _bindSurveyCardClick();
     });
 
     // 每分钟检查一次到点的问卷（照抄 period.js 的轮询方式）；反向问卷的触发检查间隔是"天"级别的，
     // 不需要这么密，但挂在同一个 60秒 定时器里跑一下也没什么成本，简单点，不用另开一个定时器
     setInterval(function () { _checkDueSurveys(); _checkAskMeTrigger(); _checkAskMeReceiveDue(); }, 60000);
 
-    _load().then(function () {
+        _load().then(function () {
         _cleanTrash();
         _save();
         _updateEntryBadges();
+        // 页面刷新后，把还没走完的"立即"问卷续上
+        _resumePendingInstantSurveys();
         setTimeout(function () { _checkDueSurveys(); _checkAskMeTrigger(); _checkAskMeReceiveDue(); }, 4000);
     });
 })();
