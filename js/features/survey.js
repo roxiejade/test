@@ -124,9 +124,14 @@
                     if (s.viewed === undefined) s.viewed = true;
                     // 老数据的 status 只有 'sent'/'received' 两种，'received' 直接映射成新的最终态即可，不用改名
                 });
-                // 兼容"收藏"上线前的旧数据
+                                // 兼容"收藏"上线前的旧数据
                 _data.askPartner.forEach(function (s) { if (s.favorited === undefined) s.favorited = false; });
                 _data.askMe.forEach(function (s) { if (s.favorited === undefined) s.favorited = false; });
+                // 兼容"回复模式"上线前的旧数据：老问卷一律当成"随机时间"，
+                // 这样它们走原来的 dueAt 逻辑，行为完全不变
+                _data.askPartner.forEach(function (s) {
+                    if (s.replyMode === undefined) s.replyMode = 'random';
+                });
             }
         } catch (e) { console.warn('[survey] load failed:', e); }
         if (!Array.isArray(_data.bank) || !_data.bank.length) _seedBuiltinBank();
