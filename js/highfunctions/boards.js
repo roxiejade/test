@@ -783,6 +783,9 @@ async function uploadToImgHub(base64) {
     // ⬆️⬆️⬆️ 兼容结束 ⬆️⬆️⬆️
 }
 
+  // ⬇️ 加这一行：把图床上传函数暴露到全局，供问卷等模块复用
+window._uploadToImgHub = uploadToImgHub;
+
 async function handleImgSelect(e) {
   const file = e.target.files[0]; 
   if (!file) return;
