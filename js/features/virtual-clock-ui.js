@@ -228,9 +228,9 @@
             timeDisplay.textContent = vt || '--:--:--';
         }
 
-        if (speedDisplay) {
+                if (speedDisplay) {
             var speed = window.VirtualClock ? window.VirtualClock.getSpeed() : 1.0;
-            speedDisplay.textContent = speed.toFixed(1) + 'x';
+            speedDisplay.textContent = speed.toFixed(2) + 'x';
         }
 
         if (statusEl) {
