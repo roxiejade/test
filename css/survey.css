@@ -569,3 +569,152 @@
     resize: none;
 }
 .survey-answer-input:focus { outline: none; border-color: var(--accent-color); }
+
+
+/* ══════════════════════════════════════════════════════════════
+   创建问卷 · "回复时间"选择器（随机时间 / 立即收到）
+   ══════════════════════════════════════════════════════════════ */
+
+.survey-reply-mode-row {
+    display: flex;
+    gap: 8px;
+}
+
+.survey-reply-mode-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 11px 0;
+    border-radius: 12px;
+    border: 1.5px solid var(--border-color);
+    background: var(--secondary-bg);
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.18s ease;
+}
+
+.survey-reply-mode-btn i {
+    font-size: 12px;
+    opacity: 0.85;
+}
+
+.survey-reply-mode-btn:hover:not(.active) {
+    border-color: rgba(var(--accent-color-rgb), 0.5);
+    color: var(--text-primary);
+    background: rgba(var(--accent-color-rgb), 0.04);
+}
+
+.survey-reply-mode-btn.active {
+    border-color: var(--accent-color);
+    background: rgba(var(--accent-color-rgb), 0.12);
+    color: var(--accent-color);
+    box-shadow: 0 0 0 3px rgba(var(--accent-color-rgb), 0.08);
+}
+
+.survey-reply-mode-btn.active i {
+    opacity: 1;
+}
+
+.survey-reply-mode-btn:active {
+    transform: scale(0.97);
+}
+
+
+/* ══════════════════════════════════════════════════════════════
+   问卷卡片 · 会话流里的"待回复 / 已回复"卡片
+   参照 together-listen 的 .tl-music-card 做的简化版
+   ══════════════════════════════════════════════════════════════ */
+
+.survey-chat-card {
+    background: var(--secondary-bg);
+    border-radius: 14px;
+    padding: 14px 16px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    min-width: 200px;
+    max-width: 280px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.survey-chat-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(var(--accent-color-rgb), 0.12);
+    border-color: rgba(var(--accent-color-rgb), 0.35);
+}
+
+.survey-chat-card-top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.survey-chat-card-cover {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--border-color), rgba(var(--accent-color-rgb), 0.15));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 20px;
+    color: var(--accent-color);
+}
+
+.survey-chat-card-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.survey-chat-card-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.35;
+    white-space: normal;
+    word-break: break-word;
+}
+
+.survey-chat-card-divider {
+    height: 1px;
+    background: var(--border-color);
+    margin: 10px 0 8px;
+    opacity: 0.5;
+}
+
+.survey-chat-card-status {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    text-align: left;
+}
+
+/* 状态：待回复（灰） */
+.survey-chat-card-status.survey-status-pending {
+    color: var(--text-secondary);
+}
+
+/* 状态：已回复（绿） */
+.survey-chat-card-status.survey-status-answered {
+    color: #3f9e64;
+}
+
+/* 系统小字："梦角正在回答问卷"——常驻，样式参照 .system-message 但更朴素 */
+.survey-chat-system-text {
+    align-self: center;
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-secondary);
+    opacity: 0.72;
+    letter-spacing: 1px;
+    padding: 5px 20px;
+    margin: 8px auto;
+    position: relative;
+    max-width: 80%;
+}
