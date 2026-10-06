@@ -258,14 +258,13 @@
     }
 
     // ── 创建问卷弹窗：草稿态问题结构 ──────────────────────────────
-        function _newDraftQuestion() {
+            function _newDraftQuestion() {
         return {
             id: _uid('q'),
             type: 'single',
             text: '',
-            // optKind 保留，作为"新建选项时的默认类型"（默认文字）；
-            // 但每个选项自己也记 kind，支持同题混搭
             optKind: 'text',
+            forceMixed: false,   // 用户主动点"混搭选项"时置 true
             options: [
                 { id: _uid('o'), kind: 'text', value: '' },
                 { id: _uid('o'), kind: 'text', value: '' }
@@ -279,10 +278,18 @@
         if (editSurvey) {
             _editingSurveyId = editSurvey.id;
             // 深拷贝一份出来编辑，不直接改原对象，点"取消"就什么都没发生过
-            _draftQuestions = editSurvey.questions.map(function (q) {
+                        _draftQuestions = editSurvey.questions.map(function (q) {
+                // 取第一项的 kind 作为这道题的"默认类型"，兼容老数据
+                var _defaultKind = q.options[0] ? (q.options[0].kind || q.optKind || 'text') : 'text';
+                // 如果老问卷的选项 kind 本身就是混合的，就自动进混搭模式
+                var _kinds = q.options.map(function (o) { return o.kind || _defaultKind; });
+                var _hadMixed = _kinds.some(function (k) { return k !== _kinds[0]; });
                 return {
-                    id: q.id, type: q.type, text: q.text, optKind: q.options[0] ? q.options[0].kind : 'text',
-                    options: q.options.map(function (o) { return { id: o.id, value: o.value }; })
+                    id: q.id, type: q.type, text: q.text, optKind: _defaultKind,
+                    forceMixed: _hadMixed,
+                    options: q.options.map(function (o) {
+                        return { id: o.id, kind: o.kind || _defaultKind, value: o.value };
+                    })
                 };
             });
             if (titleEl) titleEl.textContent = '编辑问卷';
@@ -421,16 +428,26 @@
         });
         card.appendChild(typeToggle);
 
-                var kindToggle = document.createElement('div');
+                       var kindToggle = document.createElement('div');
         kindToggle.className = 'survey-q-kind-toggle';
 
-        // 自动判断当前整题属于哪种状态：
-        //   allText  → 所有选项都是文字
-        //   allImage → 所有选项都是图片
-        //   其他      → 混搭（有文字也有图片）
         var _allText = q.options.length > 0 && q.options.every(function (o) { return (o.kind || 'text') === 'text'; });
         var _allImage = q.options.length > 0 && q.options.every(function (o) { return o.kind === 'image'; });
-        var _currentMode = _allText ? 'text' : (_allImage ? 'image' : 'mixed');
+        // 当前模式的判断优先级：
+        //   1. 用户主动选了混搭（forceMixed=true）→ 混搭
+        //   2. 所有选项都是 text → 文字
+        //   3. 所有选项都是 image → 图片
+        //   4. 其他（选项 kind 本身就混合）→ 混搭
+        var _currentMode;
+        if (q.forceMixed) {
+            _currentMode = 'mixed';
+        } else if (_allText) {
+            _currentMode = 'text';
+        } else if (_allImage) {
+            _currentMode = 'image';
+        } else {
+            _currentMode = 'mixed';
+        }
 
         [['text', '文字选项'], ['image', '图片选项'], ['mixed', '混搭选项']].forEach(function (pair) {
             var b = document.createElement('button');
@@ -438,7 +455,6 @@
             b.className = 'survey-q-kind-btn' + (_currentMode === pair[0] ? ' active' : '');
             b.textContent = pair[1];
             if (_editingSurveyId) {
-                // 编辑模式下锁掉整题类型切换——只让改"内容"，类型不算内容
                 b.disabled = true;
                 b.style.opacity = (_currentMode === pair[0]) ? '1' : '0.4';
                 b.style.cursor = 'default';
@@ -446,19 +462,19 @@
                 b.onclick = function () {
                     if (_currentMode === pair[0]) return;
                     if (pair[0] === 'text' || pair[0] === 'image') {
-                        // 文字 / 图片模式：清空内容，所有选项统一成新类型
                         var _hasContent = q.options.some(function (o) { return (o.value || '').trim(); });
                         if (_hasContent) {
                             if (!confirm('切换到"' + pair[1] + '"会清空这道题所有选项的内容，确定吗？')) return;
                         }
+                        q.forceMixed = false;   // 退出混搭
                         q.optKind = pair[0];
                         q.options.forEach(function (o) {
                             o.kind = pair[0];
                             o.value = '';
                         });
                     } else {
-                        // 混搭模式：不清空内容，各选项保留自己的 kind（没有的就补 text），
-                        // 让每个选项行右侧出现"文字/图片"小切换图标，逐个精调
+                        // 混搭模式：不清空，只标记 forceMixed
+                        q.forceMixed = true;
                         q.optKind = 'text';
                         q.options.forEach(function (o) {
                             if (!o.kind) o.kind = 'text';
@@ -483,9 +499,11 @@
         addOptBtn.className = 'survey-add-option-btn';
         addOptBtn.innerHTML = '<i class="fas fa-plus"></i> 添加选项';
         addOptBtn.disabled = q.options.length >= 10;
-        addOptBtn.onclick = function () {
+                addOptBtn.onclick = function () {
             if (q.options.length >= 10) return;
-            q.options.push({ id: _uid('o'), value: '' });
+            // 新选项的 kind 跟"当前题目的 optKind"一致，避免混进来一个没有 kind 的选项
+            // 导致整题被误判成"混搭"
+            q.options.push({ id: _uid('o'), kind: q.optKind || 'text', value: '' });
             _renderDraftQuestions();
         };
         card.appendChild(addOptBtn);
@@ -579,8 +597,10 @@
         // 判断是不是混搭模式：看这道题所有选项的 kind 是不是都一致
         //   一致 → 不是混搭，不显示图标
         //   不一致 → 是混搭，显示图标
-        var _allKinds = q.options.map(function (o) { return o.kind || 'text'; });
-        var _isMixedMode = _allKinds.some(function (k) { return k !== _allKinds[0]; });
+                var _allKinds = q.options.map(function (o) { return o.kind || 'text'; });
+        var _kindNotAllSame = _allKinds.some(function (k) { return k !== _allKinds[0]; });
+        // 混搭模式：用户主动开了（forceMixed）或选项 kind 本身就混
+        var _isMixedMode = q.forceMixed || _kindNotAllSame;
         if (_isMixedMode) {
             var optKindNow = opt.kind || q.optKind || 'text';
             var kindBtn = document.createElement('button');
