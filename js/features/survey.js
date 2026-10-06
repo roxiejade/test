@@ -643,7 +643,7 @@
         var myName = (typeof settings !== 'undefined' && settings.myName) || '我';
         var cardMsgId = _pushSurveyCardToChat(
             'user',
-            myName + '发送了一个问卷',
+            '发送了一个问卷',
             '待回复',
             'pending',
             survey.id,
@@ -651,19 +651,13 @@
         );
         survey.cardMsgId = cardMsgId;
 
-        // 2. 系统小字
-        var systemMsgId = _pushSystemTextToChat('梦角正在回答问卷');
-        survey.systemMsgId = systemMsgId;
-
-        _save();
-
-        // 3. 计算延迟：题数 × (3~10秒) + (3~5秒)
+        // 2. 计算延迟：题数 × (3~10秒) + (3~5秒)
         var qCount = survey.questions.length;
         var perQ = 3 + Math.random() * 7;      // 3~10 秒
         var extra = 3 + Math.random() * 2;     // 3~5 秒
         var totalMs = Math.round((qCount * perQ + extra) * 1000);
 
-        // 4. 排定时器
+        // 3. 排定时器
         var timerId = setTimeout(function () {
             _finishInstantSurvey(survey.id);
         }, totalMs);
@@ -695,7 +689,7 @@
         var pname = (typeof settings !== 'undefined' && settings.partnerName) || '梦角';
         var partnerCardMsgId = _pushSurveyCardToChat(
             'partner',
-            pname + '已经回答完毕，点击查看',
+            '已完成问卷，点击查看',
             '已回复',
             'answered',
             survey.id,
