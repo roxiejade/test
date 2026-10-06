@@ -2030,11 +2030,15 @@
                 '<button class="modal-btn modal-btn-primary" id="survey-detail-resend">重新发送</button>';
             actions.querySelector('#survey-detail-delete').onclick = function () { _softDeleteSurvey(s.id); };
             actions.querySelector('#survey-detail-resend').onclick = function () { _resendSurvey(s.id); };
-        } else {
-            // 已回复：单独一个"删除"按钮，靠右下角（survey-buttons-solo 这个类负责让它靠右，见 survey.css）
-            actions.className = 'modal-buttons survey-buttons-solo';
-            actions.innerHTML = '<button class="modal-btn modal-btn-secondary" id="survey-detail-delete" style="color:#e0605a;">删除</button>';
+                } else {
+            // 已回复：左下角"删除"（危险操作靠左），右下角"返回"——
+            // 跟上一级弹窗的"右下角关闭"习惯一致，用户下意识点右下角不会误触删除
+            actions.className = 'modal-buttons';
+            actions.innerHTML =
+                '<button class="modal-btn modal-btn-secondary" id="survey-detail-delete" style="color:#e0605a;">删除</button>' +
+                '<button class="modal-btn modal-btn-secondary" id="survey-detail-return">返回</button>';
             actions.querySelector('#survey-detail-delete').onclick = function () { _softDeleteSurvey(s.id); };
+            actions.querySelector('#survey-detail-return').onclick = function () { _closeDetailModal(); };
         }
     }
 
@@ -2085,7 +2089,7 @@
                 _submitAskMeAnswers(s.id, answers);
             };
             updateSubmitState();
-        } else {
+                } else {
             var qHtml2 = s.questions.map(function (q) {
                 var answerText = (s.answers && s.answers[q.id]) || '';
                 return '<div class="survey-detail-q-block">' +
@@ -2095,9 +2099,13 @@
             }).join('');
             body.innerHTML = metaHtml + qHtml2;
 
-            actions.className = 'modal-buttons survey-buttons-solo';
-            actions.innerHTML = '<button class="modal-btn modal-btn-secondary" id="survey-detail-delete" style="color:#e0605a;">删除</button>';
+            // 已收到（回答完毕）：左下角"删除"，右下角"返回"——跟问卷详情"已回复"保持一致
+            actions.className = 'modal-buttons';
+            actions.innerHTML =
+                '<button class="modal-btn modal-btn-secondary" id="survey-detail-delete" style="color:#e0605a;">删除</button>' +
+                '<button class="modal-btn modal-btn-secondary" id="survey-detail-return">返回</button>';
             actions.querySelector('#survey-detail-delete').onclick = function () { _softDeleteSurvey(s.id); };
+            actions.querySelector('#survey-detail-return').onclick = function () { _closeDetailModal(); };
         }
     }
 
@@ -2342,9 +2350,27 @@
                 var trashCloseBtn = document.getElementById('survey-trash-close');
         if (trashCloseBtn) trashCloseBtn.onclick = _closeTrashModal;
 
-        _bindDelaySliders();
+                _bindDelaySliders();
         _bindReplyModeSelector();
         _bindSurveyCardClick();
+
+        // 点遮罩空白处关闭弹窗——只对这 4 个"浏览型"弹窗开启：
+        //   设置 / 高级功能 / 问卷列表 / 问卷详情
+        // 不含创建问卷、写留言等"编辑型"弹窗，避免误关导致用户填的内容丢失
+        ['settings-modal', 'advanced-modal', 'survey-modal', 'survey-detail-modal'].forEach(function (id) {
+            var modal = document.getElementById(id);
+            if (!modal) return;
+            modal.addEventListener('click', function (e) {
+                // 只有点到遮罩层本身（不是点到 modal-content 里的东西）才关闭
+                if (e.target === modal) {
+                    if (typeof window.hideModal === 'function') {
+                        window.hideModal(modal);
+                    } else {
+                        modal.style.display = 'none';
+                    }
+                }
+            });
+        });
     });
 
     // 每分钟检查一次到点的问卷（照抄 period.js 的轮询方式）；反向问卷的触发检查间隔是"天"级别的，
