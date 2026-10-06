@@ -1974,10 +1974,12 @@
         if (!s || !body || !actions) return;
 
         var badge = _statusBadge(s, 'partner');
-        var metaHtml = '<div class="survey-detail-meta-row">' +
+                var metaHtml = '<div class="survey-detail-meta-row">' +
             '<span class="survey-tag survey-tag-status survey-tag-status-' + badge.cls + '">' + badge.text + '</span>' +
-            '<span>提问于 ' + _fmtTime(s.createdAt) + '</span>' +
-            (s.answeredAt ? ('<span>回复于 ' + _fmtTime(s.answeredAt) + '</span>') : '') +
+            '<div class="survey-detail-meta-time-row">' +
+                '<span>提问于 ' + _fmtTime(s.createdAt) + '</span>' +
+                (s.answeredAt ? ('<span>回复于 ' + _fmtTime(s.answeredAt) + '</span>') : '') +
+            '</div>' +
         '</div>';
 
         var qHtml = s.questions.map(function (q) {
@@ -2046,10 +2048,12 @@
         if (!s || !body || !actions) return;
 
         var badge = _statusBadge(s, 'me');
-        var metaHtml = '<div class="survey-detail-meta-row">' +
+                var metaHtml = '<div class="survey-detail-meta-row">' +
             '<span class="survey-tag survey-tag-status survey-tag-status-' + badge.cls + '">' + badge.text + '</span>' +
-            '<span>提问于 ' + _fmtTime(s.sentAt) + '</span>' +
-            (s.receivedAt ? ('<span>回复于 ' + _fmtTime(s.receivedAt) + '</span>') : '') +
+            '<div class="survey-detail-meta-time-row">' +
+                '<span>提问于 ' + _fmtTime(s.sentAt) + '</span>' +
+                (s.receivedAt ? ('<span>回复于 ' + _fmtTime(s.receivedAt) + '</span>') : '') +
+            '</div>' +
         '</div>';
 
         if (s.status === 'sent') {
