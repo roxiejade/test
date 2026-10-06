@@ -322,20 +322,28 @@
                         'transition:background 0.15s;',
                     '">×</button>',
                 '</div>',
-                '<div style="display:flex;align-items:center;justify-content:center;gap:10px;padding:4px 0 8px;flex-shrink:0;">',
+                                '<div style="display:flex;align-items:center;justify-content:center;gap:10px;padding:4px 0 8px;flex-shrink:0;">',
                     '<span style="font-size:14px;color:var(--text-secondary);">当前</span>',
-                    '<span id="vc-speed-current-display" style="font-size:20px;font-weight:700;color:var(--accent-color,#c5a47e);">' + currentSpeed.toFixed(1) + 'x</span>',
+                    '<span id="vc-speed-current-display" style="font-size:20px;font-weight:700;color:var(--accent-color,#c5a47e);">' + currentSpeed.toFixed(2) + 'x</span>',
                     '<span style="font-size:14px;color:var(--text-secondary);">→</span>',
-                    '<span id="vc-speed-target-display" style="font-size:20px;font-weight:700;color:var(--text-primary);">' + currentSpeed.toFixed(1) + 'x</span>',
+                    '<span id="vc-speed-target-display" style="font-size:20px;font-weight:700;color:var(--text-primary);">' + currentSpeed.toFixed(2) + 'x</span>',
                 '</div>',
-                '<div style="display:flex;flex-direction:column;gap:10px;padding:4px 0;flex-shrink:0;">',
-                    '<div style="display:flex;align-items:center;gap:12px;background:var(--primary-bg,#f5f5f5);border-radius:12px;padding:8px 14px;border:1px solid var(--border-color,#ddd);">',
+                                '<div style="display:flex;flex-direction:column;gap:10px;padding:4px 0;flex-shrink:0;">',
+                    // ===== 我的时间流速（可编辑，镜像值）=====
+                    '<div style="display:flex;align-items:center;gap:12px;background:var(--primary-bg,#f5f5f5);border-radius:12px;padding:6px 14px;border:1px solid var(--border-color,#ddd);">',
                         '<span style="font-size:12px;color:var(--text-secondary);white-space:nowrap;">我的时间流速</span>',
-                        '<span style="font-size:15px;font-weight:700;color:var(--text-primary);">1.0x</span>',
+                        '<input id="vc-my-speed-input" type="number" step="0.01" min="0.05" max="5" value="' + (1 / currentSpeed).toFixed(2) + '" style="',
+                            'flex:1;border:none;background:transparent;',
+                            'font-size:16px;font-weight:700;color:var(--text-primary);',
+                            'outline:none;text-align:right;font-family:var(--font-family);',
+                            'min-width:60px;',
+                        '">',
+                        '<span style="font-size:14px;font-weight:700;color:var(--text-secondary);">x</span>',
                     '</div>',
+                    // ===== 他的时间流速（可编辑，真正存储的值）=====
                     '<div style="display:flex;align-items:center;gap:12px;background:var(--primary-bg,#f5f5f5);border-radius:12px;padding:6px 14px;border:1px solid var(--border-color,#ddd);">',
                         '<span style="font-size:12px;color:var(--text-secondary);white-space:nowrap;">他的时间流速</span>',
-                        '<input id="vc-speed-input" type="number" step="0.1" min="0.3" max="30" value="' + currentSpeed.toFixed(1) + '" style="',
+                        '<input id="vc-speed-input" type="number" step="0.01" min="0.2" max="20" value="' + currentSpeed.toFixed(2) + '" style="',
                             'flex:1;border:none;background:transparent;',
                             'font-size:16px;font-weight:700;color:var(--text-primary);',
                             'outline:none;text-align:right;font-family:var(--font-family);',
@@ -393,17 +401,84 @@
         };
         document.addEventListener('keydown', escHandler);
         modal._escHandler = escHandler;
+                // ===== 🆕 双向联动绑定 =====
+        bindSpeedInputs();
+        // ===== 双向联动绑定结束 =====
     }
 
-    function updateSpeedModalContent() {
+    /**
+     * 双向联动：两个输入框互相换算 1/X
+     */
+    function bindSpeedInputs() {
+        var hisInput = document.getElementById('vc-speed-input');
+        var myInput = document.getElementById('vc-my-speed-input');
+        var targetDisplay = document.getElementById('vc-speed-target-display');
+        if (!hisInput || !myInput) return;
+
+        // 防止循环触发
+        var isSyncing = false;
+
+        // 更新“目标”显示
+        function updateTargetDisplay(val) {
+            if (targetDisplay) {
+                targetDisplay.textContent = (val !== '' && !isNaN(val)) ? parseFloat(val).toFixed(2) + 'x' : '--';
+            }
+        }
+
+        // 他的框输入 → 我的框 = 1/X
+        hisInput.addEventListener('input', function() {
+            if (isSyncing) return;
+            isSyncing = true;
+            var val = hisInput.value.trim();
+            if (val === '' || isNaN(parseFloat(val))) {
+                myInput.value = '';
+                updateTargetDisplay('');
+            } else {
+                var num = parseFloat(val);
+                if (num > 0) {
+                    myInput.value = (1 / num).toFixed(2);
+                } else {
+                    myInput.value = '';
+                }
+                updateTargetDisplay(num);
+            }
+            isSyncing = false;
+        });
+
+        // 我的框输入 → 他的框 = 1/X
+        myInput.addEventListener('input', function() {
+            if (isSyncing) return;
+            isSyncing = true;
+            var val = myInput.value.trim();
+            if (val === '' || isNaN(parseFloat(val))) {
+                hisInput.value = '';
+                updateTargetDisplay('');
+            } else {
+                var num = parseFloat(val);
+                if (num > 0) {
+                    var hisVal = (1 / num).toFixed(2);
+                    hisInput.value = hisVal;
+                    updateTargetDisplay(hisVal);
+                } else {
+                    hisInput.value = '';
+                    updateTargetDisplay('');
+                }
+            }
+            isSyncing = false;
+        });
+    }
+
+        function updateSpeedModalContent() {
         var speed = window.VirtualClock ? window.VirtualClock.getSpeed() : 1.0;
         var currentDisplay = document.getElementById('vc-speed-current-display');
         var targetDisplay = document.getElementById('vc-speed-target-display');
         var input = document.getElementById('vc-speed-input');
+        var myInput = document.getElementById('vc-my-speed-input');
 
-        if (currentDisplay) currentDisplay.textContent = speed.toFixed(1) + 'x';
-        if (targetDisplay) targetDisplay.textContent = speed.toFixed(1) + 'x';
-        if (input) input.value = speed.toFixed(1);
+        if (currentDisplay) currentDisplay.textContent = speed.toFixed(2) + 'x';
+        if (targetDisplay) targetDisplay.textContent = speed.toFixed(2) + 'x';
+        if (input) input.value = speed.toFixed(2);
+        if (myInput) myInput.value = (1 / speed).toFixed(2);
 
         var statusEl = document.getElementById('vc-speed-status');
         if (statusEl) {
@@ -549,33 +624,35 @@ var delay = 4000 + Math.random() * 26000;
         createSpeedModal();
     }
 
-    function handleRandomSpeed() {
+        function handleRandomSpeed() {
         if (SPEED_MODAL_STATE.waiting) return;
         var vc = window.VirtualClock;
         if (!vc) return;
 
         var randomSpeed = vc.generateRandomSpeed();
         var input = document.getElementById('vc-speed-input');
+        var myInput = document.getElementById('vc-my-speed-input');
         var targetDisplay = document.getElementById('vc-speed-target-display');
 
-        if (input) input.value = randomSpeed.toFixed(1);
-        if (targetDisplay) targetDisplay.textContent = randomSpeed.toFixed(1) + 'x';
+        if (input) input.value = randomSpeed.toFixed(2);
+        if (myInput) myInput.value = (1 / randomSpeed).toFixed(2);
+        if (targetDisplay) targetDisplay.textContent = randomSpeed.toFixed(2) + 'x';
 
         if (typeof window.showNotification === 'function') {
-            window.showNotification('随机生成流速: ' + randomSpeed.toFixed(1) + 'x', 'info', 1500);
+            window.showNotification('随机生成流速: ' + randomSpeed.toFixed(2) + 'x', 'info', 1500);
         }
     }
 
     function handleRequestSpeed() {
         if (SPEED_MODAL_STATE.waiting) return;
 
-        var input = document.getElementById('vc-speed-input');
+                var input = document.getElementById('vc-speed-input');
         if (!input) return;
 
         var targetSpeed = parseFloat(input.value);
-        if (isNaN(targetSpeed) || targetSpeed < 0.3 || targetSpeed > 30) {
+        if (isNaN(targetSpeed) || targetSpeed < 0.2 || targetSpeed > 20) {
             if (typeof window.showNotification === 'function') {
-                window.showNotification('请输入 0.3 ~ 30.0 之间的数值', 'error', 2000);
+                window.showNotification('请输入 0.2 ~ 20 之间的数值', 'error', 2000);
             }
             return;
         }
@@ -665,16 +742,25 @@ var delay = 4000 + Math.random() * 26000;
         }, delay);
     }
 
-    function handleSaveSpeed() {
+        function handleSaveSpeed() {
         if (SPEED_MODAL_STATE.waiting) return;
 
-        var input = document.getElementById('vc-speed-input');
-        if (!input) return;
+        var hisInput = document.getElementById('vc-speed-input');
+        var myInput = document.getElementById('vc-my-speed-input');
+        if (!hisInput) return;
 
-        var targetSpeed = parseFloat(input.value);
-        if (isNaN(targetSpeed) || targetSpeed < 0.3 || targetSpeed > 30) {
+        // 优先读“他的速度”输入框；如果他框为空，尝试从我框反推
+        var targetSpeed = parseFloat(hisInput.value);
+        if (isNaN(targetSpeed) || hisInput.value.trim() === '') {
+            var myVal = parseFloat(myInput ? myInput.value : '');
+            if (!isNaN(myVal) && myVal > 0) {
+                targetSpeed = 1 / myVal;
+            }
+        }
+
+        if (isNaN(targetSpeed) || targetSpeed < 0.2 || targetSpeed > 20) {
             if (typeof window.showNotification === 'function') {
-                window.showNotification('请输入 0.3 ~ 30.0 之间的数值', 'error', 2000);
+                window.showNotification('流速需在 0.2 ~ 20 之间', 'error', 2000);
             }
             return;
         }
