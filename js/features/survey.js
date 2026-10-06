@@ -500,7 +500,7 @@
             fileInput.type = 'file';
             fileInput.accept = 'image/*';
             fileInput.style.display = 'none';
-            fileInput.onchange = function () {
+                        fileInput.onchange = async function () {
                 var file = fileInput.files && fileInput.files[0];
                 if (!file) return;
                 if (file.size > 2 * 1024 * 1024) {
@@ -508,12 +508,33 @@
                     fileInput.value = '';
                     return;
                 }
-                var reader = new FileReader();
-                reader.onload = function () {
-                    opt.value = reader.result;
+                if (typeof showNotification === 'function') showNotification('正在上传图片...', 'info', 2000);
+                try {
+                    // 1. 压缩（跟留言板一致，用 optimizeImage；没有就退回 FileReader 读 base64）
+                    var compressed;
+                    if (typeof optimizeImage === 'function') {
+                        compressed = await optimizeImage(file, 800, 0.7);
+                    } else {
+                        compressed = await new Promise(function (resolve) {
+                            var r = new FileReader();
+                            r.onload = function (ev) { resolve(ev.target.result); };
+                            r.readAsDataURL(file);
+                        });
+                    }
+                    // 2. 上传图床（复用留言板的 uploadToImgHub）
+                    if (typeof window._uploadToImgHub !== 'function') {
+                        throw new Error('图床上传函数未加载（请确认 boards.js 已改）');
+                    }
+                    var url = await window._uploadToImgHub(compressed);
+                    // 3. 存 URL（不再是 base64）
+                    opt.value = url;
                     _renderDraftQuestions();
-                };
-                reader.readAsDataURL(file);
+                    if (typeof showNotification === 'function') showNotification('图片上传成功', 'success', 1500);
+                } catch (err) {
+                    console.error('[survey] 图片上传失败:', err);
+                    if (typeof showNotification === 'function') showNotification('图片上传失败，请重试', 'error', 3000);
+                }
+                fileInput.value = '';
             };
             pickLabel.appendChild(fileInput);
             wrap.appendChild(pickLabel);
