@@ -405,6 +405,9 @@
 /* 标签行（[已回复] 那个小胶囊）单独一行，靠左 */
 .survey-detail-meta-row > .survey-tag {
     align-self: flex-start;
+    /* ⬇️ 覆盖全局的 .survey-tag-status { margin-left:auto }（那条是给列表页
+       把标签推到右端用的），详情页的标签必须靠左，所以这里用 !important 强制 */
+    margin-left: 0 !important;
 }
 
 /* 时间行：提问于贴左、回复于贴右，真正左右对称 */
