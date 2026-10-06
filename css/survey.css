@@ -395,11 +395,24 @@
 /* ── 详情页 ── */
 .survey-detail-meta-row {
     display: flex;
-    align-items: center;
-    gap: 10px;
+    flex-direction: column;
+    gap: 8px;
     font-size: 11.5px;
     color: var(--text-secondary);
     margin-bottom: 14px;
+}
+
+/* 标签行（[已回复] 那个小胶囊）单独一行，靠左 */
+.survey-detail-meta-row > .survey-tag {
+    align-self: flex-start;
+}
+
+/* 时间行：提问于贴左、回复于贴右，真正左右对称 */
+.survey-detail-meta-time-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
     flex-wrap: wrap;
 }
 .survey-detail-q-block {
