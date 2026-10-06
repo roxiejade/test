@@ -258,15 +258,17 @@
     }
 
     // ── 创建问卷弹窗：草稿态问题结构 ──────────────────────────────
-    function _newDraftQuestion() {
+        function _newDraftQuestion() {
         return {
             id: _uid('q'),
             type: 'single',
             text: '',
-            optKind: 'text', // 同题内类型不混用，这个是"这道题的选项统一是文字还是图片"
+            // optKind 保留，作为"新建选项时的默认类型"（默认文字）；
+            // 但每个选项自己也记 kind，支持同题混搭
+            optKind: 'text',
             options: [
-                { id: _uid('o'), value: '' },
-                { id: _uid('o'), value: '' }
+                { id: _uid('o'), kind: 'text', value: '' },
+                { id: _uid('o'), kind: 'text', value: '' }
             ]
         };
     }
@@ -419,25 +421,49 @@
         });
         card.appendChild(typeToggle);
 
-        var kindToggle = document.createElement('div');
+                var kindToggle = document.createElement('div');
         kindToggle.className = 'survey-q-kind-toggle';
-        [['text', '文字选项'], ['image', '图片选项']].forEach(function (pair) {
+
+        // 自动判断当前整题属于哪种状态：
+        //   allText  → 所有选项都是文字
+        //   allImage → 所有选项都是图片
+        //   其他      → 混搭（有文字也有图片）
+        var _allText = q.options.length > 0 && q.options.every(function (o) { return (o.kind || 'text') === 'text'; });
+        var _allImage = q.options.length > 0 && q.options.every(function (o) { return o.kind === 'image'; });
+        var _currentMode = _allText ? 'text' : (_allImage ? 'image' : 'mixed');
+
+        [['text', '文字选项'], ['image', '图片选项'], ['mixed', '混搭选项']].forEach(function (pair) {
             var b = document.createElement('button');
             b.type = 'button';
-            b.className = 'survey-q-kind-btn' + (q.optKind === pair[0] ? ' active' : '');
+            b.className = 'survey-q-kind-btn' + (_currentMode === pair[0] ? ' active' : '');
             b.textContent = pair[1];
             if (_editingSurveyId) {
-                // 编辑模式下同样锁掉——只让改"内容"，选项是文字还是图片这个类型不算内容
+                // 编辑模式下锁掉整题类型切换——只让改"内容"，类型不算内容
                 b.disabled = true;
-                b.style.opacity = (q.optKind === pair[0]) ? '1' : '0.4';
+                b.style.opacity = (_currentMode === pair[0]) ? '1' : '0.4';
                 b.style.cursor = 'default';
             } else {
                 b.onclick = function () {
-                    if (q.optKind === pair[0]) return;
-                    q.optKind = pair[0];
-                    // 切类型清空已填的内容——文字和图片的 value 含义不一样，混着留没意义，
-                    // 而且用户是主动点切换的，清空不算意外丢数据
-                    q.options.forEach(function (o) { o.value = ''; });
+                    if (_currentMode === pair[0]) return;
+                    if (pair[0] === 'text' || pair[0] === 'image') {
+                        // 文字 / 图片模式：清空内容，所有选项统一成新类型
+                        var _hasContent = q.options.some(function (o) { return (o.value || '').trim(); });
+                        if (_hasContent) {
+                            if (!confirm('切换到"' + pair[1] + '"会清空这道题所有选项的内容，确定吗？')) return;
+                        }
+                        q.optKind = pair[0];
+                        q.options.forEach(function (o) {
+                            o.kind = pair[0];
+                            o.value = '';
+                        });
+                    } else {
+                        // 混搭模式：不清空内容，各选项保留自己的 kind（没有的就补 text），
+                        // 让每个选项行右侧出现"文字/图片"小切换图标，逐个精调
+                        q.optKind = 'text';
+                        q.options.forEach(function (o) {
+                            if (!o.kind) o.kind = 'text';
+                        });
+                    }
                     _renderDraftQuestions();
                 };
             }
@@ -471,7 +497,8 @@
         var row = document.createElement('div');
         row.className = 'survey-option-row';
 
-        if (q.optKind === 'image') {
+                var _thisOptKind = opt.kind || q.optKind || 'text';
+        if (_thisOptKind === 'image') {
             var wrap = document.createElement('div');
             wrap.className = 'survey-option-img-wrap';
             var thumb = document.createElement('div');
@@ -548,7 +575,30 @@
             input.oninput = function () { opt.value = input.value; _updateSendBtnState(); };
             row.appendChild(input);
         }
-
+        // ---------- 混搭模式：每个选项行右侧显示"文字/图片"切换小图标 ----------
+        // 判断是不是混搭模式：看这道题所有选项的 kind 是不是都一致
+        //   一致 → 不是混搭，不显示图标
+        //   不一致 → 是混搭，显示图标
+        var _allKinds = q.options.map(function (o) { return o.kind || 'text'; });
+        var _isMixedMode = _allKinds.some(function (k) { return k !== _allKinds[0]; });
+        if (_isMixedMode) {
+            var optKindNow = opt.kind || q.optKind || 'text';
+            var kindBtn = document.createElement('button');
+            kindBtn.type = 'button';
+            kindBtn.className = 'survey-option-kind-btn';
+            kindBtn.title = (optKindNow === 'text') ? '切换成图片选项' : '切换成文字选项';
+            kindBtn.innerHTML = (optKindNow === 'text')
+                ? '<i class="fas fa-image"></i>'
+                : '<i class="fas fa-font"></i>';
+            kindBtn.onclick = function () {
+                var newKind = (optKindNow === 'text') ? 'image' : 'text';
+                opt.kind = newKind;
+                opt.value = ''; // 切换类型清空这个选项的内容
+                _renderDraftQuestions();
+            };
+            row.appendChild(kindBtn);
+        }
+        
         var delBtn = document.createElement('button');
         delBtn.type = 'button';
         delBtn.className = 'survey-option-del-btn';
