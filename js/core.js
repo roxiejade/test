@@ -1181,11 +1181,11 @@ function createMessageFragment(msg, prevMsg, nextMsg, lastSenderRef) {
             messageDiv.className = `message message-${msg.sender === 'user' ? 'sent' : 'received'} ${settings.bubbleStyle}`;
         }
     }
-       messageDiv.innerHTML = messageHTML;
+           messageDiv.innerHTML = messageHTML;
 
     // 拼音盲打句：气泡上方偏左飘 ✧
     if (msg.meta && msg.meta.source === 'pinyin') {
-        messageDiv.insertAdjacentHTML('beforeend', '<span class="pinyin-float-star">&#x2727;</span>');
+        wrapper.insertAdjacentHTML('beforeend', '<span class="pinyin-float-star">&#x2727;</span>');
     }
 
     let actionsHTML = '';
