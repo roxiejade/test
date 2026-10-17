@@ -11,11 +11,11 @@
     'use strict';
 
     // ---------- 配置 ----------
-    var CONFIG = {
-        DELAY_LETTER: 180,
-        DELAY_STOP: 500,
-        DELAY_WORD: 600,
-        DELAY_SEGMENT: 900,
+        var CONFIG = {
+        DELAY_LETTER: 300,
+        DELAY_STOP: 800,
+        DELAY_WORD: 900,
+        DELAY_SEGMENT: 1300,
         MAX_SEGMENTS: 12,
         MAX_CHARS: 20,
         COMMA_PROB: 0.15,
