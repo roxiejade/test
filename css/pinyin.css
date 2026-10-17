@@ -298,13 +298,14 @@
 .pinyin-float-star {
     position: absolute;
     top: 2px;
-    left: calc(var(--in-chat-avatar-size, 36px) + 12px);
+    left: calc(var(--in-chat-avatar-size, 36px) + 28px);
     font-size: 13px;
     line-height: 1;
     color: var(--accent-color);
     pointer-events: none;
     user-select: none;
     -webkit-user-select: none;
+    z-index: 2;
     animation: pinyinFloatStar 3.4s ease-in-out infinite;
 }
 @keyframes pinyinFloatStar {
