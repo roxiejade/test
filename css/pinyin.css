@@ -1,0 +1,320 @@
+/* ============================================================
+   css/pinyin.css
+   拼音盲打浮层 + 入口按钮 + 星标识
+   所有类名加 pinyin- 前缀，不污染原站 styles.css
+   ============================================================ */
+
+/* ---------- 入口按钮（输入区，表情和发送之间） ---------- */
+.pinyin-toggle-btn {
+    order: 4;
+}
+.pinyin-toggle-btn.active {
+    background: var(--accent-color) !important;
+    color: #fff !important;
+    box-shadow: 0 0 0 3px rgba(var(--accent-color-rgb), 0.18);
+}
+.pinyin-toggle-btn.active i {
+    color: #fff !important;
+}
+
+/* ---------- 浮层 ---------- */
+#pinyin-modal {
+    position: fixed;
+    right: 16px;
+    top: 42%;
+    transform: translateY(-50%);
+    width: 340px;
+    max-width: calc(100vw - 32px);
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.14);
+    padding: 14px 16px;
+    z-index: 999;
+    display: none;
+    flex-direction: column;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Microsoft YaHei', sans-serif;
+    user-select: none;
+    transition: width 0.25s ease, padding 0.25s ease, box-shadow 0.25s ease;
+}
+#pinyin-modal.visible {
+    display: flex;
+}
+
+/* ---------- 头部 ---------- */
+.pinyin-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 22px;
+    cursor: grab;
+    touch-action: none;
+}
+.pinyin-header.dragging {
+    cursor: grabbing;
+}
+.pinyin-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent-color);
+    box-shadow: 0 0 0 3px rgba(var(--accent-color-rgb), 0.15);
+    animation: pinyinPulse 2s infinite;
+    flex-shrink: 0;
+}
+@keyframes pinyinPulse {
+    0%   { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(var(--accent-color-rgb), 0.4); }
+    70%  { transform: scale(1);    box-shadow: 0 0 0 5px rgba(var(--accent-color-rgb), 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(var(--accent-color-rgb), 0); }
+}
+.pinyin-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1a1a1a;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.pinyin-status {
+    font-size: 11px;
+    color: #7a7a7a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+    flex: 1;
+}
+.pinyin-header-btns {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex-shrink: 0;
+    margin-left: 2px;
+}
+.pinyin-icon-btn {
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: #7a7a7a;
+    cursor: pointer;
+    border-radius: 50%;
+    transition: color 0.2s, background 0.2s;
+    background: none;
+    border: none;
+    padding: 0;
+    line-height: 1;
+}
+.pinyin-icon-btn i {
+    font-size: 12px;
+    line-height: 1;
+    display: block;
+}
+.pinyin-icon-btn:hover {
+    color: #1a1a1a;
+    background: rgba(0, 0, 0, 0.05);
+}
+.pinyin-close:hover {
+    color: #e74c3c !important;
+    background: rgba(231, 76, 60, 0.08);
+}
+
+/* ---------- 模式切换 ---------- */
+.pinyin-modes {
+    display: flex;
+    gap: 6px;
+    margin: 12px 0 10px;
+    background: #f9f9f9;
+    border: 1px solid #ebebeb;
+    border-radius: 10px;
+    padding: 3px;
+}
+.pinyin-mode-btn {
+    flex: 1;
+    padding: 8px 6px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: #7a7a7a;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+.pinyin-mode-btn i {
+    font-size: 11px;
+}
+.pinyin-mode-btn:hover:not(.active) {
+    color: #1a1a1a;
+}
+.pinyin-mode-btn.active {
+    background: var(--accent-color);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(var(--accent-color-rgb), 0.3);
+}
+
+/* ---------- 主体 ---------- */
+.pinyin-body {
+    display: flex;
+    flex-direction: column;
+}
+.pinyin-input-area {
+    height: 38px;
+    background: #fafbfc;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    font-size: 16px;
+    color: #1a1a1a;
+    margin-bottom: 12px;
+    font-family: 'SFMono-Regular', Consolas, monospace;
+    white-space: pre;
+    letter-spacing: 1.5px;
+    transition: border-color 0.3s, background 0.3s;
+    min-height: 38px;
+}
+.pinyin-input-area.active {
+    border-color: var(--accent-color);
+    background: #fff;
+}
+
+.pinyin-candidates {
+    display: flex;
+    gap: 7px;
+    margin-bottom: 12px;
+    height: 30px;
+}
+.pinyin-candidate {
+    width: 30px;
+    height: 30px;
+    background: #f1f2f6;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #7a7a7a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+}
+.pinyin-candidate.active {
+    background: #fdfaf6;
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+    font-weight: bold;
+    transform: scale(1.05);
+}
+
+.pinyin-result {
+    min-height: 30px;
+    font-size: 17px;
+    color: #1a1a1a;
+    line-height: 1.5;
+    word-break: break-all;
+    letter-spacing: 0.5px;
+    margin-bottom: 14px;
+    padding: 0 2px;
+}
+
+.pinyin-controls {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+.pinyin-btn {
+    flex: 1;
+    padding: 9px 0;
+    border-radius: 8px;
+    border: none;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+}
+.pinyin-btn-redraw {
+    background: #f1f2f6;
+    color: #1a1a1a;
+}
+.pinyin-btn-redraw:hover {
+    background: #e4e6eb;
+}
+.pinyin-btn-send {
+    background: var(--accent-color);
+    color: #fff;
+    flex: 1.5;
+    box-shadow: 0 3px 10px rgba(var(--accent-color-rgb), 0.3);
+}
+.pinyin-btn-send:hover {
+    filter: brightness(0.95);
+}
+
+.pinyin-mode-auto {
+    display: flex;
+    align-items: center;
+    font-size: 13px;
+    color: #1a1a1a;
+    padding-left: 2px;
+}
+.pinyin-mode-auto input {
+    margin-right: 7px;
+    accent-color: var(--accent-color);
+    width: 15px;
+    height: 15px;
+}
+
+/* ---------- 对话回复模式：控制区保持显示，不隐藏 ---------- */
+/* 按最终确认：控制区不隐藏，发送按钮也不变灰 */
+
+/* ---------- 最小化 ---------- */
+#pinyin-modal.minimized {
+    width: 240px;
+    padding: 10px 14px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.10);
+}
+#pinyin-modal.minimized .pinyin-modes,
+#pinyin-modal.minimized .pinyin-body {
+    display: none;
+}
+#pinyin-modal.minimized .pinyin-title {
+    font-size: 12px;
+}
+#pinyin-modal.minimized .pinyin-status {
+    font-size: 10px;
+}
+
+/* ---------- 星标识（挂在梦角盲打句气泡上方偏左） ---------- */
+.pinyin-float-star {
+    position: absolute;
+    top: -11px;
+    left: 18px;
+    font-size: 13px;
+    line-height: 1;
+    color: var(--accent-color);
+    pointer-events: none;
+    user-select: none;
+    -webkit-user-select: none;
+    animation: pinyinFloatStar 3.4s ease-in-out infinite;
+}
+@keyframes pinyinFloatStar {
+    0%, 100% { transform: translateY(0) rotate(0deg);   opacity: 0.55; }
+    50%      { transform: translateY(-4px) rotate(10deg); opacity: 0.95; }
+}
+
+/* ---------- 小屏适配 ---------- */
+@media (max-width: 380px) {
+    #pinyin-modal {
+        width: calc(100vw - 24px);
+        right: 12px;
+    }
+    #pinyin-modal.minimized {
+        width: 200px;
+    }
+}
