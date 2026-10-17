@@ -315,26 +315,35 @@
 
     // ---------- 发送 ----------
     function sendToChat() {
-        if (state.currentSentence.length === 0) return;
-        var text = currentText();
-        window._pinyinSending = true;
-        try {
-            if (typeof window.sendMessage === 'function') {
-                window.sendMessage(text, 'normal');
-            }
-        } finally {
-            window._pinyinSending = false;
-        }
-        state.currentSentence = [];
-        state.segmentCount = 0;
-        state.isTyping = false;
-        el.result.textContent = '';
-        el.candidates.innerHTML = '';
-        el.pinyinDisplay.textContent = '';
-        el.pinyinDisplay.classList.remove('active');
-        updateStatus('等待开始');
-        updateButton();
+    if (state.currentSentence.length === 0) return;
+    var text = currentText();
+
+    // 梦角发消息（左侧收到气泡），不是用户发送
+    if (typeof window.addMessage === 'function') {
+        window.addMessage({
+            id: Date.now() + Math.random(),
+            sender: (typeof settings !== 'undefined' && settings.partnerName) ? settings.partnerName : '梦角',
+            text: text,
+            timestamp: new Date(),
+            status: 'received',
+            favorited: false,
+            note: null,
+            type: 'normal',
+            meta: { source: 'pinyin' }
+        });
     }
+
+    // 重置 UI
+    state.currentSentence = [];
+    state.segmentCount = 0;
+    state.isTyping = false;
+    el.result.textContent = '';
+    el.candidates.innerHTML = '';
+    el.pinyinDisplay.textContent = '';
+    el.pinyinDisplay.classList.remove('active');
+    updateStatus('等待开始');
+    updateButton();
+}
 
     // ---------- 中止 ----------
     function abortTyping() {
