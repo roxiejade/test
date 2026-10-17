@@ -298,7 +298,7 @@
 .pinyin-float-star {
     position: absolute;
     top: 2px;
-    left: 18px;
+    left: calc(var(--in-chat-avatar-size, 36px) + 12px);
     font-size: 13px;
     line-height: 1;
     color: var(--accent-color);
