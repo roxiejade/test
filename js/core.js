@@ -1181,7 +1181,12 @@ function createMessageFragment(msg, prevMsg, nextMsg, lastSenderRef) {
             messageDiv.className = `message message-${msg.sender === 'user' ? 'sent' : 'received'} ${settings.bubbleStyle}`;
         }
     }
-    messageDiv.innerHTML = messageHTML;
+       messageDiv.innerHTML = messageHTML;
+
+    // 拼音盲打句：气泡上方偏左飘 ✧
+    if (msg.meta && msg.meta.source === 'pinyin') {
+        messageDiv.insertAdjacentHTML('beforeend', '<span class="pinyin-float-star">&#x2727;</span>');
+    }
 
     let actionsHTML = '';
     if (settings.replyEnabled) actionsHTML += `<button class="meta-action-btn reply-btn" title="回复"><i class="fas fa-reply"></i></button>`;
@@ -1367,6 +1372,11 @@ function renderMessages(preserveScroll = false) {
 
 const addMessage = (message) => {
     if (!(message.timestamp instanceof Date)) message.timestamp = new Date(message.timestamp);
+
+    // 拼音引擎发送时打标，渲染时据此显示星
+    if (window._pinyinSending && !message.meta) {
+        message.meta = { source: 'pinyin' };
+    }
     
     const container = DOMElements.chatContainer;
     const wasEmpty = messages.length === 0;
