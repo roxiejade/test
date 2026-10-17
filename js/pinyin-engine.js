@@ -483,15 +483,22 @@
         });
     }
 
-    // ---------- 挂 _onUserMessage（包一层，不覆盖原站已有） ----------
-    function hookOnUserMessage() {
-        var prev = window._onUserMessage;
-        window._onUserMessage = function (msg) {
-            if (typeof prev === 'function') {
-                try { prev(msg); } catch (e) {}
-            }
-            try { onUserMessage(msg); } catch (e) {}
-        };
+        // ---------- 监听用户发送（不依赖原站 _onUserMessage 钩子） ----------
+    function setupUserSendListener() {
+        var sendBtn = document.getElementById('send-btn');
+        if (sendBtn) {
+            sendBtn.addEventListener('click', function () {
+                onUserMessage();
+            });
+        }
+        var input = document.getElementById('message-input');
+        if (input) {
+            input.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    onUserMessage();
+                }
+            });
+        }
     }
 
     // ---------- 初始化 ----------
@@ -534,9 +541,9 @@
             b.addEventListener('click', function () { switchMode(b.dataset.mode); });
         });
 
-        setupDrag();
+                setupDrag();
         setupToggleBtn();
-        hookOnUserMessage();
+        setupUserSendListener();
         updateButton();
     }
 
