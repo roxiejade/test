@@ -12,10 +12,10 @@
 
     // ---------- 配置 ----------
     var CONFIG = {
-        DELAY_LETTER: 100,
-        DELAY_STOP: 320,
-        DELAY_WORD: 380,
-        DELAY_SEGMENT: 520,
+        DELAY_LETTER: 180,
+        DELAY_STOP: 500,
+        DELAY_WORD: 600,
+        DELAY_SEGMENT: 900,
         MAX_SEGMENTS: 12,
         MAX_CHARS: 20,
         COMMA_PROB: 0.15,
