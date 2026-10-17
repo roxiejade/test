@@ -125,11 +125,15 @@
     }
 
     // ---------- 选字 ----------
-    function pickChar(pinyin) {
-        var pool = window.PINYIN_DICT[pinyin];
-        if (!pool || !pool.length) return '？';
+        function pickChar(pinyin) {
+        var rawPool = window.PINYIN_DICT[pinyin];
+        if (!rawPool || !rawPool.length) return '？';
+        // 过滤掉频次 < 1 的极冷门字（婺、鹜、翳这种聊天里不会出现的）
+        var pool = rawPool.filter(function (x) { return x[1] >= 1; });
+        if (!pool.length) pool = rawPool;  // 兜底：全被过滤了就用原池
         var normal = weightedRandom(pool);
         if (Math.random() < CONFIG.EGG_PROB && pool.length > 1) {
+            // 彩蛋也只从过滤后的池里抽，排除冷门字
             var others = pool.filter(function (x) { return x[0] !== normal; });
             if (others.length) {
                 return others[Math.floor(Math.random() * others.length)][0];
@@ -137,7 +141,6 @@
         }
         return normal;
     }
-
     function updateCandidates(pinyin, finalChar) {
         el.candidates.innerHTML = '';
         var pool = window.PINYIN_DICT[pinyin];
