@@ -22,6 +22,7 @@
 
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/companion.css">
+        <link rel="stylesheet" href="css/pinyin.css">
     <!-- 在 companion.css 后面添加 -->
 <link rel="stylesheet" href="css/together-listen.css">
     <!-- 虚拟时钟样式 -->
@@ -284,6 +285,10 @@
     </button>
 
     <textarea class="message-input" id="message-input" placeholder="" rows="1"></textarea>
+
+            <button class="input-btn pinyin-toggle-btn collapse-hideable" id="pinyin-toggle-btn" title="拼音组句">
+        <i class="fas fa-keyboard"></i>
+    </button>
     
     <div class="input-buttons">
     <button class="continue-btn input-btn" id="continue-btn" title="让对方继续说"><i class="fas fa-ellipsis-h"></i></button>
@@ -2995,12 +3000,55 @@
     </div>
 </div>
 
+<!-- ========== 拼音盲打浮层 ========== -->
+<div id="pinyin-modal" class="mode-free">
+    <div class="pinyin-header" id="pinyin-drag-handle">
+        <div class="pinyin-dot"></div>
+        <span class="pinyin-title">拼音组句</span>
+        <span class="pinyin-status" id="pinyin-status">等待开始</span>
+        <div class="pinyin-header-btns">
+            <button class="pinyin-icon-btn" id="pinyin-minimize" title="最小化">
+                <i class="fas fa-minus"></i>
+            </button>
+            <button class="pinyin-icon-btn pinyin-close" id="pinyin-close" title="关闭">
+                <i class="fas fa-xmark"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="pinyin-modes">
+        <button class="pinyin-mode-btn active" data-mode="free">
+            <i class="fas fa-pen-nib"></i>自由组句
+        </button>
+        <button class="pinyin-mode-btn" data-mode="reply">
+            <i class="fas fa-comments"></i>对话回复
+        </button>
+    </div>
+
+    <div class="pinyin-body">
+        <div class="pinyin-input-area" id="pinyin-display"></div>
+        <div class="pinyin-candidates" id="pinyin-candidates"></div>
+        <div class="pinyin-result" id="pinyin-result"></div>
+        <div class="pinyin-controls">
+            <button class="pinyin-btn pinyin-btn-redraw" id="pinyin-start">开始组句</button>
+            <button class="pinyin-btn pinyin-btn-send" id="pinyin-send">发送到聊天</button>
+        </div>
+        <div class="pinyin-mode-auto">
+            <input type="checkbox" id="pinyin-auto-mode">
+            <label for="pinyin-auto-mode">自动发送</label>
+        </div>
+    </div>
+</div>
+<!-- ========== /拼音盲打浮层 ========== -->
+        
     <!-- == 核心层 == -->
     <script src="js/config.js"></script>
     <script src="js/utils.js"></script>
     <script src="js/backup-engine.js"></script>
     <script src="js/state.js"></script>
     <script src="js/core.js"></script>
+        <script src="js/pinyin-dict.js"></script>
+    <script src="js/pinyin-engine.js"></script>
 
     <!-- == 功能模块 == -->
     <script src="js/features/mood.js"></script>
