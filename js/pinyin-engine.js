@@ -4,7 +4,7 @@
    - Trie 真字母级：每层按子节点拼音数加权，每个完整拼音等概率
    - 两种模式：自由组句（手动开始/换一句）、对话回复（我发消息自动触发）
    - 浮层可拖动、可最小化、无遮罩
-   - 发送走 window.sendMessage，打标 meta.source='pinyin'
+   - 梦角发消息：直接 addMessage，sender=settings.partnerName，带 meta.source='pinyin'
    依赖：window.PINYIN_DICT / window.PINYIN_WORD_DICT（pinyin-dict.js）
    ============================================================ */
 (function () {
@@ -12,23 +12,22 @@
 
     // ---------- 配置 ----------
     var CONFIG = {
-        DELAY_LETTER: 100,      // 每个字母间隔
-        DELAY_STOP: 320,        // 决定"停"之后到选字的间隔
-        DELAY_WORD: 380,        // 每个字选完到下一段的间隔
-        DELAY_SEGMENT: 520,     // 段与段之间
-        MAX_SEGMENTS: 12,       // 硬上限段数
-        MAX_CHARS: 20,          // 硬上限字数
-        COMMA_PROB: 0.15,       // 每段后加逗号概率
-        EGG_PROB: 0.10,         // 首字母彩蛋概率
-        WORD_PROB: 0.10,        // 双音节概率（拼音级抽双音节词组）
-        DIRECT_WORD_PROB: 0.50, // 双音节时直接出词概率
-        REPLY_MERGE_WINDOW: 3000, // 对话回复合并窗口
-        REPLY_TWO_PROB: 0.30,   // 对话回复 2 句概率
-        REPLY_GAP_MIN: 2000,    // 两句间隔
+        DELAY_LETTER: 100,
+        DELAY_STOP: 320,
+        DELAY_WORD: 380,
+        DELAY_SEGMENT: 520,
+        MAX_SEGMENTS: 12,
+        MAX_CHARS: 20,
+        COMMA_PROB: 0.15,
+        EGG_PROB: 0.10,
+        WORD_PROB: 0.10,
+        DIRECT_WORD_PROB: 0.50,
+        REPLY_MERGE_WINDOW: 3000,
+        REPLY_TWO_PROB: 0.30,
+        REPLY_GAP_MIN: 2000,
         REPLY_GAP_MAX: 4000
     };
 
-    // 停止概率：第 1 段后 10%，2~3 段 15%，4~6 段 5%，7 段起每段 +10%
     function stopProb(seg) {
         if (seg <= 0) return 0;
         if (seg === 1) return 0.10;
@@ -41,11 +40,11 @@
     var state = {
         isOpen: false,
         isMinimized: false,
-        mode: 'free',           // 'free' | 'reply'
+        mode: 'free',
         isTyping: false,
-        currentSentence: [],     // [{text, hasComma}]
+        currentSentence: [],
         segmentCount: 0,
-        abortToken: 0,           // 每次中止 +1，异步回调里比对
+        abortToken: 0,
         trieRoot: null,
         singleKeys: [],
         doubleKeys: [],
@@ -53,7 +52,6 @@
         replyPending: false
     };
 
-    // ---------- DOM 引用（init 时赋值） ----------
     var el = {};
 
     // ---------- 工具 ----------
@@ -77,13 +75,11 @@
         });
     }
 
-    // ---------- Trie 建树 ----------
-    // 每个节点：{ children: {字母: 节点}, leafCount: 以该节点为完整拼音的数量, subtreeCount: 以该节点为前缀的完整拼音总数 }
+    // ---------- Trie ----------
     function buildTrie(dict) {
         var root = { children: {}, leafCount: 0, subtreeCount: 0 };
-        var keys = Object.keys(dict);
-        keys.forEach(function (py) {
-            if (!/^[a-z]+$/.test(py)) return; // 只收纯小写字母拼音
+        Object.keys(dict).forEach(function (py) {
+            if (!/^[a-z]+$/.test(py)) return;
             var node = root;
             for (var i = 0; i < py.length; i++) {
                 var ch = py[i];
@@ -99,27 +95,17 @@
         return root;
     }
 
-    // 从 Trie 走一个完整拼音（真字母级：每层条件概率 + 中间节点可停）
-    // onLetter(letter) 回调，返回 false 表示已中止
     async function walkTriePinyin(token) {
         var node = state.trieRoot;
         var letters = [];
         while (true) {
             if (token !== state.abortToken) return null;
-            // 中间节点可停：按 leafCount / subtreeCount 概率停
             if (node.leafCount > 0) {
                 var pStop = node.leafCount / node.subtreeCount;
-                if (Math.random() < pStop) {
-                    // 停：当前 letters 就是完整拼音
-                    break;
-                }
+                if (Math.random() < pStop) break;
             }
-            // 继续：在子节点里按 subtreeCount 加权
             var childKeys = Object.keys(node.children);
-            if (childKeys.length === 0) {
-                // 没有子节点但也没停（理论上不会发生，兜底）
-                break;
-            }
+            if (childKeys.length === 0) break;
             var totalSub = 0;
             childKeys.forEach(function (k) { totalSub += node.children[k].subtreeCount; });
             var r = Math.random() * totalSub;
@@ -131,7 +117,6 @@
             }
             node = node.children[picked];
             letters.push(picked);
-            // 打字动画
             el.pinyinDisplay.textContent += picked;
             var ok = await sleep(CONFIG.DELAY_LETTER, token);
             if (!ok) return null;
@@ -144,7 +129,6 @@
         var pool = window.PINYIN_DICT[pinyin];
         if (!pool || !pool.length) return '？';
         var normal = weightedRandom(pool);
-        // 首字母彩蛋：10% 概率从同音池里换一个冷门字
         if (Math.random() < CONFIG.EGG_PROB && pool.length > 1) {
             var others = pool.filter(function (x) { return x[0] !== normal; });
             if (others.length) {
@@ -154,7 +138,6 @@
         return normal;
     }
 
-    // 更新候选区：5 个方块，包含最终抽中的字，打乱顺序，选中高亮
     function updateCandidates(pinyin, finalChar) {
         el.candidates.innerHTML = '';
         var pool = window.PINYIN_DICT[pinyin];
@@ -172,7 +155,7 @@
         });
     }
 
-    // ---------- 渲染拼句 ----------
+    // ---------- 拼句 ----------
     function renderSentence() {
         var s = '';
         state.currentSentence.forEach(function (item, idx) {
@@ -197,14 +180,12 @@
         return n;
     }
 
-    // ---------- 单段打字（真字母级） ----------
+    // ---------- 单段 ----------
     async function typeOneSegment(token) {
-        // 10% 概率走双音节（拼音级直接抽词组）
         var isDouble = Math.random() < CONFIG.WORD_PROB && state.doubleKeys.length > 0;
 
         if (isDouble) {
             var pinyinStr = state.doubleKeys[Math.floor(Math.random() * state.doubleKeys.length)];
-            // 拼音带空格显示
             el.pinyinDisplay.textContent = '';
             el.pinyinDisplay.classList.add('active');
             for (var i = 0; i < pinyinStr.length; i++) {
@@ -213,10 +194,8 @@
                 var ok = await sleep(ch === ' ' ? CONFIG.DELAY_LETTER * 3 : CONFIG.DELAY_LETTER, token);
                 if (!ok) return null;
             }
-            // 50% 直接出词
             if (Math.random() < CONFIG.DIRECT_WORD_PROB && window.PINYIN_WORD_DICT[pinyinStr]) {
                 var word = window.PINYIN_WORD_DICT[pinyinStr];
-                // 候选区用第一个音节的池子展示
                 var firstSyl = pinyinStr.split(' ')[0];
                 updateCandidates(firstSyl, word[0]);
                 var okw = await sleep(CONFIG.DELAY_WORD, token);
@@ -225,7 +204,6 @@
                 el.pinyinDisplay.classList.remove('active');
                 return word;
             } else {
-                // 拆开按单音节盲抽
                 var sylls = pinyinStr.split(' ');
                 var text = '';
                 for (var j = 0; j < sylls.length; j++) {
@@ -243,13 +221,10 @@
             }
         }
 
-        // 单音节：真字母级走 Trie
         el.pinyinDisplay.textContent = '';
         el.pinyinDisplay.classList.add('active');
         var pinyin = await walkTriePinyin(token);
         if (!pinyin) return null;
-
-        // 停 → 选字
         var okStop = await sleep(CONFIG.DELAY_STOP, token);
         if (!okStop) return null;
         var finalChar = pickChar(pinyin);
@@ -299,7 +274,7 @@
         }
     }
 
-    // ---------- 状态/按钮刷新 ----------
+    // ---------- UI 刷新 ----------
     function updateStatus(text) {
         if (el.status) el.status.textContent = text;
     }
@@ -313,37 +288,35 @@
         }
     }
 
-    // ---------- 发送 ----------
+    // ---------- 发送（梦角发消息） ----------
     function sendToChat() {
-    if (state.currentSentence.length === 0) return;
-    var text = currentText();
+        if (state.currentSentence.length === 0) return;
+        var text = currentText();
 
-    // 梦角发消息（左侧收到气泡），不是用户发送
-    if (typeof window.addMessage === 'function') {
-        window.addMessage({
-            id: Date.now() + Math.random(),
-            sender: (typeof settings !== 'undefined' && settings.partnerName) ? settings.partnerName : '梦角',
-            text: text,
-            timestamp: new Date(),
-            status: 'received',
-            favorited: false,
-            note: null,
-            type: 'normal',
-            meta: { source: 'pinyin' }
-        });
+        if (typeof window.addMessage === 'function') {
+            window.addMessage({
+                id: Date.now() + Math.random(),
+                sender: (typeof settings !== 'undefined' && settings.partnerName) ? settings.partnerName : '对方',
+                text: text,
+                timestamp: new Date(),
+                status: 'received',
+                favorited: false,
+                note: null,
+                type: 'normal',
+                meta: { source: 'pinyin' }
+            });
+        }
+
+        state.currentSentence = [];
+        state.segmentCount = 0;
+        state.isTyping = false;
+        el.result.textContent = '';
+        el.candidates.innerHTML = '';
+        el.pinyinDisplay.textContent = '';
+        el.pinyinDisplay.classList.remove('active');
+        updateStatus('等待开始');
+        updateButton();
     }
-
-    // 重置 UI
-    state.currentSentence = [];
-    state.segmentCount = 0;
-    state.isTyping = false;
-    el.result.textContent = '';
-    el.candidates.innerHTML = '';
-    el.pinyinDisplay.textContent = '';
-    el.pinyinDisplay.classList.remove('active');
-    updateStatus('等待开始');
-    updateButton();
-}
 
     // ---------- 中止 ----------
     function abortTyping() {
@@ -359,14 +332,13 @@
         updateButton();
     }
 
-    // ---------- 开始/换一句 ----------
     function startOrRedraw() {
         abortTyping();
         var token = ++state.abortToken;
         runSentence(token);
     }
 
-    // ---------- 浮层显隐/最小化 ----------
+    // ---------- 显隐/最小化 ----------
     function openModal() {
         el.modal.classList.add('visible');
         state.isOpen = true;
@@ -378,7 +350,6 @@
         el.modal.classList.remove('visible');
         state.isOpen = false;
         if (state.replyMergeTimer) { clearTimeout(state.replyMergeTimer); state.replyMergeTimer = null; }
-        // 关闭 = 熄灭入口按钮 + 关功能
         if (el.toggleBtn) el.toggleBtn.classList.remove('active');
         if (typeof settings !== 'undefined') {
             settings.pinyinEngineEnabled = false;
@@ -413,11 +384,10 @@
         updateButton();
     }
 
-    // ---------- 对话回复：我发消息时触发 ----------
+    // ---------- 对话回复 ----------
     function onUserMessage() {
         if (!state.isOpen) return;
         if (state.mode !== 'reply') return;
-        // 合并窗口：3 秒内多条只触发一次
         if (state.replyPending) return;
         state.replyPending = true;
         state.replyMergeTimer = setTimeout(function () {
@@ -433,7 +403,6 @@
         var token = ++state.abortToken;
         await runSentence(token);
         if (token !== state.abortToken) return;
-        // 跑完后，30% 概率再来一句
         if (Math.random() < CONFIG.REPLY_TWO_PROB) {
             var gap = CONFIG.REPLY_GAP_MIN + Math.random() * (CONFIG.REPLY_GAP_MAX - CONFIG.REPLY_GAP_MIN);
             var ok = await sleep(gap, token);
@@ -481,7 +450,6 @@
                 } catch (err) {}
             }
         });
-        // 恢复位置
         try {
             var saved = JSON.parse(localStorage.getItem('pinyinModalPos') || 'null');
             if (saved && saved.left && saved.top) {
@@ -496,7 +464,6 @@
     // ---------- 入口按钮 ----------
     function setupToggleBtn() {
         if (!el.toggleBtn) return;
-        // 初始状态
         if (typeof settings !== 'undefined' && settings.pinyinEngineEnabled) {
             el.toggleBtn.classList.add('active');
             openModal();
@@ -516,18 +483,27 @@
         });
     }
 
+    // ---------- 挂 _onUserMessage（包一层，不覆盖原站已有） ----------
+    function hookOnUserMessage() {
+        var prev = window._onUserMessage;
+        window._onUserMessage = function (msg) {
+            if (typeof prev === 'function') {
+                try { prev(msg); } catch (e) {}
+            }
+            try { onUserMessage(msg); } catch (e) {}
+        };
+    }
+
     // ---------- 初始化 ----------
     function init() {
         if (!window.PINYIN_DICT || !window.PINYIN_WORD_DICT) {
             console.warn('[pinyin-engine] PINYIN_DICT 未加载，引擎不启动');
             return;
         }
-        // 建 Trie
         state.trieRoot = buildTrie(window.PINYIN_DICT);
         state.singleKeys = Object.keys(window.PINYIN_DICT).filter(function (k) { return /^[a-z]+$/.test(k); });
         state.doubleKeys = Object.keys(window.PINYIN_WORD_DICT);
 
-        // DOM
         el.modal = document.getElementById('pinyin-modal');
         el.toggleBtn = document.getElementById('pinyin-toggle-btn');
         el.header = document.getElementById('pinyin-drag-handle');
@@ -544,7 +520,6 @@
 
         if (!el.modal) { console.warn('[pinyin-engine] #pinyin-modal 不存在'); return; }
 
-        // 事件
         el.startBtn.addEventListener('click', startOrRedraw);
         el.sendBtn.addEventListener('click', sendToChat);
         el.minBtn.addEventListener('click', function (e) {
@@ -561,10 +536,10 @@
 
         setupDrag();
         setupToggleBtn();
+        hookOnUserMessage();
         updateButton();
     }
 
-    // 对外接口
     window.PinyinEngine = {
         onUserMessage: onUserMessage,
         isOpen: function () { return state.isOpen; },
