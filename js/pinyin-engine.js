@@ -129,7 +129,7 @@
         var rawPool = window.PINYIN_DICT[pinyin];
         if (!rawPool || !rawPool.length) return '？';
         // 过滤掉频次 < 1 的极冷门字（婺、鹜、翳这种聊天里不会出现的）
-        var pool = rawPool.filter(function (x) { return x[1] >= 1; });
+        var pool = rawPool.filter(function (x) { return x[1] >= 3; });
         if (!pool.length) pool = rawPool;  // 兜底：全被过滤了就用原池
         var normal = weightedRandom(pool);
         if (Math.random() < CONFIG.EGG_PROB && pool.length > 1) {
