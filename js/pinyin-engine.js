@@ -484,23 +484,23 @@
     }
 
         // ---------- 监听用户发送（不依赖原站 _onUserMessage 钩子） ----------
-    function setupUserSendListener() {
+        function setupUserSendListener() {
         var sendBtn = document.getElementById('send-btn');
         if (sendBtn) {
             sendBtn.addEventListener('click', function () {
                 onUserMessage();
             });
         }
-        var input = document.getElementById('message-input');
-        if (input) {
-            input.addEventListener('keydown', function (e) {
-                if (e.key === 'Enter' && !e.shiftKey) {
+        // 用 document 监听 keydown，绕过原站对 message-input 的可能拦截
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                var input = document.getElementById('message-input');
+                if (input && e.target === input) {
                     onUserMessage();
                 }
-            });
-        }
+            }
+        });
     }
-
     // ---------- 初始化 ----------
     function init() {
         if (!window.PINYIN_DICT || !window.PINYIN_WORD_DICT) {
