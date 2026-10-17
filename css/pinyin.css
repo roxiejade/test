@@ -291,9 +291,12 @@
 }
 
 /* ---------- 星标识（挂在梦角盲打句气泡上方偏左） ---------- */
+.message-wrapper {
+    position: relative;
+}
 .pinyin-float-star {
     position: absolute;
-    top: -11px;
+    top: 2px;
     left: 18px;
     font-size: 13px;
     line-height: 1;
