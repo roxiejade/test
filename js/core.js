@@ -1372,11 +1372,6 @@ function renderMessages(preserveScroll = false) {
 
 const addMessage = (message) => {
     if (!(message.timestamp instanceof Date)) message.timestamp = new Date(message.timestamp);
-
-    // 拼音引擎发送时打标，渲染时据此显示星
-    if (window._pinyinSending && !message.meta) {
-        message.meta = { source: 'pinyin' };
-    }
     
     const container = DOMElements.chatContainer;
     const wasEmpty = messages.length === 0;
