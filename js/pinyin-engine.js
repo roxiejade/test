@@ -368,6 +368,7 @@
     }
 
     function expand() {
+       if (!state.minimized) return;
         state.isMinimized = false;
         el.modal.classList.remove('minimized');
         el.minBtn.innerHTML = '<i class="fas fa-minus"></i>';
@@ -424,6 +425,7 @@
         var handle = el.header;
         handle.addEventListener('pointerdown', function (e) {
             if (e.target.closest('.pinyin-icon-btn') || e.target.closest('.pinyin-mode-btn')) return;
+           if (state.isMinimized) return;
             var rect = el.modal.getBoundingClientRect();
             dragging = true; moved = false;
             sx = e.clientX; sy = e.clientY;
@@ -466,6 +468,18 @@
                 el.modal.style.right = 'auto';
             }
         } catch (err) {}
+    }
+
+       // ---------- 最小化后点头部任意处（除 ×）展开 ----------
+    function setupHeaderExpand() {
+        var header = el.header;
+        if (!header) return;
+        header.addEventListener('click', function (e) {
+            if (!state.isMinimized) return;                  // 只在最小化态生效
+            if (e.target.closest('#pinyin-close')) return;   // × 不展开
+            if (e.target.closest('.pinyin-mode-btn')) return; // 模式按钮不展开（保险）
+            expand();                                        // 其余位置展开
+        });
     }
 
     // ---------- 入口按钮 ----------
@@ -552,6 +566,7 @@
         });
 
                 setupDrag();
+       setupHeaderExpand();
         setupToggleBtn();
         setupUserSendListener();
         updateButton();
