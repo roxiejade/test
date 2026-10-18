@@ -24,7 +24,7 @@
     top: 42%;
     transform: translateY(-50%);
     width: 300px;
-   max-width: 70vw;
+    max-width: 70vw;
     max-width: calc(100vw - 32px);
     background: #fff;
     border-radius: 12px;
@@ -189,13 +189,30 @@
 
 .pinyin-candidates {
     display: flex;
+    flex-wrap: nowrap;
     gap: 6px;
     margin-bottom: 10px;
     height: 26px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;          /* Firefox 隐藏 */
+    -ms-overflow-style: none;       /* 旧 Edge/IE 隐藏 */
+}
+.pinyin-candidates::-webkit-scrollbar {
+    display: none;                  /* Chrome/Safari 隐藏 */
+}
+.pinyin-candidates::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 2px;
+}
+.pinyin-candidates::-webkit-scrollbar-track {
+    background: transparent;
 }
 .pinyin-candidate {
     width: 26px;
     height: 26px;
+    flex: 0 0 auto;              /* ← 关键：不压缩，保持方块大小 */
     background: #f1f2f6;
     border-radius: 5px;
     font-size: 13px;
