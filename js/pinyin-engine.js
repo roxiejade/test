@@ -144,8 +144,10 @@
     }
     function updateCandidates(pinyin, finalChar) {
         el.candidates.innerHTML = '';
-        var pool = window.PINYIN_DICT[pinyin];
-        if (!pool || !pool.length) return;
+        var rawPool = window.PINYIN_DICT[pinyin];
+        if (!rawPool || !rawPool.length) return;
+        var pool = rawPool.filter(function (x) { return x[1] >= 300; });
+        if (!pool.length) pool = rawPool;
         var chars = pool.map(function (x) { return x[0]; }).filter(function (c) { return c !== finalChar; });
         chars.sort(function () { return 0.5 - Math.random(); });
         var display = chars.slice(0, 4);
