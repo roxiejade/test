@@ -24,6 +24,7 @@
     top: 42%;
     transform: translateY(-50%);
     width: 300px;
+   max-width: 70vw;
     max-width: calc(100vw - 32px);
     background: #fff;
     border-radius: 12px;
@@ -322,4 +323,42 @@
     #pinyin-modal.minimized {
         width: 200px;
     }
+}
+
+/* ===== 小屏收紧：宽度靠 max-width:70vw，这里收字号/间距/高度 ===== */
+@media (max-width: 480px) {
+  #pinyin-modal {
+    padding: 10px 12px;
+    border-radius: 10px;
+    top: 38%;                 /* 初始位略上移，避开键盘/输入区 */
+  }
+  #pinyin-modal .pinyin-header {
+    font-size: 12px;
+  }
+  #pinyin-modal .pinyin-mode-btn {
+    font-size: 11px;
+    padding: 4px 0;
+  }
+  #pinyin-display {           /* 拼音输入框 */
+    height: 30px;
+    font-size: 12px;
+  }
+  #pinyin-candidates .candidate {
+    width: 22px;
+    height: 22px;
+    font-size: 12px;
+  }
+  #pinyin-result {            /* 拼句区 */
+    font-size: 14px;
+    min-height: 22px;
+  }
+  #pinyin-modal .pinyin-actions button {
+    padding: 6px 0;
+    font-size: 11px;
+  }
+  /* 主体限高滚动（可选，防止内容多时占满竖屏） */
+  #pinyin-modal .pinyin-body {
+    max-height: 46vh;
+    overflow-y: auto;
+  }
 }
