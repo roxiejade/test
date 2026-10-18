@@ -241,6 +241,7 @@
 
     // ---------- 组句主循环 ----------
     async function runSentence(token) {
+       console.log('[runSentence] 开始, token=', token, '当前abortToken=', state.abortToken);
         state.currentSentence = [];
         state.segmentCount = 0;
         state.isTyping = true;
@@ -323,6 +324,8 @@
 
     // ---------- 中止 ----------
     function abortTyping() {
+       console.log('[abortTyping] 被调用');
+    console.trace();
         state.abortToken++;
         state.isTyping = false;
         state.currentSentence = [];
@@ -402,6 +405,7 @@
     }
 
         async function triggerReplyRun() {
+           console.log('[triggerReplyRun] 进入, isTyping=', state.isTyping);
         if (!state.isOpen || state.mode !== 'reply') return;
         abortTyping();
         var token = ++state.abortToken;
