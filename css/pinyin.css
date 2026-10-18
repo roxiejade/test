@@ -192,7 +192,7 @@
     gap: 6px;
     margin-bottom: 10px;
     height: 30px;
-    padding: 3px 0;
+    padding: 3px 3px;
     align-items: center;
     overflow-x: auto;
     overflow-y: hidden;
@@ -363,7 +363,7 @@
   }
   #pinyin-candidates {
     height: 28px;
-    padding: 3px 0;
+    padding: 3px 3px;
   }
    #pinyin-candidates .pinyin-candidate {
     width: 22px;
