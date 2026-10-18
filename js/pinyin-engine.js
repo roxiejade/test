@@ -367,8 +367,8 @@
         el.minBtn.title = '展开';
     }
 
-    function expand() {
-       if (!state.minimized) return;
+        function expand() {
+        if (!state.isMinimized) return;
         state.isMinimized = false;
         el.modal.classList.remove('minimized');
         el.minBtn.innerHTML = '<i class="fas fa-minus"></i>';
