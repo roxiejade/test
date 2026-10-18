@@ -14,6 +14,7 @@
         var CONFIG = {
         DELAY_LETTER: 400,
         DELAY_STOP: 1100,
+        DELAY_BROWSE: 600,
         DELAY_WORD: 1200,
         DELAY_SEGMENT: 1800,
         MAX_SEGMENTS: 12,
@@ -142,23 +143,32 @@
         }
         return normal;
     }
-    function updateCandidates(pinyin, finalChar) {
+        // 只渲染该拼音下过滤后的全部候选字，不高亮
+    function renderCandidates(pinyin) {
         el.candidates.innerHTML = '';
         var rawPool = window.PINYIN_DICT[pinyin];
         if (!rawPool || !rawPool.length) return;
         var pool = rawPool.filter(function (x) { return x[1] >= 300; });
         if (!pool.length) pool = rawPool;
-        var chars = pool.map(function (x) { return x[0]; }).filter(function (c) { return c !== finalChar; });
-        chars.sort(function () { return 0.5 - Math.random(); });
-        var display = chars.slice(0, 4);
-        display.push(finalChar);
-        display.sort(function () { return 0.5 - Math.random(); });
-        display.forEach(function (c) {
+        pool.forEach(function (item) {
             var d = document.createElement('div');
-            d.className = 'pinyin-candidate' + (c === finalChar ? ' active' : '');
-            d.textContent = c;
+            d.className = 'pinyin-candidate';
+            d.dataset.char = item[0];
+            d.textContent = item[0];
             el.candidates.appendChild(d);
         });
+    }
+
+    // 只给最终字加 active，并横向滚到中间
+    function highlightCandidate(finalChar) {
+        var nodes = el.candidates.querySelectorAll('.pinyin-candidate');
+        for (var i = 0; i < nodes.length; i++) {
+            if (nodes[i].dataset.char === finalChar) {
+                nodes[i].classList.add('active');
+                nodes[i].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+                break;
+            }
+        }
     }
 
     // ---------- 拼句 ----------
@@ -200,10 +210,13 @@
                 var ok = await sleep(ch === ' ' ? CONFIG.DELAY_LETTER * 3 : CONFIG.DELAY_LETTER, token);
                 if (!ok) return null;
             }
-            if (Math.random() < CONFIG.DIRECT_WORD_PROB && window.PINYIN_WORD_DICT[pinyinStr]) {
+                       if (Math.random() < CONFIG.DIRECT_WORD_PROB && window.PINYIN_WORD_DICT[pinyinStr]) {
                 var word = window.PINYIN_WORD_DICT[pinyinStr];
                 var firstSyl = pinyinStr.split(' ')[0];
-                updateCandidates(firstSyl, word[0]);
+                renderCandidates(firstSyl);
+                var okb1 = await sleep(CONFIG.DELAY_BROWSE, token);
+                if (!okb1) return null;
+                highlightCandidate(word[0]);
                 var okw = await sleep(CONFIG.DELAY_WORD, token);
                 if (!okw) return null;
                 el.pinyinDisplay.textContent = '';
@@ -212,12 +225,15 @@
             } else {
                 var sylls = pinyinStr.split(' ');
                 var text = '';
-                for (var j = 0; j < sylls.length; j++) {
+                               for (var j = 0; j < sylls.length; j++) {
                     if (token !== state.abortToken) return null;
                     var syl = sylls[j];
+                    renderCandidates(syl);
+                    var okb = await sleep(CONFIG.DELAY_BROWSE, token);
+                    if (!okb) return null;
                     var c = pickChar(syl);
+                    highlightCandidate(c);
                     text += c;
-                    updateCandidates(syl, c);
                     var okc = await sleep(CONFIG.DELAY_WORD, token);
                     if (!okc) return null;
                 }
@@ -227,15 +243,19 @@
             }
         }
 
-        el.pinyinDisplay.textContent = '';
+                el.pinyinDisplay.textContent = '';
         el.pinyinDisplay.classList.add('active');
         var pinyin = await walkTriePinyin(token);
         if (!pinyin) return null;
         var okStop = await sleep(CONFIG.DELAY_STOP, token);
         if (!okStop) return null;
-        var finalChar = pickChar(pinyin);
-        updateCandidates(pinyin, finalChar);
-        var okWord = await sleep(CONFIG.DELAY_WORD, token);
+
+        renderCandidates(pinyin);                              // 1. 摆出全部候选，不高亮
+        var okBrowse = await sleep(CONFIG.DELAY_BROWSE, token); // 2. 浏览停顿
+        if (!okBrowse) return null;
+        var finalChar = pickChar(pinyin);                      // 3. 真选
+        highlightCandidate(finalChar);                         // 4. 只高亮最终字 + 滚到中间
+        var okWord = await sleep(CONFIG.DELAY_WORD, token);    // 5. 选中停留
         if (!okWord) return null;
         el.pinyinDisplay.textContent = '';
         el.pinyinDisplay.classList.remove('active');
