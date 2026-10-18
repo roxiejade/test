@@ -400,12 +400,17 @@
         }, CONFIG.REPLY_MERGE_WINDOW);
     }
 
-    async function triggerReplyRun() {
+        async function triggerReplyRun() {
         if (!state.isOpen || state.mode !== 'reply') return;
         abortTyping();
         var token = ++state.abortToken;
         await runSentence(token);
         if (token !== state.abortToken) return;
+
+        // 只有第一句已经发出去（勾了自动发送，currentSentence 已清空）时，
+        // 才考虑补第二句。第一句还停在拼句区时，不触发第二句。
+        if (state.currentSentence.length > 0) return;
+
         if (Math.random() < CONFIG.REPLY_TWO_PROB) {
             var gap = CONFIG.REPLY_GAP_MIN + Math.random() * (CONFIG.REPLY_GAP_MAX - CONFIG.REPLY_GAP_MIN);
             var ok = await sleep(gap, token);
@@ -413,7 +418,6 @@
             await runSentence(token);
         }
     }
-
     // ---------- 拖拽 ----------
     function setupDrag() {
         var dragging = false, moved = false, sx = 0, sy = 0, sl = 0, st = 0;
