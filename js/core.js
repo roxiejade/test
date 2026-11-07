@@ -455,6 +455,13 @@ const loadData = async () => {
         try { await initMoodData(); } catch(e) { console.warn("心情数据加载失败", e); }
         try { await loadEnvelopeData(); } catch(e) { console.warn("信封数据加载失败", e); }
             try { await initPeriodData(); } catch(e) { console.warn("月经数据加载失败", e); }
+
+            // ← 新增：读取回收站
+try {
+    const savedDeleted = await localforage.getItem(getStorageKey('deletedMessages'));
+    deletedMessages = Array.isArray(savedDeleted) ? savedDeleted : [];
+    window.deletedMessages = deletedMessages;
+} catch(e) { console.warn('[loadData] 回收站读取失败', e); deletedMessages = []; window.deletedMessages = deletedMessages; }
         
         displayedMessageCount = HISTORY_BATCH_SIZE;
         
@@ -614,6 +621,7 @@ const saveData = async () => {
         { key: 'customThemes',           val: () => localforage.setItem(`${APP_PREFIX}customThemes`, customThemes) },
         { key: 'themeSchemes',           val: () => localforage.setItem(`${APP_PREFIX}themeSchemes`, themeSchemes) },
         { key: 'chatMessages',           val: () => localforage.setItem(getStorageKey('chatMessages'), messages) },
+{ key: 'deletedMessages',        val: () => localforage.setItem(getStorageKey('deletedMessages'), deletedMessages) },
             { key: 'transferData', val: () => localforage.setItem(getStorageKey('transferData'), transferData) },
     ];
 
@@ -1189,10 +1197,11 @@ function createMessageFragment(msg, prevMsg, nextMsg, lastSenderRef) {
     }
 
     let actionsHTML = '';
-    if (settings.replyEnabled) actionsHTML += `<button class="meta-action-btn reply-btn" title="回复"><i class="fas fa-reply"></i></button>`;
-    const starIcon = msg.favorited ? 'fas fa-star' : 'far fa-star';
-    actionsHTML += `<button class="meta-action-btn favorite-action-btn ${msg.favorited ? 'favorited' : ''}" title="${msg.favorited ? '取消收藏' : '收藏'}"><i class="${starIcon}"></i></button>`;
-    actionsHTML += `<button class="meta-action-btn delete-btn" title="删除"><i class="fas fa-trash-alt"></i></button>`;
+if (settings.replyEnabled) actionsHTML += `<button class="meta-action-btn reply-btn" title="引用"><i class="fas fa-quote-right"></i></button>`;
+const starIcon = msg.favorited ? 'fas fa-star' : 'far fa-star';
+actionsHTML += `<button class="meta-action-btn favorite-action-btn ${msg.favorited ? 'favorited' : ''}" title="${msg.favorited ? '取消收藏' : '收藏'}"><i class="${starIcon}"></i></button>`;
+if (msg.sender === 'user') actionsHTML += `<button class="meta-action-btn recall-btn" title="撤回"><i class="fas fa-reply"></i></button>`;
+actionsHTML += `<button class="meta-action-btn delete-btn" title="删除"><i class="fas fa-trash-alt"></i></button>`;
     const actionsDiv = document.createElement('div');
     actionsDiv.className = 'message-meta-actions';
     actionsDiv.innerHTML = actionsHTML;
@@ -1460,6 +1469,56 @@ if (lastWrapper && prevMsg) {
 
 // 暴露到全局
 window.addMessage = addMessage;
+
+// ← 新增：撤回 / 恢复
+const RECALL_TIME_LIMIT_MS = 2 * 60 * 1000;
+
+function recallMessage(msgId) {
+    const idx = messages.findIndex(m => m.id === msgId);
+    if (idx === -1) return;
+    const msg = messages[idx];
+    if (msg.sender !== 'user') {
+        showNotification('只能撤回自己发送的消息');
+        return;
+    }
+    const ts = msg.timestamp instanceof Date ? msg.timestamp.getTime() : new Date(msg.timestamp).getTime();
+    if (ts && Date.now() - ts > RECALL_TIME_LIMIT_MS) {
+        showNotification('超过 2 分钟，无法撤回');
+        return;
+    }
+    if (!confirm('确定撤回这条消息？')) return;
+    messages.splice(idx, 1);
+    renderMessages(true);
+    throttledSaveData();
+    showNotification('已撤回', 'success');
+}
+window.recallMessage = recallMessage;
+
+function restoreMessage(trashId) {
+    const tIdx = deletedMessages.findIndex(m => m.id === trashId);
+    if (tIdx === -1) return;
+    const item = deletedMessages[tIdx];
+    let insertAt = null;
+    if (item.nextId) {
+        const ni = messages.findIndex(m => m.id === item.nextId);
+        if (ni !== -1) insertAt = ni;
+    }
+    if (insertAt === null && item.prevId) {
+        const pi = messages.findIndex(m => m.id === item.prevId);
+        if (pi !== -1) insertAt = pi + 1;
+    }
+    if (insertAt === null) {
+        insertAt = Math.min(item.originalIndex, messages.length);
+    }
+    const { deletedAt, originalIndex, prevId, nextId, ...restored } = item;
+    messages.splice(insertAt, 0, restored);
+    deletedMessages.splice(tIdx, 1);
+    renderMessages(true);
+    throttledSaveData();
+    showNotification('已恢复', 'success');
+    if (typeof window._renderTrashPanel === 'function') window._renderTrashPanel();
+}
+window.restoreMessage = restoreMessage;
 
         window._addCallEvent = (icon, label, detail) => {
             addMessage({
