@@ -23,11 +23,11 @@
     right: 16px;
     top: 42%;
     transform: translateY(-50%);
-    width: 300px;
+    width: 270px;
     max-width: 70vw;
     background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.14);
+    border-radius: 20px;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.10), 0 0 0 1px rgba(0, 0, 0, 0.03);
     padding: 12px 14px;
     z-index: 999;
     display: none;
@@ -56,15 +56,15 @@
     width: 7px;
     height: 7px;
     border-radius: 50%;
-    background: var(--accent-color);
-    box-shadow: 0 0 0 3px rgba(var(--accent-color-rgb), 0.15);
+    background: #7a8ee0;
+    box-shadow: 0 0 0 3px rgba(158, 196, 224, 0.2);
     animation: pinyinPulse 2s infinite;
     flex-shrink: 0;
 }
 @keyframes pinyinPulse {
-    0%   { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(var(--accent-color-rgb), 0.4); }
-    70%  { transform: scale(1);    box-shadow: 0 0 0 5px rgba(var(--accent-color-rgb), 0); }
-    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(var(--accent-color-rgb), 0); }
+    0%   { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(158, 196, 224, 0.55); }
+    70%  { transform: scale(1);    box-shadow: 0 0 0 5px rgba(158, 196, 224, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(158, 196, 224, 0); }
 }
 .pinyin-title {
     font-size: 12px;
@@ -132,7 +132,7 @@
 .pinyin-mode-btn {
     flex: 1;
     padding: 6px 5px;
-    border: none;
+    border: 1px solid transparent;
     border-radius: 6px;
     background: transparent;
     color: #7a7a7a;
@@ -153,9 +153,10 @@
     color: #1a1a1a;
 }
 .pinyin-mode-btn.active {
-    background: var(--accent-color);
-    color: #fff;
-    box-shadow: 0 2px 8px rgba(var(--accent-color-rgb), 0.3);
+    background: #fff;
+    color: #7a8ee0;
+    border: 1px solid #7a8ee0;
+    box-shadow: none;
 }
 
 /* ---------- 主体 ---------- */
@@ -225,9 +226,9 @@
     border: 1px solid transparent;
 }
 .pinyin-candidate.active {
-    background: #fdfaf6;
-    border-color: var(--accent-color);
-    color: var(--accent-color);
+    background: rgba(122, 142, 224, 0.08);
+    border-color: #7a8ee0;
+    color: #7a8ee0;
     font-weight: bold;
     transform: scale(1.05);
 }
@@ -267,13 +268,12 @@
     background: #e4e6eb;
 }
 .pinyin-btn-send {
-    background: var(--accent-color);
-    color: #fff;
-    flex: 1.5;
-    box-shadow: 0 3px 10px rgba(var(--accent-color-rgb), 0.3);
+    background: rgba(122, 142, 224, 0.12);
+    color: #7a8ee0;
+    flex: 1.2;
 }
 .pinyin-btn-send:hover {
-    filter: brightness(0.95);
+    background: rgba(122, 142, 224, 0.18);
 }
 
 .pinyin-mode-auto {
@@ -285,7 +285,7 @@
 }
 .pinyin-mode-auto input {
     margin-right: 7px;
-    accent-color: var(--accent-color);
+    accent-color: #7a8ee0;
     width: 15px;
     height: 15px;
 }
@@ -418,21 +418,22 @@
     }
 }
 
-/* ===== 小屏收紧：宽度靠 max-width:70vw，这里收字号/间距/高度 ===== */
+/* ===== 小屏收紧：480 以下（380~480 用 210） ===== */
 @media (max-width: 480px) {
   #pinyin-modal {
+    width: 220px;
     padding: 10px 12px;
-    border-radius: 10px;
-    top: 38%;                 /* 初始位略上移，避开键盘/输入区 */
+    border-radius: 16px;
+    top: 38%;
   }
   #pinyin-modal .pinyin-header {
     font-size: 12px;
   }
   #pinyin-modal .pinyin-mode-btn {
     font-size: 11px;
-    padding: 4px 0;
+    padding: 5px 4px;
   }
-    #pinyin-display {           /* 拼音输入框 */
+  #pinyin-display {
     height: 30px;
     min-height: 30px;
     font-size: 12px;
@@ -441,12 +442,12 @@
     height: 28px;
     padding: 3px 3px;
   }
-   #pinyin-candidates .pinyin-candidate {
+  #pinyin-candidates .pinyin-candidate {
     width: 22px;
     height: 22px;
     font-size: 12px;
   }
-  #pinyin-result {            /* 拼句区 */
+  #pinyin-result {
     font-size: 14px;
     min-height: 22px;
   }
@@ -454,9 +455,53 @@
     padding: 6px 0;
     font-size: 11px;
   }
-  /* 主体限高滚动（可选，防止内容多时占满竖屏） */
   #pinyin-modal .pinyin-body {
     max-height: 46vh;
     overflow-y: auto;
+  }
+
+  /* 小屏最小化（380~480） */
+  #pinyin-modal.minimized {
+    width: 210px;
+    height: 39px;
+    border-radius: 19px;
+    padding: 0 9px 0 16px;
+  }
+  #pinyin-modal.minimized .pinyin-icon-btn {
+    width: 21px;
+    height: 21px;
+    font-size: 12.5px;
+  }
+  #pinyin-modal.minimized .pinyin-title {
+    font-size: 11.5px;
+  }
+  #pinyin-modal.minimized .pinyin-status {
+    font-size: 9.5px;
+    padding-right: 6px;
+  }
+}
+
+/* ===== 更窄：380 以下（覆盖 480 的最小化，用 196） ===== */
+@media (max-width: 380px) {
+  #pinyin-modal {
+    right: 12px;
+  }
+  #pinyin-modal.minimized {
+    width: 196px;
+    height: 38px;
+    border-radius: 19px;
+    padding: 0 9px 0 16px;
+  }
+  #pinyin-modal.minimized .pinyin-icon-btn {
+    width: 21px;
+    height: 21px;
+    font-size: 12.5px;
+  }
+  #pinyin-modal.minimized .pinyin-title {
+    font-size: 11.5px;
+  }
+  #pinyin-modal.minimized .pinyin-status {
+    font-size: 9.5px;
+    padding-right: 6px;
   }
 }
