@@ -3,6 +3,7 @@ window.switchStatsTab = function(tab) {
     var favoritesPanel = document.getElementById('favorites-panel');
     var searchPanel = document.getElementById('search-panel');
     var wordcloudPanel = document.getElementById('wordcloud-panel');
+    var trashPanel = document.getElementById('trash-panel'); // ← 新增
     var allBtns = document.querySelectorAll('.stats-nav-btn');
     allBtns.forEach(function(b) { b.classList.remove('active'); });
     var activeBtn = document.querySelector('.stats-nav-btn[data-tab="' + tab + '"]');
@@ -12,6 +13,7 @@ window.switchStatsTab = function(tab) {
     if (favoritesPanel) favoritesPanel.style.display = 'none';
     if (searchPanel) searchPanel.style.display = 'none';
     if (wordcloudPanel) wordcloudPanel.style.display = 'none';
+    if (trashPanel) trashPanel.style.display = 'none'; // ← 新增
 
     if (tab === 'stats') {
         if (statsPanel) statsPanel.style.display = 'block';
@@ -26,11 +28,71 @@ window.switchStatsTab = function(tab) {
         requestAnimationFrame(function() {
             if (typeof renderWordCloud === 'function') renderWordCloud();
         });
+    } else if (tab === 'trash') { // ← 新增分支
+        if (trashPanel) trashPanel.style.display = 'block';
+        if (typeof window._renderTrashPanel === 'function') window._renderTrashPanel();
     } else {
         if (favoritesPanel) favoritesPanel.style.display = 'block';
         if (typeof renderFavorites === 'function') renderFavorites();
     }
 };
+
+// ← 新增：回收站面板渲染
+window._renderTrashPanel = function() {
+    var list = document.getElementById('trash-list');
+    if (!list) return;
+    if (typeof deletedMessages === 'undefined' || !deletedMessages || deletedMessages.length === 0) {
+        list.innerHTML = '<div style="text-align:center;color:var(--text-secondary);font-size:13px;padding:40px 0;">回收站为空</div>';
+        return;
+    }
+    var sorted = deletedMessages.slice().sort(function(a, b) { return b.deletedAt - a.deletedAt; });
+    function esc(s) {
+        return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+    function fmt(ts) {
+        var d = new Date(ts);
+        function p(n){ return String(n).padStart(2,'0'); }
+        return d.getFullYear() + '-' + p(d.getMonth()+1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+    }
+    function summary(t) {
+        t = String(t || '');
+        return t.length > 30 ? t.slice(0, 30) + '…' : t;
+    }
+    list.innerHTML = sorted.map(function(m) {
+        var text = m.text ? summary(m.text) : (m.image ? '[图片]' : '[消息]');
+        return '<div style="display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--border-color);">'
+            + '<div style="flex:1;min-width:0;">'
+            +   '<div style="font-size:13px;color:var(--text-primary);word-break:break-all;">' + esc(text) + '</div>'
+            +   '<div style="font-size:11px;color:var(--text-secondary);margin-top:2px;">删除于 ' + fmt(m.deletedAt) + '</div>'
+            + '</div>'
+            + '<button class="modal-btn modal-btn-primary" style="font-size:12px;padding:6px 12px;white-space:nowrap;" onclick="window.restoreMessage(' + JSON.stringify(m.id) + ')">恢复</button>'
+            + '</div>';
+    }).join('');
+};
+
+// ← 新增：清空按钮绑定
+(function bindClearTrash() {
+    function tryBind() {
+        var btn = document.getElementById('clear-trash-btn');
+        if (!btn) { setTimeout(tryBind, 500); return; }
+        if (btn._bound) return;
+        btn._bound = true;
+        btn.addEventListener('click', function() {
+            if (typeof deletedMessages === 'undefined' || !deletedMessages || deletedMessages.length === 0) {
+                if (typeof showNotification === 'function') showNotification('回收站已经是空的', 'info');
+                return;
+            }
+            if (!confirm('确定清空回收站？清空后不可恢复。')) return;
+            deletedMessages.length = 0;
+            window.deletedMessages = deletedMessages;
+            if (typeof throttledSaveData === 'function') throttledSaveData();
+            if (typeof window._renderTrashPanel === 'function') window._renderTrashPanel();
+            if (typeof showNotification === 'function') showNotification('回收站已清空', 'success');
+        });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', tryBind);
+    else setTimeout(tryBind, 300);
+})();
 
 var groupChatSettings = (function() {
     try {
