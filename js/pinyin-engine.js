@@ -15,7 +15,7 @@
         DELAY_LETTER: 400,
         DELAY_STOP: 1100,
         DELAY_BROWSE: 300,      // 摆出候选 → 停 0.3 秒 → 开始逐个扫
-        DELAY_SCAN: 150,        // 每个候选高亮停留 0.15 秒
+        DELAY_SCAN: 800,        // 每个候选高亮停留 0.8 秒
         DELAY_WORD: 1600,       // 停在最终字 → 停 1.6 秒 → 下一段
         DELAY_SEGMENT: 1800,
         MAX_SEGMENTS: 12,
