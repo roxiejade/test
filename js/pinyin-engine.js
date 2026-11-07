@@ -39,7 +39,7 @@
     }
 
     // ---------- 状态 ----------
-        var state = {
+            var state = {
         isOpen: false,
         isMinimized: false,
         mode: 'free',
@@ -52,7 +52,8 @@
         doubleKeys: [],
         replyMergeTimer: null,
         replyPending: false,
-        replyRunning: false          // ← 新增
+        replyRunning: false,
+        freeAutoTimer: null          // ← 新增
     };
 
     var el = {};
@@ -417,14 +418,16 @@
     }
 
     // ---------- 显隐/最小化 ----------
-    function openModal() {
+        function openModal() {
         el.modal.classList.add('visible');
         state.isOpen = true;
         updateButton();
+        if (state.mode === 'free') scheduleFreeAuto();
     }
 
     function closeModal() {
         abortTyping();
+        clearFreeAutoTimer();
         el.modal.classList.remove('visible');
         state.isOpen = false;
         if (state.replyMergeTimer) { clearTimeout(state.replyMergeTimer); state.replyMergeTimer = null; }
@@ -451,7 +454,7 @@
     }
 
     // ---------- 模式切换 ----------
-    function switchMode(mode) {
+        function switchMode(mode) {
         if (state.mode === mode) return;
         abortTyping();
         state.mode = mode;
@@ -461,6 +464,11 @@
         });
         updateStatus(mode === 'free' ? '等待开始' : '等待你的消息...');
         updateButton();
+        if (mode === 'free') {
+            scheduleFreeAuto();
+        } else {
+            clearFreeAutoTimer();
+        }
     }
 
     // ---------- 对话回复 ----------
@@ -499,6 +507,46 @@
             state.replyRunning = false;          // ← 无论正常结束还是中途 return，都复位
         }
     }
+
+    // ---------- 自由模式：梦角自主用拼音说一句 ----------
+    function clearFreeAutoTimer() {
+        if (state.freeAutoTimer) {
+            clearTimeout(state.freeAutoTimer);
+            state.freeAutoTimer = null;
+        }
+    }
+
+    function scheduleFreeAuto() {
+        clearFreeAutoTimer();
+        if (!state.isOpen) return;
+        if (state.mode !== 'free') return;
+        var minMs = 3 * 60 * 1000;
+        var maxMs = 10 * 60 * 1000;
+        var wait = minMs + Math.random() * (maxMs - minMs);
+        state.freeAutoTimer = setTimeout(function () {
+            state.freeAutoTimer = null;
+            runFreeAutoOnce();
+        }, wait);
+    }
+
+    async function runFreeAutoOnce() {
+        if (!state.isOpen || state.mode !== 'free') return;
+        if (state.isTyping || state.replyRunning) {
+            scheduleFreeAuto();
+            return;
+        }
+        var token = ++state.abortToken;
+        try {
+            await runSentence(token);
+            if (token !== state.abortToken) return;
+            if (state.currentSentence.length > 0) {
+                sendToChat();
+            }
+        } finally {
+            scheduleFreeAuto();
+        }
+    }
+   
     // ---------- 拖拽 ----------
     function setupDrag() {
         var dragging = false, moved = false, sx = 0, sy = 0, sl = 0, st = 0;
@@ -645,11 +693,12 @@
             b.addEventListener('click', function () { switchMode(b.dataset.mode); });
         });
 
-                setupDrag();
+                                setupDrag();
        setupHeaderExpand();
         setupToggleBtn();
         setupUserSendListener();
         updateButton();
+        if (state.mode === 'free' && state.isOpen) scheduleFreeAuto();
     }
 
     window.PinyinEngine = {
