@@ -293,11 +293,11 @@
 /* ---------- 对话回复模式：控制区保持显示，不隐藏 ---------- */
 /* 按最终确认：控制区不隐藏，发送按钮也不变灰 */
 
-/* ---------- 最小化：磨砂渐变细条 + 浮雕图标 ---------- */
+/* ---------- 最小化：磨砂渐变细条 ---------- */
 #pinyin-modal.minimized {
     width: 240px;
     height: 40px;
-    padding: 0 15px 0 14px;          /* 右边距 15px（左移图标），左边 14px */
+    padding: 0 15px 0 14px;
     border-radius: 20px;
     background: linear-gradient(135deg, #ebf2fa 0%, #f8f3ff 75%, #ffffff 100%);
     box-shadow:
@@ -319,17 +319,15 @@
 }
 #pinyin-modal.minimized .pinyin-title {
     font-size: 12px;
-    color: #3a3550;
-    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
+    font-weight: 600;
+    color: #7a7290;
+    letter-spacing: 0.2px;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 #pinyin-modal.minimized .pinyin-status {
     font-size: 10px;
-    color: #8a82a0;
-    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
-}
-#pinyin-modal.minimized .pinyin-dot {
-    width: 8px;
-    height: 8px;
+    color: #9a92b0;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
 }
 #pinyin-modal.minimized .pinyin-header {
     min-height: 40px;
