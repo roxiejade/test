@@ -183,7 +183,7 @@
     min-height: 34px;
 }
 .pinyin-input-area.active {
-    border-color: var(--accent-color);
+    border-color: #a8b8e8;
     background: #fff;
 }
 
