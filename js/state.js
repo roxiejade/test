@@ -8,6 +8,7 @@
         let autoSendTimer = null; 
         let sessionList = [];
         let messages = [];
+        let deletedMessages = []; // ← 新增
         let settings = {};
         let partnerPersonas = []; 
         let showPartnerNameInChat = false; 
@@ -181,3 +182,4 @@
 
 // 暴露 messages 到全局，供一起听等模块使用
 window.messages = messages;
+window.deletedMessages = deletedMessages;
