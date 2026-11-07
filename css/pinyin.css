@@ -154,8 +154,8 @@
 }
 .pinyin-mode-btn.active {
     background: #fff;
-    color: #7a8ee0;
-    border: 1px solid #7a8ee0;
+    color: #8f9fe0;
+    border: 1px solid #8f9fe0;
     box-shadow: none;
 }
 
@@ -285,7 +285,7 @@
 }
 .pinyin-mode-auto input {
     margin-right: 7px;
-    accent-color: #7a8ee0;
+    accent-color: #8f9fe0;
     width: 15px;
     height: 15px;
 }
