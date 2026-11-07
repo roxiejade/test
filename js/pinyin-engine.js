@@ -14,13 +14,14 @@
         var CONFIG = {
         DELAY_LETTER: 400,
         DELAY_STOP: 1100,
-        DELAY_BROWSE: 600,
-        DELAY_WORD: 1200,
+        DELAY_BROWSE: 300,      // 摆出候选 → 停 0.3 秒 → 开始逐个扫
+        DELAY_SCAN: 150,        // 每个候选高亮停留 0.15 秒
+        DELAY_WORD: 1600,       // 停在最终字 → 停 1.6 秒 → 下一段
         DELAY_SEGMENT: 1800,
         MAX_SEGMENTS: 12,
         MAX_CHARS: 20,
         COMMA_PROB: 0.15,
-        EGG_PROB: 0.10,
+        //EGG_PROB: 0.10,
         WORD_PROB: 0.08,
         DIRECT_WORD_PROB: 0.70,
         REPLY_MERGE_WINDOW: 3000,
@@ -127,22 +128,65 @@
     }
 
     // ---------- 选字 ----------
-        function pickChar(pinyin) {
+            // 开关：true = 同拼音内每个字等概率；false = 按字频加权（旧逻辑）
+    var PICK_EQUAL_PROB = true;
+
+    function pickChar(pinyin) {
         var rawPool = window.PINYIN_DICT[pinyin];
         if (!rawPool || !rawPool.length) return '？';
-        // 过滤掉频次 < 1 的极冷门字（婺、鹜、翳这种聊天里不会出现的）
         var pool = rawPool.filter(function (x) { return x[1] >= 300; });
-        if (!pool.length) pool = rawPool;  // 兜底：全被过滤了就用原池
-        var normal = weightedRandom(pool);
-        if (Math.random() < CONFIG.EGG_PROB && pool.length > 1) {
-            // 彩蛋也只从过滤后的池里抽，排除冷门字
-            var others = pool.filter(function (x) { return x[0] !== normal; });
-            if (others.length) {
-                return others[Math.floor(Math.random() * others.length)][0];
+        if (!pool.length) pool = rawPool;
+
+        if (PICK_EQUAL_PROB) {
+            // 等概率：随机取一个，无彩蛋
+            return pool[Math.floor(Math.random() * pool.length)][0];
+        }
+        // 旧逻辑：按字频加权（保留，改 PICK_EQUAL_PROB = false 可切回）
+        return weightedRandom(pool);
+    }
+
+       // 摆出候选 → 逐个高亮 → 走到某步当场决定停 → 该字即结果
+    // 每个候选被选中概率相等（1/remaining），字是扫描中当场决定的
+    async function scanAndPick(pinyin, token) {
+        var rawPool = window.PINYIN_DICT[pinyin];
+        if (!rawPool || !rawPool.length) return '？';
+        var pool = rawPool.filter(function (x) { return x[1] >= 300; });
+        if (!pool.length) pool = rawPool;
+
+        el.candidates.innerHTML = '';
+        pool.forEach(function (item) {
+            var d = document.createElement('div');
+            d.className = 'pinyin-candidate';
+            d.dataset.char = item[0];
+            d.textContent = item[0];
+            el.candidates.appendChild(d);
+        });
+        var nodes = el.candidates.querySelectorAll('.pinyin-candidate');
+        if (!nodes.length) return '？';
+
+        var okBrowse = await sleep(CONFIG.DELAY_BROWSE, token);
+        if (!okBrowse) return null;
+
+        for (var i = 0; i < nodes.length; i++) {
+            if (token !== state.abortToken) return null;
+
+            for (var j = 0; j < nodes.length; j++) nodes[j].classList.remove('active');
+            nodes[i].classList.add('active');
+            nodes[i].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+
+            var okScan = await sleep(CONFIG.DELAY_SCAN, token);
+            if (!okScan) return null;
+
+            var remaining = nodes.length - i;
+            var stopProb = 1 / remaining;
+            if (i === nodes.length - 1 || Math.random() < stopProb) {
+                return nodes[i].dataset.char;
             }
         }
-        return normal;
+        return nodes[nodes.length - 1].dataset.char;
     }
+
+   
         // 只渲染该拼音下过滤后的全部候选字，不高亮
     function renderCandidates(pinyin) {
         el.candidates.innerHTML = '';
@@ -197,7 +241,7 @@
     }
 
     // ---------- 单段 ----------
-    async function typeOneSegment(token) {
+       async function typeOneSegment(token) {
         var isDouble = Math.random() < CONFIG.WORD_PROB && state.doubleKeys.length > 0;
 
         if (isDouble) {
@@ -210,29 +254,39 @@
                 var ok = await sleep(ch === ' ' ? CONFIG.DELAY_LETTER * 3 : CONFIG.DELAY_LETTER, token);
                 if (!ok) return null;
             }
-                       if (Math.random() < CONFIG.DIRECT_WORD_PROB && window.PINYIN_WORD_DICT[pinyinStr]) {
+            if (Math.random() < CONFIG.DIRECT_WORD_PROB && window.PINYIN_WORD_DICT[pinyinStr]) {
+                // 直接出正确词组：不扫描，直接高亮首字（词组没有“选字”过程）
                 var word = window.PINYIN_WORD_DICT[pinyinStr];
                 var firstSyl = pinyinStr.split(' ')[0];
-                renderCandidates(firstSyl);
-                var okb1 = await sleep(CONFIG.DELAY_BROWSE, token);
-                if (!okb1) return null;
-                highlightCandidate(word[0]);
+                var rawPool = window.PINYIN_DICT[firstSyl];
+                el.candidates.innerHTML = '';
+                if (rawPool && rawPool.length) {
+                    var pool = rawPool.filter(function (x) { return x[1] >= 300; });
+                    if (!pool.length) pool = rawPool;
+                    pool.forEach(function (item) {
+                        var d = document.createElement('div');
+                        d.className = 'pinyin-candidate' + (item[0] === word[0] ? ' active' : '');
+                        d.dataset.char = item[0];
+                        d.textContent = item[0];
+                        el.candidates.appendChild(d);
+                    });
+                    var active = el.candidates.querySelector('.pinyin-candidate.active');
+                    if (active) active.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+                }
                 var okw = await sleep(CONFIG.DELAY_WORD, token);
                 if (!okw) return null;
                 el.pinyinDisplay.textContent = '';
                 el.pinyinDisplay.classList.remove('active');
                 return word;
             } else {
+                // 拆开盲抽：每个音节都走 scanAndPick
                 var sylls = pinyinStr.split(' ');
                 var text = '';
-                               for (var j = 0; j < sylls.length; j++) {
+                for (var j = 0; j < sylls.length; j++) {
                     if (token !== state.abortToken) return null;
                     var syl = sylls[j];
-                    renderCandidates(syl);
-                    var okb = await sleep(CONFIG.DELAY_BROWSE, token);
-                    if (!okb) return null;
-                    var c = pickChar(syl);
-                    highlightCandidate(c);
+                    var c = await scanAndPick(syl, token);
+                    if (c === null) return null;
                     text += c;
                     var okc = await sleep(CONFIG.DELAY_WORD, token);
                     if (!okc) return null;
@@ -243,19 +297,17 @@
             }
         }
 
-                el.pinyinDisplay.textContent = '';
+        // 单音节：走 scanAndPick
+        el.pinyinDisplay.textContent = '';
         el.pinyinDisplay.classList.add('active');
         var pinyin = await walkTriePinyin(token);
         if (!pinyin) return null;
         var okStop = await sleep(CONFIG.DELAY_STOP, token);
         if (!okStop) return null;
 
-        renderCandidates(pinyin);                              // 1. 摆出全部候选，不高亮
-        var okBrowse = await sleep(CONFIG.DELAY_BROWSE, token); // 2. 浏览停顿
-        if (!okBrowse) return null;
-        var finalChar = pickChar(pinyin);                      // 3. 真选
-        highlightCandidate(finalChar);                         // 4. 只高亮最终字 + 滚到中间
-        var okWord = await sleep(CONFIG.DELAY_WORD, token);    // 5. 选中停留
+        var finalChar = await scanAndPick(pinyin, token);
+        if (finalChar === null) return null;
+        var okWord = await sleep(CONFIG.DELAY_WORD, token);
         if (!okWord) return null;
         el.pinyinDisplay.textContent = '';
         el.pinyinDisplay.classList.remove('active');
