@@ -293,11 +293,25 @@
 /* ---------- 对话回复模式：控制区保持显示，不隐藏 ---------- */
 /* 按最终确认：控制区不隐藏，发送按钮也不变灰 */
 
-/* ---------- 最小化 ---------- */
+/* ---------- 最小化：磨砂渐变细条 + 浮雕图标 ---------- */
 #pinyin-modal.minimized {
     width: 240px;
-    padding: 10px 14px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.10);
+    height: 40px;
+    padding: 0 15px 0 14px;          /* 右边距 15px（左移图标），左边 14px */
+    border-radius: 20px;
+    background: linear-gradient(135deg, #ebf2fa 0%, #f8f3ff 75%, #ffffff 100%);
+    box-shadow:
+        inset 0.55em -0.45em 0.3em -0.6em rgba(68, 71, 75, 0.08),
+        inset 0.02em 0.02em 0px rgba(255, 255, 255, 1),
+        inset -0.25em -0.25em 0.05em -0.3em rgb(255, 255, 255),
+        0.2em 0.2em 0.1em -0.2em rgba(255, 255, 255, 0.901),
+        0.2em 0.3em 0.2em rgba(0, 0, 0, 0.07),
+        -0.2em -0.3em 0.2em -0.2em #edf8fc,
+        0.2em -0.3em 0.2em -0.2em #fcf5fd,
+        inset 0.3em 0.1em 0.2em -0.2em #edf8fc,
+        inset -0.2em 0.2em 0.2em -0.1em #fcf5fd,
+        inset -0.3em 0.3em 0.2em 0em #fcf5fd;
+    transition: width 0.25s ease, padding 0.25s ease, box-shadow 0.25s ease;
 }
 #pinyin-modal.minimized .pinyin-modes,
 #pinyin-modal.minimized .pinyin-body {
@@ -305,9 +319,96 @@
 }
 #pinyin-modal.minimized .pinyin-title {
     font-size: 12px;
+    color: #3a3550;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 #pinyin-modal.minimized .pinyin-status {
     font-size: 10px;
+    color: #8a82a0;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+#pinyin-modal.minimized .pinyin-dot {
+    width: 8px;
+    height: 8px;
+}
+#pinyin-modal.minimized .pinyin-header {
+    min-height: 40px;
+    gap: 8px;
+}
+#pinyin-modal.minimized .pinyin-header-btns {
+    gap: 0;
+    margin-left: 2px;
+}
+/* 最小化态：+ / × 浮雕图标（字号 19px，容器 30×?，下移 2.5px） */
+#pinyin-modal.minimized .pinyin-icon-btn {
+    position: relative;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 19px;
+    font-weight: 700;
+    color: transparent;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    padding: 0;
+    line-height: 1;
+    transition: transform 0.12s ease, background 0.18s ease;
+    text-shadow: none;
+}
+/* 隐藏原来的 Font Awesome 图标（最小化态用 data-icon 浮雕） */
+#pinyin-modal.minimized .pinyin-icon-btn > i {
+    display: none;
+}
+/* 底层：渐变填充文字 */
+#pinyin-modal.minimized .pinyin-icon-btn::before {
+    content: attr(data-icon);
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(to bottom, #baafc4 0%, #e8e1ee 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    z-index: 2;
+    pointer-events: none;
+    transform: translateY(2.5px);
+}
+/* 上层：透明 + 上下描边，叠浮雕 */
+#pinyin-modal.minimized .pinyin-icon-btn::after {
+    content: attr(data-icon);
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: transparent;
+    z-index: 1;
+    pointer-events: none;
+    text-shadow: 0 1px 0 #ffffff, 0 -1px 0 rgba(100, 97, 104, 0.5);
+    transform: translateY(2.5px);
+}
+/* hover：浅底，不跳 */
+#pinyin-modal.minimized .pinyin-icon-btn:hover {
+    background: rgba(255, 255, 255, 0.35);
+}
+#pinyin-modal.minimized .pinyin-icon-btn:active {
+    transform: scale(0.9);
+}
+/* 关闭 hover 变红（渐变也变红） */
+#pinyin-modal.minimized .pinyin-close:hover {
+    background: rgba(231, 76, 60, 0.08);
+}
+#pinyin-modal.minimized .pinyin-close:hover::before {
+    background: linear-gradient(to bottom, #e07a6e 0%, #f0a89e 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
 /* ---------- 星标识（挂在梦角盲打句气泡上方偏左） ---------- */
