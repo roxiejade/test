@@ -1761,14 +1761,19 @@ if (!isBatchMode && type === 'normal') {
         // 通用：触发"模拟用户发了消息后的延迟回复"机制
         //   isUserMessage: true 表示真实有用户消息（默认），false 表示陪伴页点击触发（不存在的虚拟消息）
         //   返回 true 表示已排队等待回复，false 表示被"已读不回"概率拦截
-        window._triggerDelayedReply = function(isUserMessage) {
+                window._triggerDelayedReply = function(isUserMessage) {
             if (isBatchMode) return false;
             // 真实用户消息一定要清除陪伴静默标志（避免陪伴中点了一下，回首页发消息时还跳过引用）
             if (isUserMessage) {
                 window._companionSilentTrigger = false;
             }
             const delayRange = settings.replyDelayMax - settings.replyDelayMin;
-            const randomDelay = settings.replyDelayMin + Math.random() * delayRange;
+            let randomDelay = settings.replyDelayMin + Math.random() * delayRange;
+
+            // 拼音引擎开着时，字卡延迟延长 30%，避免和拼音句挤在一起
+            if (typeof settings !== 'undefined' && settings.pinyinEngineEnabled) {
+                randomDelay = Math.round(randomDelay * 1.3);
+            }
 
             const chance = Math.max(0, Math.min(1, Number(settings.readNoReplyChance) || 0));
             const shouldIgnore = settings.allowReadNoReply && (Math.random() < chance);
