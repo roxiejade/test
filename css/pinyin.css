@@ -337,6 +337,20 @@
     gap: 0;
     margin-left: 2px;
 }
+
+/* 最小化态：中蓝紫圆点 + 浅雾蓝呼吸光晕 */
+#pinyin-modal.minimized .pinyin-dot {
+    width: 9px;
+    height: 9px;
+    background: #7a8ee0;
+    animation: pinyinPulseBlue 2s infinite;
+}
+@keyframes pinyinPulseBlue {
+    0%   { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(158, 196, 224, 0.55); }
+    70%  { transform: scale(1);    box-shadow: 0 0 0 6px rgba(158, 196, 224, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(158, 196, 224, 0); }
+}
+
 /* 最小化态：+ / × 浮雕图标（字号 19px，容器 30×?，下移 2.5px） */
 #pinyin-modal.minimized .pinyin-icon-btn {
     position: relative;
