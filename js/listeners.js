@@ -80,13 +80,25 @@ if (target.classList.contains('delete-btn')) {
         const index = messages.findIndex(m => m.id === messageId);
         if (index > -1) {
             const savedScrollTop = DOMElements.chatContainer.scrollTop;
-            messages.splice(index, 1); 
-            throttledSaveData(); 
+            // ← 新增：删除时把普通消息存进回收站
+            const msg = messages[index];
+            const isNormal = (msg.type === 'normal' || !msg.type);
+            if (isNormal) {
+                deletedMessages.push({
+                    ...msg,
+                    deletedAt: Date.now(),
+                    originalIndex: index,
+                    prevId: messages[index - 1] ? messages[index - 1].id : null,
+                    nextId: messages[index + 1] ? messages[index + 1].id : null
+                });
+            }
+            messages.splice(index, 1);
+            throttledSaveData();
             renderMessages(true);
             requestAnimationFrame(() => {
                 DOMElements.chatContainer.scrollTop = savedScrollTop;
             });
-            showNotification('消息已删除', 'success');
+            showNotification(isNormal ? '已删除，可在回收站恢复' : '消息已删除', 'success');
         }
     }
     return;
@@ -107,6 +119,11 @@ if (target.classList.contains('delete-btn')) {
                     });
                     return;
                 } 
+                // ← 新增：撤回按钮
+if (target.classList.contains('recall-btn')) {
+    recallMessage(messageId);
+    return;
+}
                 throttledSaveData();
             });
 
