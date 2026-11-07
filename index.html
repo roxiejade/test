@@ -2087,9 +2087,12 @@
                     <i class="fas fa-star"></i> 收藏
                 </button>
                 <button class="stats-nav-btn" id="wordcloud-tab-btn" onclick="switchStatsTab('wordcloud')" data-tab="wordcloud">
-                    <i class="fas fa-cloud"></i> 词云
-                </button>
-            </div>
+    <i class="fas fa-cloud"></i> 词云
+</button>
+<button class="stats-nav-btn" id="trash-tab-btn" onclick="switchStatsTab('trash')" data-tab="trash">
+    <i class="fas fa-trash-restore"></i> 回收站
+</button>
+</div>
             <div id="stats-panel">
                 <div class="stats-content" id="stats-content"></div>
             </div>
@@ -2121,6 +2124,13 @@
                 </div>
                 <div class="favorites-list" id="favorites-list" style="max-height:55vh;overflow-y:auto;"></div>
             </div>
+            <div id="trash-panel" style="display:none;">
+    <div style="font-size:11.5px;color:var(--text-secondary);margin-bottom:10px;">已删除的消息会保留在这里，可恢复到原位置。</div>
+    <div id="trash-list" style="max-height:52vh;overflow-y:auto;"></div>
+    <div style="display:flex;justify-content:flex-end;margin-top:10px;">
+        <button class="modal-btn modal-btn-secondary" id="clear-trash-btn" style="font-size:12px;padding:6px 14px;"><i class="fas fa-trash"></i> 清空回收站</button>
+    </div>
+</div>
             <div class="modal-buttons">
                 <button class="modal-btn modal-btn-secondary" id="close-stats">关闭</button>
             </div>
