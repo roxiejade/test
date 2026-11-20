@@ -12989,3 +12989,31 @@ html[data-theme="dark"] .period-stat-value { color: var(--accent-color-dark); }
     box-sizing: border-box !important;
     padding: 0 6px !important;
 }
+
+/* ===== 修复音乐播放器主播放按钮点击异常 ===== */
+#play-btn {
+    -webkit-tap-highlight-color: transparent;
+    outline: none !important;
+}
+
+#play-btn:focus,
+#play-btn:focus-visible,
+#play-btn:active {
+    outline: none !important;
+    transform: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+#play-btn.action-btn:active,
+#play-btn.input-btn:active {
+    transform: none !important;
+    background: transparent !important;
+}
+
+.player.playing #play-btn,
+.player.collapsed #play-btn {
+    width: auto;
+    height: auto;
+    background: transparent;
+}
