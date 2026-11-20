@@ -13066,4 +13066,22 @@ html[data-theme="dark"] .period-stat-value { color: var(--accent-color-dark); }
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    color: var(--text-secondary) !important;
+}
+#music-subtitle:hover,
+#music-subtitle:active,
+#music-subtitle:focus {
+    color: var(--text-secondary) !important;
+    opacity: 1 !important;
+}
+#play-btn.btn-main,
+#play-btn.btn-main:hover,
+#play-btn.btn-main:active,
+#play-btn.btn-main:focus,
+#play-btn.btn-main:focus-visible {
+    background: var(--accent-color) !important;
+    color: var(--message-sent-text) !important;
+    opacity: 1 !important;
+    filter: none !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
 }
