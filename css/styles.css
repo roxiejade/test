@@ -13060,3 +13060,10 @@ html[data-theme="dark"] .period-stat-value { color: var(--accent-color-dark); }
     color: var(--message-sent-text) !important;
     font-size: 24px !important;
 }
+
+#music-subtitle {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
