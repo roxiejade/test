@@ -3017,15 +3017,27 @@ playlist.style.top = (rect.top + (player.classList.contains('collapsed') ? 65 : 
         miniView.addEventListener('click', () => {
             if (!hasMoved && player.classList.contains('collapsed')) {
                 player.classList.remove('collapsed');
-                setTimeout(() => {
-                    const rect = player.getBoundingClientRect();
-                    playlist.style.top = (rect.top + 150) + 'px';
-                }, 300);
+        setTimeout(() => {
+                const rect = player.getBoundingClientRect();
+                playlist.style.top = (rect.top + 150) + 'px';
+
+                // 兜底：展开时清掉播放按钮可能残留的内联尺寸/背景和焦点
+                const pb = document.getElementById('play-btn');
+                if (pb) {
+                    pb.style.width = '';
+                    pb.style.height = '';
+                    pb.style.background = '';
+                    pb.blur();
+                }
+            }, 300);
             }
         });
     }
 
-    playBtn.addEventListener('click', togglePlay);
+    playBtn.addEventListener('click', () => {
+    togglePlay();
+    setTimeout(() => { try { playBtn.blur(); } catch(e) {} }, 0);
+});
     const _next_btnEl = document.getElementById('next-btn');
     if (_next_btnEl) _next_btnEl.addEventListener('click', nextSong);
     const _prev_btnEl = document.getElementById('prev-btn');
