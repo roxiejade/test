@@ -2669,6 +2669,35 @@ header.innerHTML = `
 `;
         playlist.appendChild(header);
 
+                // ===== 歌单标题：每次重绘都重新读保存值并绑定编辑 =====
+        (function initPlaylistTitle() {
+            const titleEl = header.querySelector('#playlist-title');
+            if (!titleEl) return;
+            const savedName = localStorage.getItem('playlistCustomName');
+            if (savedName) titleEl.textContent = savedName;
+            titleEl.style.cursor = 'pointer';
+            titleEl.title = '点击修改歌单名称';
+            titleEl.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (this.querySelector('input')) return;
+                const currentName = this.textContent;
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.value = currentName;
+                input.style.cssText = `background:transparent;border:none;border-bottom:1.5px solid var(--accent-color);color:var(--text-primary);font-size:16px;font-weight:600;font-family:var(--font-family);outline:none;width:${Math.max(currentName.length*1.2,60)}px;padding:0 2px;`;
+                this.textContent = '';
+                this.appendChild(input);
+                input.focus(); input.select();
+                const save = () => {
+                    const newName = input.value.trim() || '˙°ʚᕱ⑅ᕱɞ°˙';
+                    localStorage.setItem('playlistCustomName', newName);
+                    titleEl.textContent = newName;
+                };
+                input.addEventListener('keydown', ev => { if (ev.key === 'Enter') { ev.preventDefault(); save(); } });
+                input.addEventListener('blur', save);
+            });
+        })();
+
         const searchWrapper = document.createElement('div');
         searchWrapper.className = `playlist-search-wrapper ${isSearchVisible ? 'active' : ''}`;
         const searchInput = document.createElement('input');
@@ -3050,77 +3079,6 @@ playlist.style.top = (rect.top + (player.classList.contains('collapsed') ? 65 : 
 
     loadSong(0);
     renderPlaylist();
-
-// ===== 新增：歌单标题点击编辑 =====
-const titleEl = document.getElementById('playlist-title');
-if (titleEl) {
-    // 从 localStorage 读取保存的名称
-    const savedName = localStorage.getItem('playlistCustomName');
-    if (savedName) {
-        titleEl.textContent = savedName;
-    }
-    
-    titleEl.style.cursor = 'pointer';
-    titleEl.title = '点击修改歌单名称';
-    
-    // 保存名称的函数
-    function savePlaylistName(input, titleElement) {
-        const newName = input.value.trim();
-        if (newName) {
-            localStorage.setItem('playlistCustomName', newName);
-            titleElement.textContent = newName;
-        } else {
-            // 如果为空，恢复默认名称
-            const defaultName = '˙°ʚᕱ⑅ᕱɞ°˙';
-            localStorage.setItem('playlistCustomName', defaultName);
-            titleElement.textContent = defaultName;
-        }
-    }
-    
-    titleEl.addEventListener('click', function(e) {
-        e.stopPropagation();
-        const currentName = this.textContent;
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.value = currentName;
-        input.style.cssText = `
-            background: transparent;
-            border: none;
-            border-bottom: 1.5px solid var(--accent-color);
-            color: var(--text-primary);
-            font-size: 16px;
-            font-weight: 600;
-            font-family: var(--font-family);
-            outline: none;
-            width: ${Math.max(currentName.length * 1.2, 60)}px;
-            padding: 0 2px;
-        `;
-        this.textContent = '';
-        this.appendChild(input);
-        input.focus();
-        input.select();
-        
-        // 按回车保存
-        input.addEventListener('keydown', function(ev) {
-            if (ev.key === 'Enter') {
-                ev.preventDefault();
-                savePlaylistName(this, titleEl);
-            }
-        });
-        
-        // 点击其他地方保存（通过全局点击事件）
-        function onDocClick(ev) {
-            if (!titleEl.contains(ev.target)) {
-                savePlaylistName(input, titleEl);
-                document.removeEventListener('click', onDocClick);
-            }
-        }
-        // 延迟添加监听，避免点击标题时立即触发
-        setTimeout(() => {
-            document.addEventListener('click', onDocClick);
-        }, 10);
-    });
-}
             
     setupDrag();
 
