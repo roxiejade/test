@@ -13017,3 +13017,32 @@ html[data-theme="dark"] .period-stat-value { color: var(--accent-color-dark); }
     height: auto;
     background: transparent;
 }
+
+/* ===== 修复播放/暂停按钮点击变白变大（针对 .btn-main） ===== */
+#play-btn.btn-main {
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+    max-width: 44px !important;
+    max-height: 44px !important;
+    padding: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    transform: none !important;
+    transition: none !important;
+    -webkit-tap-highlight-color: transparent;
+    outline: none !important;
+}
+
+#play-btn.btn-main:active,
+#play-btn.btn-main:focus,
+#play-btn.btn-main:hover,
+#play-btn.btn-main:focus-visible {
+    background: transparent !important;
+    transform: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+    width: 44px !important;
+    height: 44px !important;
+}
