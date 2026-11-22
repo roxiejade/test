@@ -197,47 +197,58 @@ setTimeout(function() {
     }
 });
 const stickerInput = document.getElementById('sticker-file-input');
-            if (stickerInput) {
-                stickerInput.addEventListener('change', async (e) => {
-                    const files = Array.from(e.target.files);
-                    if (!files.length) return;
+if (stickerInput) {
+    stickerInput.addEventListener('change', async (e) => {
+        const files = Array.from(e.target.files);
+        if (!files.length) return;
 
-                    const oversized = files.filter(f => f.size > 2 * 1024 * 1024);
-                    if (oversized.length > 0) {
-                        showNotification(oversized.length + ' 张图片超过 2MB 限制，已跳过', 'warning');
-                    }
+        const oversized = files.filter(f => f.size > 2 * 1024 * 1024);
+        if (oversized.length > 0) {
+            showNotification(oversized.length + ' 张图片超过 2MB 限制，已跳过', 'warning');
+        }
 
-                    const validFiles = files.filter(f => f.size <= 2 * 1024 * 1024);
-                    if (!validFiles.length) return;
+        const validFiles = files.filter(f => f.size <= 2 * 1024 * 1024);
+        if (!validFiles.length) return;
 
-                    showNotification('正在批量处理 ' + validFiles.length + ' 张图片...', 'info');
+        showNotification('正在上传 ' + validFiles.length + ' 张图片到云端...', 'info');
 
-                    let successCount = 0;
-                    let failCount = 0;
+        let successCount = 0;
+        let failCount = 0;
 
-                    for (const file of validFiles) {
-                        try {
-                            const base64 = await optimizeImage(file, 300, 0.8);
-                            stickerLibrary.push(base64);
-                            successCount++;
-                        } catch (err) {
-                            console.error(err);
-                            failCount++;
-                        }
-                    }
+        for (const file of validFiles) {
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('group', '默认');
+                formData.append('owner', 'partner'); // 对方的表情库
 
-                    throttledSaveData();
-                    renderReplyLibrary();
-
-                    if (failCount > 0) {
-                        showNotification('上传完成：' + successCount + ' 张成功，' + failCount + ' 张失败', 'warning');
-                    } else {
-                        showNotification('上传成功，共 ' + successCount + ' 张', 'success');
-                    }
-
-                    e.target.value = '';
+                const res = await fetch('https://flashcard-site.yunyu0613.workers.dev/api/emoji/upload', {
+                    method: 'POST',
+                    body: formData
                 });
+                const data = await res.json();
+                if (!data.ok) throw new Error(data.error || '上传失败');
+
+                stickerLibrary.push(data.url);
+                successCount++;
+            } catch (err) {
+                console.error(err);
+                failCount++;
             }
+        }
+
+        throttledSaveData();
+        renderReplyLibrary();
+
+        if (failCount > 0) {
+            showNotification('上传完成：' + successCount + ' 张成功，' + failCount + ' 张失败', 'warning');
+        } else {
+            showNotification('上传成功，共 ' + successCount + ' 张', 'success');
+        }
+
+        e.target.value = '';
+    });
+}
 const myStickerQuickUpload = document.getElementById('my-sticker-quick-upload');
 if (myStickerQuickUpload) {
     myStickerQuickUpload.addEventListener('change', async (e) => {
@@ -247,15 +258,29 @@ if (myStickerQuickUpload) {
         if (oversized.length > 0) showNotification(oversized.length + ' 张图片超过 2MB，已跳过', 'warning');
         const validFiles = files.filter(f => f.size <= 2 * 1024 * 1024);
         if (!validFiles.length) return;
-        showNotification('正在处理 ' + validFiles.length + ' 张...', 'info');
+        showNotification('正在上传 ' + validFiles.length + ' 张到云端...', 'info');
         let ok = 0, fail = 0;
         const newStickers = [];
         for (const file of validFiles) {
             try {
-                const base64 = await optimizeImage(file, 300, 0.8);
-                newStickers.push(base64);
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('group', '默认');
+                formData.append('owner', 'me'); // 我的表情库
+
+                const res = await fetch('https://flashcard-site.yunyu0613.workers.dev/api/emoji/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                if (!data.ok) throw new Error(data.error || '上传失败');
+
+                newStickers.push(data.url);
                 ok++;
-            } catch(err) { fail++; }
+            } catch(err) { 
+                console.error(err);
+                fail++; 
+            }
         }
         // 新表情插到最前面，批量上传时保持原顺序
         myStickerLibrary.unshift(...newStickers);
@@ -265,7 +290,6 @@ if (myStickerQuickUpload) {
         e.target.value = '';
     });
 }
-
 // 启动时检查闪退未结束的陪伴会话（独立于 load 事件，确保一定执行）
 (function() {
     function _cdRecLog(msg, data) {
