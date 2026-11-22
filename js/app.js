@@ -750,3 +750,76 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+// ===== 临时：补表情包顺序（手机端跑一次即可）=====
+(function() {
+    if (document.getElementById('_fix_emoji_order_btn')) return;
+
+    const logBox = document.createElement('div');
+    logBox.id = '_fix_order_log';
+    logBox.style.cssText = 'position:fixed;left:10px;right:10px;bottom:150px;max-height:180px;overflow:auto;z-index:99999;background:rgba(0,0,0,0.82);color:#fff;font-size:11px;line-height:1.5;padding:10px;border-radius:10px;white-space:pre-wrap;display:none;';
+    document.body.appendChild(logBox);
+
+    const log = (msg) => {
+        console.log(msg);
+        logBox.style.display = 'block';
+        logBox.textContent += msg + '\n';
+        logBox.scrollTop = logBox.scrollHeight;
+    };
+
+    const btn = document.createElement('button');
+    btn.id = '_fix_emoji_order_btn';
+    btn.textContent = '补表情顺序';
+    btn.style.cssText = 'position:fixed;right:16px;bottom:90px;z-index:99999;padding:10px 14px;border-radius:12px;border:none;background:#c5a47e;color:#fff;font-size:13px;font-weight:600;box-shadow:0 6px 18px rgba(0,0,0,0.25);cursor:pointer;';
+
+    async function fixOrder(lib, libName, owner) {
+        log('开始补 ' + libName + '，数组长度: ' + (lib ? lib.length : 'null'));
+        if (!Array.isArray(lib) || lib.length === 0) {
+            log(libName + ' 为空，跳过');
+            return;
+        }
+        let ok = 0, fail = 0;
+        for (let i = 0; i < lib.length; i++) {
+            const item = lib[i];
+            if (typeof item !== 'string' || !item.startsWith('http')) { continue; }
+            const sortOrder = lib.length - i;
+            try {
+                const res = await fetch('https://flashcard-site.yunyu0613.workers.dev/api/emoji/order', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: item, owner, sort_order: sortOrder })
+                });
+                const data = await res.json();
+                if (!data.ok) throw new Error(data.error || '更新失败');
+                ok++;
+            } catch (e) {
+                log('第 ' + i + ' 个失败: ' + e.message);
+                fail++;
+            }
+            if ((ok + fail) % 20 === 0) {
+                log(libName + ' 进度 ' + (ok + fail) + '/' + lib.length);
+            }
+        }
+        log('✅ ' + libName + ' 完成：成功 ' + ok + '，失败 ' + fail);
+    }
+
+    btn.onclick = async function() {
+        btn.disabled = true;
+        btn.textContent = '补顺序中...';
+        logBox.textContent = '';
+        try {
+            await fixOrder(typeof stickerLibrary !== 'undefined' ? stickerLibrary : null, 'stickerLibrary', 'partner');
+            await fixOrder(typeof myStickerLibrary !== 'undefined' ? myStickerLibrary : null, 'myStickerLibrary', 'me');
+            btn.textContent = '补完了，刷新看效果';
+            btn.style.background = '#51cf66';
+            log('🎉 全部完成，刷新页面');
+        } catch (e) {
+            log('出错: ' + e.message);
+            btn.textContent = '出错，看日志';
+            btn.style.background = '#ff4757';
+            btn.disabled = false;
+        }
+    };
+
+    document.body.appendChild(btn);
+})();
