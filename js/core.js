@@ -287,6 +287,20 @@ function loadMoreHistory() {
 
 
 const loadData = async () => {
+
+    async function fetchEmojisFromCloud(owner) {
+        try {
+            const res = await fetch('https://flashcard-site.yunyu0613.workers.dev/api/emoji/list?owner=' + owner);
+            const data = await res.json();
+            if (data.ok && Array.isArray(data.data)) {
+                return data.data.map(item => item.url);
+            }
+        } catch (e) {
+            console.warn('拉取云端表情包失败:', e);
+        }
+        return null;
+    }
+
     try {
         settings = getDefaultSettings();
             window.settings = settings;
@@ -309,7 +323,7 @@ const loadData = async () => {
         // ===== 虚拟时钟初始化结束 =====
 
         
-        const results = await Promise.allSettled([
+               const results = await Promise.allSettled([
             localforage.getItem(getStorageKey('chatSettings')),
             localforage.getItem(getStorageKey('chatMessages')),
             localforage.getItem(getStorageKey('backgroundGallery')),
@@ -319,7 +333,7 @@ const loadData = async () => {
             localforage.getItem(getStorageKey('customMottos')),
             localforage.getItem(getStorageKey('customIntros')),
             localforage.getItem(getStorageKey('anniversaries')),
-            localforage.getItem(getStorageKey('stickerLibrary')),
+            fetchEmojisFromCloud('partner'),
             localforage.getItem(`${APP_PREFIX}customThemes`),
             localforage.getItem(getStorageKey('chatBackground')),
             localforage.getItem(getStorageKey('partnerAvatar')),
@@ -327,7 +341,7 @@ const loadData = async () => {
             localforage.getItem(getStorageKey('partnerPersonas')), 
             localforage.getItem(getStorageKey('showPartnerNameInChat')),
             localforage.getItem(`${APP_PREFIX}themeSchemes`),
-            localforage.getItem(getStorageKey('myStickerLibrary')),
+            fetchEmojisFromCloud('me'),
             localforage.getItem(getStorageKey('customReplyGroups')),
             localforage.getItem(getStorageKey('customPokeGroups')),
             localforage.getItem(getStorageKey('customStatusGroups')),
@@ -429,8 +443,8 @@ const loadData = async () => {
         if (savedPokeGroups) window.customPokeGroups = savedPokeGroups;
         if (savedStatusGroups) window.customStatusGroups = savedStatusGroups;
         if (savedAnniversaries) anniversaries = savedAnniversaries;
-        if (savedStickers) stickerLibrary = savedStickers;
-        if (savedMyStickers) myStickerLibrary = savedMyStickers;
+        if (savedStickers && savedStickers.length > 0) stickerLibrary = savedStickers;
+        if (savedMyStickers && savedMyStickers.length > 0) myStickerLibrary = savedMyStickers;
         if (savedCustomThemes) customThemes = savedCustomThemes;
         if (savedThemeSchemes) themeSchemes = savedThemeSchemes;
         try { const ce = await localforage.getItem(getStorageKey('customEmojis')); if (ce && Array.isArray(ce)) customEmojis = ce; } catch(e) {}
