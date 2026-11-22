@@ -222,6 +222,7 @@ if (stickerInput) {
                 formData.append('file', file);
                 formData.append('group', '默认');
                 formData.append('owner', 'partner');
+                formData.append('sort_order', String(Date.now()));
 
                 const res = await fetch('https://flashcard-site.yunyu0613.workers.dev/api/emoji/upload', {
                     method: 'POST',
@@ -273,6 +274,7 @@ if (myStickerQuickUpload) {
                 formData.append('file', file);
                 formData.append('group', '默认');
                 formData.append('owner', 'me'); // 我的表情库
+                formData.append('sort_order', String(Date.now()));
 
                 const res = await fetch('https://flashcard-site.yunyu0613.workers.dev/api/emoji/upload', {
                     method: 'POST',
