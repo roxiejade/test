@@ -214,13 +214,14 @@ if (stickerInput) {
 
         let successCount = 0;
         let failCount = 0;
+        const newStickers = [];
 
         for (const file of validFiles) {
             try {
                 const formData = new FormData();
                 formData.append('file', file);
                 formData.append('group', '默认');
-                formData.append('owner', 'partner'); // 对方的表情库
+                formData.append('owner', 'partner');
 
                 const res = await fetch('https://flashcard-site.yunyu0613.workers.dev/api/emoji/upload', {
                     method: 'POST',
@@ -229,12 +230,17 @@ if (stickerInput) {
                 const data = await res.json();
                 if (!data.ok) throw new Error(data.error || '上传失败');
 
-                stickerLibrary.push(data.url);
+                newStickers.push(data.url);
                 successCount++;
             } catch (err) {
                 console.error(err);
                 failCount++;
             }
+        }
+
+        // 新表情插到最前面，批量上传时保持原顺序
+        if (newStickers.length > 0) {
+            stickerLibrary.unshift(...newStickers);
         }
 
         throttledSaveData();
