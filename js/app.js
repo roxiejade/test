@@ -749,9 +749,22 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// ===== 临时：表情包迁移到 R2 按钮 =====
+// ===== 临时：表情包迁移到 R2 按钮（带页面日志）=====
 (function() {
     if (document.getElementById('_migrate_emoji_btn')) return;
+
+    // 日志框
+    const logBox = document.createElement('div');
+    logBox.id = '_migrate_log_box';
+    logBox.style.cssText = 'position:fixed;left:10px;right:10px;bottom:150px;max-height:180px;overflow:auto;z-index:99999;background:rgba(0,0,0,0.82);color:#fff;font-size:11px;line-height:1.5;padding:10px;border-radius:10px;white-space:pre-wrap;display:none;';
+    document.body.appendChild(logBox);
+
+    const log = (msg) => {
+        console.log(msg);
+        logBox.style.display = 'block';
+        logBox.textContent += msg + '\n';
+        logBox.scrollTop = logBox.scrollHeight;
+    };
 
     const btn = document.createElement('button');
     btn.id = '_migrate_emoji_btn';
@@ -759,9 +772,9 @@ document.addEventListener('DOMContentLoaded', function() {
     btn.style.cssText = 'position:fixed;right:16px;bottom:90px;z-index:99999;padding:10px 14px;border-radius:12px;border:none;background:#c5a47e;color:#fff;font-size:13px;font-weight:600;box-shadow:0 6px 18px rgba(0,0,0,0.25);cursor:pointer;';
 
     async function migrateArray(lib, libName, owner) {
-        console.log('开始迁移 ' + libName + '，数组长度:', lib ? lib.length : 'null');
+        log('开始迁移 ' + libName + '，数组长度: ' + (lib ? lib.length : 'null'));
         if (!Array.isArray(lib) || lib.length === 0) {
-            console.warn(libName + ' 为空或不是数组，跳过');
+            log(libName + ' 为空或不是数组，跳过');
             return;
         }
         let done = 0, skip = 0, fail = 0;
@@ -780,30 +793,31 @@ document.addEventListener('DOMContentLoaded', function() {
                 lib[i] = data.url;
                 done++;
             } catch (e) {
-                console.error('第 ' + i + ' 个失败:', e);
+                log('第 ' + i + ' 个失败: ' + e.message);
                 fail++;
             }
             if ((done + fail) % 5 === 0) {
                 window.throttledSaveData && window.throttledSaveData();
-                btn.textContent = libName + ' ' + (done + fail) + '/' + lib.length;
+                log(libName + ' 进度 ' + (done + fail) + '/' + lib.length + '（成功 ' + done + '，失败 ' + fail + '）');
             }
         }
         window.throttledSaveData && window.throttledSaveData();
-        console.log('✅ ' + libName + ' 完成：成功 ' + done + '，跳过 ' + skip + '，失败 ' + fail);
+        log('✅ ' + libName + ' 完成：成功 ' + done + '，跳过 ' + skip + '，失败 ' + fail);
     }
 
     btn.onclick = async function() {
         btn.disabled = true;
         btn.textContent = '开始迁移...';
+        logBox.textContent = '';
         try {
-            // 注意：这里直接用变量名，不用 window[libName]
             await migrateArray(typeof stickerLibrary !== 'undefined' ? stickerLibrary : null, 'stickerLibrary', 'partner');
             await migrateArray(typeof myStickerLibrary !== 'undefined' ? myStickerLibrary : null, 'myStickerLibrary', 'me');
             btn.textContent = '迁移完成，可刷新';
             btn.style.background = '#51cf66';
+            log('🎉 全部结束');
         } catch (e) {
-            console.error(e);
-            btn.textContent = '迁移出错，看控制台';
+            log('迁移出错: ' + e.message);
+            btn.textContent = '迁移出错';
             btn.style.background = '#ff4757';
             btn.disabled = false;
         }
