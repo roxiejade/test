@@ -758,45 +758,47 @@ document.addEventListener('DOMContentLoaded', function() {
     btn.textContent = '迁移表情包到R2';
     btn.style.cssText = 'position:fixed;right:16px;bottom:90px;z-index:99999;padding:10px 14px;border-radius:12px;border:none;background:#c5a47e;color:#fff;font-size:13px;font-weight:600;box-shadow:0 6px 18px rgba(0,0,0,0.25);cursor:pointer;';
 
-    btn.onclick = async function() {
-        const WORKER = 'https://flashcard-site.yunyu0613.workers.dev';
-
-        async function migrateLibrary(libName, owner) {
-            const lib = window[libName];
-            if (!Array.isArray(lib)) { console.warn(libName + ' 不是数组，跳过'); return; }
-            let done = 0, skip = 0, fail = 0;
-            for (let i = 0; i < lib.length; i++) {
-                const item = lib[i];
-                if (typeof item !== 'string' || !item.startsWith('data:image')) { skip++; continue; }
-                try {
-                    const blob = await (await fetch(item)).blob();
-                    const fd = new FormData();
-                    fd.append('file', new File([blob], 'migrate.png', { type: blob.type }));
-                    fd.append('group', '默认');
-                    fd.append('owner', owner);
-                    const res = await fetch(WORKER + '/api/emoji/upload', { method: 'POST', body: fd });
-                    const data = await res.json();
-                    if (!data.ok) throw new Error(data.error);
-                    lib[i] = data.url;
-                    done++;
-                } catch (e) {
-                    console.error('第 ' + i + ' 个失败:', e);
-                    fail++;
-                }
-                if ((done + fail) % 5 === 0) {
-                    window.throttledSaveData && window.throttledSaveData();
-                    btn.textContent = '迁移中 ' + (done + fail) + '/' + lib.length;
-                }
-            }
-            window.throttledSaveData && window.throttledSaveData();
-            console.log('✅ ' + libName + ' 迁移完成：成功 ' + done + '，跳过 ' + skip + '，失败 ' + fail);
+    async function migrateArray(lib, libName, owner) {
+        console.log('开始迁移 ' + libName + '，数组长度:', lib ? lib.length : 'null');
+        if (!Array.isArray(lib) || lib.length === 0) {
+            console.warn(libName + ' 为空或不是数组，跳过');
+            return;
         }
+        let done = 0, skip = 0, fail = 0;
+        for (let i = 0; i < lib.length; i++) {
+            const item = lib[i];
+            if (typeof item !== 'string' || !item.startsWith('data:image')) { skip++; continue; }
+            try {
+                const blob = await (await fetch(item)).blob();
+                const fd = new FormData();
+                fd.append('file', new File([blob], 'migrate.png', { type: blob.type }));
+                fd.append('group', '默认');
+                fd.append('owner', owner);
+                const res = await fetch('https://flashcard-site.yunyu0613.workers.dev/api/emoji/upload', { method: 'POST', body: fd });
+                const data = await res.json();
+                if (!data.ok) throw new Error(data.error);
+                lib[i] = data.url;
+                done++;
+            } catch (e) {
+                console.error('第 ' + i + ' 个失败:', e);
+                fail++;
+            }
+            if ((done + fail) % 5 === 0) {
+                window.throttledSaveData && window.throttledSaveData();
+                btn.textContent = libName + ' ' + (done + fail) + '/' + lib.length;
+            }
+        }
+        window.throttledSaveData && window.throttledSaveData();
+        console.log('✅ ' + libName + ' 完成：成功 ' + done + '，跳过 ' + skip + '，失败 ' + fail);
+    }
 
+    btn.onclick = async function() {
         btn.disabled = true;
         btn.textContent = '开始迁移...';
         try {
-            await migrateLibrary('stickerLibrary', 'partner');
-            await migrateLibrary('myStickerLibrary', 'me');
+            // 注意：这里直接用变量名，不用 window[libName]
+            await migrateArray(typeof stickerLibrary !== 'undefined' ? stickerLibrary : null, 'stickerLibrary', 'partner');
+            await migrateArray(typeof myStickerLibrary !== 'undefined' ? myStickerLibrary : null, 'myStickerLibrary', 'me');
             btn.textContent = '迁移完成，可刷新';
             btn.style.background = '#51cf66';
         } catch (e) {
