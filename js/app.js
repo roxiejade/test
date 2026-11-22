@@ -782,7 +782,7 @@ document.addEventListener('DOMContentLoaded', function() {
         for (let i = 0; i < lib.length; i++) {
             const item = lib[i];
             if (typeof item !== 'string' || !item.startsWith('http')) { continue; }
-            const sortOrder = lib.length - i;
+            const sortOrder = lib.length - i; // 数组越靠前，值越大，页面越靠上
             try {
                 const res = await fetch('https://flashcard-site.yunyu0613.workers.dev/api/emoji/order', {
                     method: 'POST',
